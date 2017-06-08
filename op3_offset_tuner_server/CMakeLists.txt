@@ -1,9 +1,12 @@
+################################################################################
+# CMake
+################################################################################
 cmake_minimum_required(VERSION 2.8.3)
 project(op3_offset_tuner_server)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
+################################################################################
+# Packages
+################################################################################
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslib
@@ -21,34 +24,45 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen REQUIRED)
 
-###################################
-## catkin specific configuration ##
-###################################
+
+################################################################################
+# Declare ROS messages, services and actions
+################################################################################
+
+################################################################################
+# Declare ROS dynamic reconfigure parameters
+################################################################################
+
+################################################################################
+# Catkin specific configuration
+################################################################################
 catkin_package(
   INCLUDE_DIRS include
-#  CATKIN_DEPENDS roscpp
-#  DEPENDS system_lib
 )
 
-###########
-## Build ##
-###########
+################################################################################
+# Build
+################################################################################
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${Eigen_INCLUDE_DIRS}
 )
 
-## Declare a C++ executable
 add_executable(offset_tuner_server_node 
    src/op3_offset_tuner_server.cpp
    src/main.cpp
 )
 
-## Specify libraries to link a library or executable target against
 target_link_libraries(offset_tuner_server_node
   yaml-cpp
   ${catkin_LIBRARIES}
 )
 
+################################################################################
+# Install
+################################################################################
 
+################################################################################
+# Test
+################################################################################

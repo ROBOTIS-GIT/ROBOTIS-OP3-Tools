@@ -32,7 +32,7 @@
  * action_editor.cpp
  *
  *  Created on: 2016. 12. 16.
- *      Author: JaySong
+ *      Author: JaySong. kayman
  */
 
 #include "op3_action_editor/action_editor.h"
@@ -148,7 +148,7 @@ void ActionEditor::setSTDin()
 {
   tcgetattr(0, &oldterm);
   new_term = oldterm;
-  new_term.c_lflag &= ~(ICANON | ECHO | ISIG);  // �ǹ̴� struct termios�� ã���� ��.
+  new_term.c_lflag &= ~(ICANON | ECHO | ISIG);
   new_term.c_cc[VMIN] = 1;
   new_term.c_cc[VTIME] = 0;
   tcsetattr(0, TCSANOW, &new_term);

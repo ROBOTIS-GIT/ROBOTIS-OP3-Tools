@@ -44,13 +44,6 @@
 
 #include "op3_walking_tuner/cmd_process.h"
 
-//#define INI_FILE_PATH       "../../../Data/config.ini"
-//
-//using namespace Robot;
-//
-//LinuxCM730 linux_cm730("/dev/ttyUSB0");
-//CM730 cm730(&linux_cm730);
-
 void sighandler(int sig)
 {
   struct termios term;

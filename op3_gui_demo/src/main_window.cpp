@@ -177,11 +177,6 @@ void MainWindow::on_checkBox_balance_off_clicked(bool check)
 
 void MainWindow::on_head_center_button_clicked(bool check)
 {
-  //    is_updating_ == true;
-  //    ui.head_pan_slider->setValue(0.0);
-  //    ui.head_tilt_slider->setValue(0.0);
-  //    is_updating_ == false;
-
   qnode_op3_.log(QNodeOP3::Info, "Go Head init position");
   setHeadAngle(0, 0);
 }
@@ -202,44 +197,40 @@ void MainWindow::on_button_demo_stop_clicked(bool check)
 
 void MainWindow::on_button_r_kick_clicked(bool check)
 {
-  // temporary code
   qnode_op3_.setActionModuleBody();
 
   usleep(10 * 1000);
 
-  qnode_op3_.playMotion(83);
+  qnode_op3_.playMotion(RightKick);
 }
 
 void MainWindow::on_button_l_kick_clicked(bool check)
 {
-  // temporary code
   qnode_op3_.setActionModuleBody();
 
   usleep(10 * 1000);
 
-  qnode_op3_.playMotion(84);
+  qnode_op3_.playMotion(LeftKick);
 
 }
 
 void MainWindow::on_button_getup_front_clicked(bool check)
 {
-  // temporary code
   qnode_op3_.setActionModuleBody();
 
   usleep(10 * 1000);
 
-  qnode_op3_.playMotion(81);
+  qnode_op3_.playMotion(GetUpFront);
 
 }
 
 void MainWindow::on_button_getup_back_clicked(bool check)
 {
-  // temporary code
   qnode_op3_.setActionModuleBody();
 
   usleep(10 * 1000);
 
-  qnode_op3_.playMotion(82);
+  qnode_op3_.playMotion(GetUpBack);
 
 }
 
@@ -433,56 +424,6 @@ void MainWindow::setHeadAngle(double pan, double tilt)
   qnode_op3_.setHeadJoint(pan * M_PI / 180, tilt * M_PI / 180);
 }
 
-// manipulation
-//void MainWindow::updateCurrJointSpinbox( double value )
-//{
-//  ui_.joint_spinbox->setValue( value * 180.0 / M_PI );
-//}
-
-//void MainWindow::updateCurrPosSpinbox( double x, double y, double z )
-//{
-//  ui_.pos_x_spinbox->setValue( x );
-//  ui_.pos_y_spinbox->setValue( y );
-//  ui_.pos_z_spinbox->setValue( z );
-//}
-
-//void MainWindow::updateCurrOriSpinbox( double x , double y , double z , double w )
-//{
-//  Eigen::Quaterniond QR(w,x,y,z);
-
-//  Eigen::MatrixXd R = QR.toRotationMatrix();
-
-//  double roll = atan2( R.coeff(2,1), R.coeff(2,2) ) * 180.0 / M_PI;
-//  double pitch = atan2( -R.coeff(2,0), sqrt( pow(R.coeff(2,1),2) + pow(R.coeff(2,2),2) ) ) * 180.0 / M_PI;
-//  double yaw = atan2 ( R.coeff(1,0) , R.coeff(0,0) ) * 180.0 / M_PI;
-
-//  ui_.ori_roll_spinbox->setValue( roll );
-//  ui_.ori_pitch_spinbox->setValue( pitch );
-//  ui_.ori_yaw_spinbox->setValue( yaw );
-//}
-
-/*
- void MainWindow::sendDemoMsg(const std::string &demo_command)
- {
- thormang3_manipulation_module_msgs::DemoPose _msg;
-
- std::string _group_name = ui.demo_group_combobox->currentText().toStdString() + (demo_command == "ini_pose" ? "" : "_with_torso");
- _msg.name = _group_name;
- _msg.demo = demo_command;
-
- _msg.pose.position.x = 0.0;
- _msg.pose.position.y = 0.0;
- _msg.pose.position.z = 0.0;
-
- _msg.pose.orientation.x = 0.0;
- _msg.pose.orientation.y = 0.0;
- _msg.pose.orientation.z = 0.0;
- _msg.pose.orientation.w = 1.0;
-
- qnode_thor3.sendDemoMsg( _msg );
- }
- */
-
 // walking
 void MainWindow::updateWalkingParams(op3_walking_module_msgs::WalkingParam params)
 {
@@ -585,7 +526,6 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::initModeUnit()
 {
-  // std::string _module[] = {"None", "Walking", "Manipulation", "Action", "Head", "Direct"};
   int number_joint = qnode_op3_.getJointSize();
 
   // preset button
@@ -607,7 +547,6 @@ void MainWindow::initModeUnit()
     QObject::connect(preset_button, SIGNAL(clicked()), signalMapper, SLOT(map()));
   }
 
-  // QObject::connect(_signalMapper, SIGNAL(mapped(QString)), this, SLOT(setPreset(QString)));
   QObject::connect(signalMapper, SIGNAL(mapped(QString)), this, SLOT(setMode(QString)));
 
   ui_.widget_mode_preset->setLayout(preset_layout);
@@ -648,10 +587,6 @@ void MainWindow::initModeUnit()
   QPushButton *get_mode_button = new QPushButton(tr("Get Mode"));
   grid_layout->addWidget(get_mode_button, (number_joint / 2) + 2, 0, 1, 3);
   QObject::connect(get_mode_button, SIGNAL(clicked(bool)), &qnode_op3_, SLOT(getJointControlMode()));
-
-  // QPushButton *_set_mode_button = new QPushButton(tr("Set Mode"));
-  // _grid_mod->addWidget(_set_mode_button, (_number_joint / 2) + 2, 3, 1, 3);
-  // QObject::connect(_set_mode_button, SIGNAL(clicked(bool)), this, SLOT(setMode(bool)));
 
   ui_.widget_mode->setLayout(grid_layout);
 
@@ -694,8 +629,6 @@ void MainWindow::initMotionUnit()
     QString q_motion_name = QString::fromStdString(motion_name);
     QPushButton *motion_button = new QPushButton(q_motion_name);
 
-    // if(DEBUG) std::cout << "name : " <<  _motion_name << std::endl;
-
     int button_size = (motion_index < 0) ? 2 : 1;
     int num_row = index / 4;
     int num_col = index % 4;
@@ -729,18 +662,14 @@ void MainWindow::setMode(QString mode_name)
 
 void MainWindow::readSettings()
 {
-  QSettings settings("Qt-Ros Package", "op3_demo");
+  QSettings settings("Qt-Ros Package", "op3_gui_demo");
   restoreGeometry(settings.value("geometry").toByteArray());
   restoreState(settings.value("windowState").toByteArray());
 }
 
 void MainWindow::writeSettings()
 {
-  QSettings settings("Qt-Ros Package", "op3_demo");
-  //settings.setValue("master_url",ui.line_edit_master->text());
-  //settings.setValue("host_url",ui.line_edit_host->text());
-  //settings.setValue("topic_name",ui.line_edit_topic->text());
-  //settings.setValue("use_environment_variables",QVariant(ui.checkbox_use_environment->isChecked()));
+  QSettings settings("Qt-Ros Package", "op3_gui_demo");
   settings.setValue("geometry", saveGeometry());
   settings.setValue("windowState", saveState());
 }

@@ -231,8 +231,6 @@ void QNodeOP3::parseMotionMapFromYaml(const std::string &path)
     motion_name = yaml_it->second.as<std::string>();
 
     motion_table_[motion_index] = motion_name;
-
-    // if(DEBUG) std::cout << "Motion Index : " << _motion_index << " - " << _motion_name << std::endl;
   }
 
   // parse shortcut_table
@@ -250,8 +248,6 @@ void QNodeOP3::parseMotionMapFromYaml(const std::string &path)
       continue;
 
     motion_shortcut_table_[motion_index] = shortcut_index + shortcut_prefix;
-
-    // if(DEBUG) std::cout << "Motion Index : " << _motion_index << " - " << _motion_name << std::endl;
   }
 }
 
@@ -419,7 +415,6 @@ void QNodeOP3::getJointControlMode()
       if (service_it == mode_index_table_.end())
         continue;
 
-      // ROS_INFO_STREAM("joint[" << ix << "] : " << _service_iter->second);
       modules.at(index) = service_it->second;
 
       std::map<std::string, bool>::iterator module_it = using_mode_table_.find(module_name);
@@ -472,7 +467,6 @@ void QNodeOP3::refreshCurrentJointControlCallback(const robotis_controller_msgs:
     if (module_it == joint_module_map.end())
       continue;
 
-    // ROS_INFO_STREAM("joint[" << ix << "] : " << _module_iter->second);
     modules.at(ix) = module_it->second;
   }
 
@@ -578,19 +572,6 @@ void QNodeOP3::initGyro()
 
   log(Info, "Initialize Gyro");
 }
-
-//void QNodeOP3::setWalkingBalance(bool on_command)
-//{
-//    std_msgs::Bool _msg;
-//    _msg.data = on_command;
-
-//    set_walking_balance_pub.publish(_msg);
-
-//    std::stringstream _ss;
-//    _ss << "Set Walking Balance : " << (on_command ? "True" : "False");
-
-//    log(Info, _ss.str());
-//}
 
 // Motion
 void QNodeOP3::playMotion(int motion_index)

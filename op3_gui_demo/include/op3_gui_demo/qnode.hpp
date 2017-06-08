@@ -92,14 +92,6 @@ Q_OBJECT
     Fatal = 4
   };
 
-//    enum ControlIndex
-//    {
-//        Control_None = 0,
-//        Control_Walking = 1,
-//        Control_Manipulation = 2,
-//        Control_Head = 3,
-//    };
-
   QNodeOP3(int argc, char** argv);
   virtual ~QNodeOP3();
 
@@ -134,7 +126,6 @@ Q_OBJECT
   void saveWalkingParam();
   void applyWalkingParam(const op3_walking_module_msgs::WalkingParam &walking_param);
   void initGyro();
-  //        void setWalkingBalance(bool on_command);
 
   // Demo
   void setDemoCommand(const std::string &command);
@@ -154,12 +145,7 @@ Q_SIGNALS:
   void rosShutdown();
   void updateCurrentJointControlMode(std::vector<int> mode);
 
-  // Manipulation
-//    void updateCurrJoint( double value );
-//    void updateCurrPos( double x , double y , double z );
-//    void updateCurrOri( double x , double y , double z , double w );
-
-// Head
+  // Head
   void updateHeadAngles(double pan, double tilt);
 
   // Walking
@@ -192,19 +178,8 @@ Q_SIGNALS:
   ros::Publisher set_head_joint_angle_pub_;
   ros::Subscriber current_joint_states_sub_;
 
-  // Manipulation
-//    ros::Publisher set_control_mode_msg_pub;
-//    ros::Publisher send_ini_pose_msg_pub;
-//    ros::Publisher send_des_joint_msg_pub;
-//    ros::Publisher send_ik_msg_pub;
-//    ros::Publisher send_pathplan_demo_pub;
-//    ros::Subscriber kenematics_pose_sub;
-//    ros::ServiceClient get_joint_pose_client;
-//    ros::ServiceClient get_kinematics_pose_client;
-
-// Walking
+  // Walking
   ros::Publisher set_walking_command_pub;
-//    ros::Publisher set_walking_balance_pub;
   ros::Publisher set_walking_param_pub;
   ros::ServiceClient get_walking_param_client_;
 

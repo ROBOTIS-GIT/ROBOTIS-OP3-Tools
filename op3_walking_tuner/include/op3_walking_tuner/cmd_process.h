@@ -104,8 +104,6 @@ void PrintCmd(std::string message);
 
 // Edit value
 void UpdateValue(bool large, double dir);
-//void IncreaseValue(bool large);
-//void DecreaseValue(bool large);
 
 // Command process
 void BeginCommandMode();

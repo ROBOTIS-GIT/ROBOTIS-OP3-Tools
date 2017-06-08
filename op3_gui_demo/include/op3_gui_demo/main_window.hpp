@@ -116,11 +116,6 @@ Q_OBJECT
   // Head Control
   void updateHeadAngles(double pan, double tilt);
 
-  // Manipulation
-//    void updateCurrJointSpinbox( double value );
-//    void updateCurrPosSpinbox( double x , double y , double z  );
-//    void updateCurrOriSpinbox( double x , double y , double z , double w );
-
   // Walking
   void updateWalkingParams(op3_walking_module_msgs::WalkingParam params);
   void walkingCommandShortcut();
@@ -129,6 +124,17 @@ Q_OBJECT
   void setHeadAngle();
 
  private:
+  enum Motion_Index
+  {
+    InitPose = 1,
+    WalkingReady = 9,
+    GetUpFront = 122,
+    GetUpBack = 123,
+    RightKick = 121,
+    LeftKick = 120,
+    Ceremony = 85,
+  };
+
   void setUserShortcut();
   void initModeUnit();
   void initMotionUnit();

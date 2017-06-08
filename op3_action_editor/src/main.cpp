@@ -32,7 +32,7 @@
  * main.cpp
  *
  *  Created on: 2016. 12. 16.
- *      Author: JaySong
+ *      Author: JaySong, Kayman
  */
 
 #include "op3_action_editor/action_editor.h"
