@@ -5,15 +5,19 @@ motion:
   1 : Walking Init
   2 : OK
   3 : No
-  15 : Sit down
+  4 : Thank you
+  15 : Sit downn
   16 : Stand up
 # soccer
   80 : Init pose
-  81 : Get up(Front)
-  82 : Get up(Back)
-  83 : Right Kick
-  84 : Left Kick
-  85 : Ceremony
+  122 : Get up(Front)
+  123 : Get up(Back)
+  121 : Right Kick
+  120 : Left Kick
+  94 : Ceremony
+  201 : Foot play
+  202 : Roll back
+  126 : Push up
 # action demo
   90 : Action Demo
 motion_shortcut:
