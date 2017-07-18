@@ -1182,6 +1182,7 @@ void ActionEditor::helpCmd()
   printf(" set [value]        Sets value on cursor [value].\n");
   printf(" save               Saves changes.\n");
   printf(" play               Motion playback of current page.\n");
+  printf(" playboth [index]   Motion playback of current page with [index] mp3.\n");
   printf(" g [index]          Motion playback of STP[index].\n");
   printf(" name               Name for current page or changes the name of current page.\n");
   printf(" time               Change time base playing.\n");
@@ -1194,6 +1195,9 @@ void ActionEditor::helpCmd()
   printf(" m [index] [index2] Moves data from [index] to [index2] step.\n");
   printf(" d [index]          Deletes data from STP[index]. \n"
          "                    Pushes data from STP[index] to STP[index-1].\n");
+  printf(" mlr [index]        Mirror the left side value to the right of STP[index]. \n");
+  printf(" mrl [index]        Mirror the right side value to the left of STP[index]. \n");
+  printf(" ms [index]         Switch the values between left and right of STP[index]. \n");
   printf(" on/off             Turn On/Off torque from ALL actuators.\n");
   printf(" on/off [index1] [index2] ...  \n"
          "                    turns On/Off torque from ID[index1] ID[index2]...\n");
