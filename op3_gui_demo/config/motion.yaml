@@ -21,6 +21,9 @@ motion:
   126 : Push up
 # action demo
   90 : Action Demo
+  60 : Keeper Ready
+  61 : Defence to Right
+  62 : Defence to Left
 motion_shortcut:
 # motion_index : button id (0 ~ 9)
   -1 : 0

@@ -34,12 +34,22 @@
 #define OP3_CAMERA_SETTING_TOOL_H_
 
 #include <ros/ros.h>
+#include <dynamic_reconfigure/server.h>
+
 #include "op3_camera_setting_tool/V4lParameter.h"
 #include "op3_camera_setting_tool/V4lParameters.h"
+#include "op3_camera_setting_tool/cameraParamsConfig.h"
 
 std::string g_device_name;
 std::string g_camera_node_name;
 std::map<std::string, std::string> g_param_list;
+
+boost::shared_ptr<dynamic_reconfigure::Server< op3_camera_setting_tool::cameraParamsConfig> > g_param_server;
+op3_camera_setting_tool::cameraParamsConfig g_dyn_config;
+
+void dynParamCallback(op3_camera_setting_tool::cameraParamsConfig &config, uint32_t level);
+void changeDynParam(const std::string& param, const int& value);
+void updateDynParam(op3_camera_setting_tool::cameraParamsConfig &config);
 
 void setCameraParameterCallback(const op3_camera_setting_tool::V4lParameter::ConstPtr &msg);
 void setCameraParametersCallback(const op3_camera_setting_tool::V4lParameters::ConstPtr &msg);

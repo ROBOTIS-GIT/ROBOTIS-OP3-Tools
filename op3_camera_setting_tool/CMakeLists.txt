@@ -9,7 +9,9 @@ project(op3_camera_setting_tool)
 ################################################################################
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  rospy
   std_msgs
+  dynamic_reconfigure
   message_generation
 )
 
@@ -32,12 +34,14 @@ generate_messages(
 ################################################################################
 # Declare ROS dynamic reconfigure parameters
 ################################################################################
+generate_dynamic_reconfigure_options(cfg/camera_params.cfg)
 
 ################################################################################
 # Catkin specific configuration
 ################################################################################
 catkin_package(
- INCLUDE_DIRS include
+  INCLUDE_DIRS include
+  CATKIN_DEPENDS roscpp rospy dynamic_reconfigure
 )
 
 ################################################################################
