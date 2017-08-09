@@ -63,14 +63,16 @@ int main(int argc, char **argv)
   ros::Subscriber camera_param_sub = nh.subscribe("/op3_camera/set_param", 1, &setCameraParameterCallback);
   ros::Subscriber camera_params_sub = nh.subscribe("/op3_camera/set_params", 1, &setCameraParametersCallback);
 
+  boost::recursive_mutex config_mutex;
+
   //dynamic_reconfigure::Server<op3_camera_setting_tool::cameraParamsConfig> param_server;
   dynamic_reconfigure::Server<op3_camera_setting_tool::cameraParamsConfig>::CallbackType callback_fnc;
-  g_param_server.reset(new dynamic_reconfigure::Server<op3_camera_setting_tool::cameraParamsConfig>);
+  g_param_server.reset(new dynamic_reconfigure::Server<op3_camera_setting_tool::cameraParamsConfig>(config_mutex));
 
   g_param_server->getConfigDefault(g_dyn_config);
-
   // get param to set camera
   getROSParam();
+
   updateDynParam(g_dyn_config);
 
   callback_fnc = boost::bind(&dynParamCallback, _1, _2);
@@ -136,50 +138,31 @@ void dynParamCallback(op3_camera_setting_tool::cameraParamsConfig &config, uint3
   g_dyn_config = config;
 
   setV4lParameter("brightness", config.brightness);
-  setROSParam("brightness", config.brightness);
-
   setV4lParameter("contrast", config.contrast);
-  setROSParam("contrast", config.contrast);
-
   setV4lParameter("saturation", config.saturation);
-  setROSParam("saturation", config.saturation);
-
   setV4lParameter("sharpness", config.sharpness);
-  setROSParam("sharpness", config.sharpness);
-
   setV4lParameter("gain", config.gain);
-  setROSParam("gain", config.gain);
-
   // focus
   setV4lParameter("focus_auto", config.focus_auto);
-  setROSParam("focus_auto", config.focus_auto);
-
   if (config.focus_auto == false)
   {
     //0-255, -1 "leave alone"
     setV4lParameter("focus_absolute", config.focus_absolute);
-    setROSParam("focus_absolute", config.focus_absolute);
   }
 
   // exposure
   // turn down exposure control (from max of 3)
   setV4lParameter("exposure_auto", config.exposure_auto);
-  setROSParam("exposure_auto", config.exposure_auto);
-
   if (config.exposure_auto == 1)  // if it's manual
   {
     setV4lParameter("exposure_absolute", config.exposure_absolute);
-    setROSParam("exposure_absolute", config.exposure_absolute);
   }
 
   // white balance
   setV4lParameter("white_balance_temperature_auto", config.white_balance_temperature_auto);
-  setROSParam("white_balance_temperature_auto", config.white_balance_temperature_auto);
-
   if (config.white_balance_temperature_auto == false)
   {
     setV4lParameter("white_balance_temperature", config.white_balance_temperature);
-    setROSParam("white_balance_temperature", config.white_balance_temperature);
   }
 }
 
