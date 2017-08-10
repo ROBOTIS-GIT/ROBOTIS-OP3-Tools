@@ -112,32 +112,61 @@ bool OffsetTunerServer::initialize()
   }
 
   //Load Offset.yaml
-  YAML::Node offset_yaml_node = YAML::LoadFile(offset_file_.c_str());
-
-  //Get Offset Data and Init_Pose for Offset Tuning
-  YAML::Node offset_data_node = offset_yaml_node[OFFSET_ROSPARAM_KEY];
-  YAML::Node offset_init_pose_node = offset_yaml_node[OFFSET_INIT_POS_ROSPARAM_KEY];
-
-  //Initialize Offset Data in RobotOffsetData
-  for (YAML::const_iterator node_it = offset_data_node.begin(); node_it != offset_data_node.end(); node_it++)
+  YAML::Node offset_yaml_node;
+  bool has_offset_file = false;
+  try
   {
-    std::string joint_name = node_it->first.as<std::string>();
-    double offset = node_it->second.as<double>();
-
-    std::map<std::string, JointOffsetData*>::iterator robot_offset_data_it = robot_offset_data_.find(joint_name);
-    if (robot_offset_data_it != robot_offset_data_.end())
-      robot_offset_data_[joint_name]->joint_offset_rad_ = offset;
+    // load yaml
+    offset_yaml_node = YAML::LoadFile(offset_file_.c_str());
+    has_offset_file = true;
+  } catch (const std::exception& e)
+  {
+    ROS_ERROR("Fail to load offset yaml file.");
+    has_offset_file = false;
   }
 
-  //Initialize Init Pose for Offset Tuning in RobotOffsetData
-  for (YAML::const_iterator node_it = offset_init_pose_node.begin(); node_it != offset_init_pose_node.end(); node_it++)
+  if (has_offset_file)
   {
-    std::string joint_name = node_it->first.as<std::string>();
-    double offset_init_pose = node_it->second.as<double>();
+    //Get Offset Data and Init_Pose for Offset Tuning
+    YAML::Node offset_data_node = offset_yaml_node[OFFSET_ROSPARAM_KEY];
 
-    std::map<std::string, JointOffsetData*>::iterator robot_offset_data_it = robot_offset_data_.find(joint_name);
-    if (robot_offset_data_it != robot_offset_data_.end())
-      robot_offset_data_[joint_name]->joint_init_pos_rad_ = offset_init_pose;
+    //Initialize Offset Data in RobotOffsetData
+    for (YAML::const_iterator node_it = offset_data_node.begin(); node_it != offset_data_node.end(); node_it++)
+    {
+      std::string joint_name = node_it->first.as<std::string>();
+      double offset = node_it->second.as<double>();
+
+      std::map<std::string, JointOffsetData*>::iterator robot_offset_data_it = robot_offset_data_.find(joint_name);
+      if (robot_offset_data_it != robot_offset_data_.end())
+        robot_offset_data_[joint_name]->joint_offset_rad_ = offset;
+    }
+
+
+    YAML::Node offset_init_pose_node = offset_yaml_node[OFFSET_INIT_POS_ROSPARAM_KEY];
+
+    //Initialize Init Pose for Offset Tuning in RobotOffsetData
+    for (YAML::const_iterator node_it = offset_init_pose_node.begin(); node_it != offset_init_pose_node.end();
+        node_it++)
+    {
+      std::string joint_name = node_it->first.as<std::string>();
+      double offset_init_pose = node_it->second.as<double>();
+
+      std::map<std::string, JointOffsetData*>::iterator robot_offset_data_it = robot_offset_data_.find(joint_name);
+      if (robot_offset_data_it != robot_offset_data_.end())
+        robot_offset_data_[joint_name]->joint_init_pos_rad_ = offset_init_pose;
+    }
+  }
+  else
+  {
+    double default_offset_value = 0.0;
+
+    for (std::map<std::string, robotis_framework::Dynamixel *>::iterator dxls_it = controller_->robot_->dxls_.begin();
+        dxls_it != controller_->robot_->dxls_.end(); dxls_it++)
+    {
+      std::string joint_name = dxls_it->first;
+      robot_offset_data_[joint_name]->joint_offset_rad_ = default_offset_value;
+      robot_offset_data_[joint_name]->joint_init_pos_rad_ = default_offset_value;
+    }
   }
 
   ROS_INFO(" ");
