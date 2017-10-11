@@ -35,8 +35,8 @@
  *      Author: JaySong
  */
 
-#ifndef THORMANG3_ACTION_EDITOR_ACTION_EDITOR_H_
-#define THORMANG3_ACTION_EDITOR_ACTION_EDITOR_H_
+#ifndef OP3_ACTION_EDITOR_H_
+#define OP3_ACTION_EDITOR_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -229,4 +229,4 @@ private:
 
 }
 
-#endif /* THORMANG3_ACTION_EDITOR_ACTION_EDITOR_H_ */
+#endif /* OP3_ACTION_EDITOR_H_ */

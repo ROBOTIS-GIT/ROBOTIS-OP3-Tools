@@ -13,10 +13,12 @@
   <build_depend>robotis_controller</build_depend>  
   <build_depend>op3_base_module</build_depend>  
   <build_depend>op3_offset_tuner_msgs</build_depend>  
+  <build_depend>yaml-cpp</build_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>  
   <run_depend>cmake_modules</run_depend>
   <run_depend>robotis_controller</run_depend>  
   <run_depend>op3_base_module</run_depend>  
   <run_depend>op3_offset_tuner_msgs</run_depend>
+  <run_depend>yaml-cpp</run_depend>
 </package>

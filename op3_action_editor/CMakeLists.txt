@@ -17,7 +17,11 @@ find_package(catkin REQUIRED COMPONENTS
   robotis_controller_msgs
   robotis_math  
   op3_action_module
+  op3_action_module_msgs
 )
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(yaml_cpp REQUIRED yaml-cpp)
 
 ################################################################################
 # Declare ROS messages, services and actions
@@ -49,8 +53,9 @@ add_executable(op3_action_editor
 )
 
 target_link_libraries(op3_action_editor
-   ncurses
-   ${catkin_LIBRARIES}
+  ncurses
+  ${yaml_cpp_LIBRARIES}
+  ${catkin_LIBRARIES}
 )
 
 ################################################################################

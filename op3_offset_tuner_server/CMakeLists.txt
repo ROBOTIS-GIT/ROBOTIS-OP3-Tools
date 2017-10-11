@@ -20,10 +20,13 @@ find_package(catkin REQUIRED COMPONENTS
   op3_kinematics_dynamics
   robotis_controller_msgs
   robotis_controller
+  op3_offset_tuner_msgs
 )
 
 find_package(Eigen REQUIRED)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(yaml_cpp REQUIRED yaml-cpp)
 
 ################################################################################
 # Declare ROS messages, services and actions
@@ -55,7 +58,7 @@ add_executable(offset_tuner_server_node
 )
 
 target_link_libraries(offset_tuner_server_node
-  yaml-cpp
+  ${yaml_cpp_LIBRARIES}
   ${catkin_LIBRARIES}
 )
 
