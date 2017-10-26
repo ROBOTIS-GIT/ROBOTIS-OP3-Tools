@@ -3,7 +3,7 @@
   <name>op3_action_editor</name>
   <version>0.1.0</version>
   <description>The op3_action_editor package</description>
-  <license>BSD</license>
+  <license>Apache License 2.0</license>
   <author email="hjsong@robotis.com">Jay</author>
   <author email="kmjung@robotis.com">Kayman</author>
   <maintainer email="pyo@robotis.com">Pyo</maintainer>
