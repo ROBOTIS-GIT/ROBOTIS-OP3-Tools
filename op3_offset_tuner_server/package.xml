@@ -3,7 +3,7 @@
   <name>op3_offset_tuner_server</name>
   <version>0.1.0</version>
   <description>The offset_tuner_server package</description>
-  <license>BSD</license>
+  <license>Apache License 2.0</license>
   <author email="hjsong@robotis.com">Jay</author>
   <maintainer email="pyo@robotis.com">Pyo</maintainer>
   <buildtool_depend>catkin</buildtool_depend>  

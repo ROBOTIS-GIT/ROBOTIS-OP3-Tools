@@ -7,7 +7,7 @@
      op3_gui_demo
 
   </description>
-  <license>BSD</license>
+  <license>Apache License 2.0</license>
   <maintainer email="pyo@robotis.com">Pyo</maintainer>
   <author email="kmjung@robotis.com">Kayman</author>
   <buildtool_depend>catkin</buildtool_depend>
