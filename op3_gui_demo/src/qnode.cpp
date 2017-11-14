@@ -581,83 +581,6 @@ void QNodeOP3::initGyro()
   log(Info, "Initialize Gyro");
 }
 
-// Preview walking
-void QNodeOP3::sendFootStepCommandMsg(op3_wholebody_module_msgs::FootStepCommand msg)
-{
-  foot_step_command_pub_.publish(msg);
-  log( Info , "Send Foot Step Command Msg" );
-}
-
-void QNodeOP3::sendWalkingParamMsg(op3_wholebody_module_msgs::WalkingParam msg)
-{
-  walking_param_pub_.publish(msg);
-  log( Info, "Set Walking Parameter");
-}
-
-void QNodeOP3::sendBodyOffsetMsg(geometry_msgs::Pose msg)
-{
-  body_offset_pub_.publish(msg);
-  log( Info, "Send Body Offset");
-}
-
-void QNodeOP3::sendFootDistanceMsg(std_msgs::Float64 msg)
-{
-  foot_distance_pub_.publish(msg);
-  log( Info, "Send Foot Distance");
-}
-
-void QNodeOP3::sendResetBodyMsg( std_msgs::Bool msg )
-{
-  reset_body_msg_pub_.publish( msg );
-  log( Info , "Reset Body Pose" );
-}
-
-void QNodeOP3::sendWholebodyBalanceMsg(std_msgs::String msg)
-{
-  wholebody_balance_pub_.publish( msg );
-  log( Info , "Wholebody Balance Msg" );
-}
-
-void QNodeOP3::parseIniPoseData(const std::string &path)
-{
-  YAML::Node doc;
-  try
-  {
-    // load yaml
-    doc = YAML::LoadFile(path.c_str());
-  } catch (const std::exception& e)
-  {
-    ROS_ERROR_STREAM("Fail to load yaml file. [" << path << "]");
-    return;
-  }
-
-  op3_wholebody_module_msgs::JointPose msg;
-
-  // parse movement time
-  double mov_time = doc["mov_time"].as<double>();
-  msg.mov_time = mov_time;
-
-  // parse target pose
-  YAML::Node tar_pose_node = doc["tar_pose"];
-  for (YAML::iterator it = tar_pose_node.begin(); it != tar_pose_node.end(); ++it)
-  {
-    std::string joint_name = it->first.as<std::string>();
-    double value = it->second.as<double>();
-
-    msg.pose.name.push_back(joint_name);
-    msg.pose.position.push_back(value * DEG2RAD);
-  }
-
-  sendJointPoseMsg( msg );
-}
-
-void QNodeOP3::sendJointPoseMsg(op3_wholebody_module_msgs::JointPose msg)
-{
-  joint_pose_msg_pub_.publish( msg );
-
-  log( Info , "Send Joint Pose Msg" );
-}
-
 // Motion
 void QNodeOP3::playMotion(int motion_index)
 {
@@ -671,7 +594,7 @@ void QNodeOP3::playMotion(int motion_index)
   switch (motion_index)
   {
     case -2:
-      log_ss << "Break Motion";
+      log_ss << "Brake Motion";
       break;
 
     case -1:
