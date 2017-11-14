@@ -28,19 +28,29 @@
  *****************************************************************************/
 #ifndef Q_MOC_RUN
 
-#include <ros/ros.h>
-#include <ros/package.h>
 #include <string>
 #include <sstream>
 
 #include <QThread>
 #include <QStringListModel>
+
+#include <ros/ros.h>
+#include <ros/package.h>
+#include <tf/tf.h>
+#include <tf/transform_listener.h>
+#include <std_msgs/Bool.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
+#include <std_msgs/Float64.h>
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PointStamped.h>
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
+#include <visualization_msgs/MarkerArray.h>
+#include <interactive_markers/interactive_marker_server.h>
+#include <visualization_msgs/InteractiveMarker.h>
+#include <eigen_conversions/eigen_msg.h>
 
 #include "robotis_controller_msgs/JointCtrlModule.h"
 #include "robotis_controller_msgs/GetJointModule.h"
@@ -52,7 +62,17 @@
 #include "op3_walking_module_msgs/GetWalkingParam.h"
 #include "op3_walking_module_msgs/SetWalkingParam.h"
 
+// Preview walking
+#include "op3_wholebody_module_msgs/FootStepCommand.h"
+#include "op3_wholebody_module_msgs/WalkingParam.h"
+#include "op3_wholebody_module_msgs/JointPose.h"
+#include "op3_wholebody_module_msgs/Step2DArray.h"
+#include "humanoid_nav_msgs/PlanFootsteps.h"
+
 #endif
+
+#define DEG2RAD   (M_PI / 180.0)
+#define RAD2DEG   (180.0 / M_PI)
 /*****************************************************************************
  ** Namespaces
  *****************************************************************************/
@@ -66,8 +86,8 @@ namespace robotis_op
 
 class QNodeOP3 : public QThread
 {
-Q_OBJECT
- public:
+  Q_OBJECT
+public:
 
   enum LogLevel
   {
@@ -113,16 +133,39 @@ Q_OBJECT
   void applyWalkingParam(const op3_walking_module_msgs::WalkingParam &walking_param);
   void initGyro();
 
+  // Preview Walking
+  void sendFootStepCommandMsg(op3_wholebody_module_msgs::FootStepCommand msg);
+  void sendWalkingParamMsg(op3_wholebody_module_msgs::WalkingParam msg);
+  void sendBodyOffsetMsg(geometry_msgs::Pose msg);
+  void sendFootDistanceMsg(std_msgs::Float64 msg);
+  void sendResetBodyMsg(std_msgs::Bool msg );
+  void sendWholebodyBalanceMsg(std_msgs::String msg);
+  void parseIniPoseData(const std::string &path);
+  void sendJointPoseMsg(op3_wholebody_module_msgs::JointPose msg);
+
+  // Preview /w footstep
+  void makeFootstepUsingPlanner();
+  void makeFootstepUsingPlanner(const geometry_msgs::Pose &target_foot_pose);
+  void visualizePreviewFootsteps(bool clear);
+  void clearFootsteps();
+  void setWalkingFootsteps(const double &step_time);
+
   // Demo
   void setDemoCommand(const std::string &command);
   void setActionModuleBody();
   void setModuleToDemo();
 
+  // Interactive marker
+  void makeInteractiveMarker(const geometry_msgs::Pose& marker_pose);
+  bool updateInteractiveMarker(const geometry_msgs::Pose& pose);
+  void getInteractiveMarkerPose();
+  void clearInteractiveMarker();
+
   std::map<int, std::string> module_table_;
   std::map<int, std::string> motion_table_;
   std::map<int, int> motion_shortcut_table_;
 
- public Q_SLOTS:
+public Q_SLOTS:
   void getJointControlMode();
   void playMotion(int motion_index);
 
@@ -137,16 +180,37 @@ Q_SIGNALS:
   // Walking
   void updateWalkingParameters(op3_walking_module_msgs::WalkingParam params);
 
- private:
+  // Interactive marker
+  void updateDemoPoint(const geometry_msgs::Point point);
+  void updateDemoPose(const geometry_msgs::Pose pose);
+
+private:
   void parseJointNameFromYaml(const std::string &path);
   void parseMotionMapFromYaml(const std::string &path);
   void refreshCurrentJointControlCallback(const robotis_controller_msgs::JointCtrlModule::ConstPtr &msg);
   void updateHeadJointStatesCallback(const sensor_msgs::JointState::ConstPtr &msg);
   void statusMsgCallback(const robotis_controller_msgs::StatusMsg::ConstPtr &msg);
 
+  void pointStampedCallback(const geometry_msgs::PointStamped::ConstPtr &msg);
+  void interactiveMarkerFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+
+  bool transformPose(const std::string &from_id, const std::string &to_id, const geometry_msgs::Pose &from_pose,
+                     geometry_msgs::Pose &to_pose, bool inverse = false);
+
   int init_argc_;
   char** init_argv_;
   bool debug_;
+  double body_height_;
+
+  // interactive marker
+  ros::Subscriber rviz_clicked_point_sub_;
+  std::string frame_id_;
+  std::string marker_name_;
+  geometry_msgs::Pose pose_from_ui_;
+  geometry_msgs::Pose current_pose_;
+  geometry_msgs::Pose curr_pose_msg_;
+  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> interactive_marker_server_;
+  boost::shared_ptr<tf::TransformListener> tf_listener_;
 
   op3_walking_module_msgs::WalkingParam walking_param_;
 
@@ -169,6 +233,22 @@ Q_SIGNALS:
   ros::Publisher set_walking_param_pub;
   ros::ServiceClient get_walking_param_client_;
 
+  // preview walking
+  ros::ServiceClient humanoid_footstep_client_;
+  ros::Publisher foot_step_command_pub_;
+  ros::Publisher set_walking_footsteps_pub_;
+  ros::Publisher walking_param_pub_;
+  ros::Publisher body_offset_pub_;
+  ros::Publisher foot_distance_pub_;
+  ros::Publisher wholebody_balance_pub_;
+  ros::Publisher reset_body_msg_pub_;
+  ros::Publisher joint_pose_msg_pub_;
+
+  ros::Publisher marker_pub_;
+
+  std::vector<geometry_msgs::Pose2D> preview_foot_steps_;
+  std::vector<int> preview_foot_types_;
+
   // Action
   ros::Publisher motion_index_pub_;
 
@@ -188,4 +268,15 @@ Q_SIGNALS:
 
 }  // namespace robotis_op
 
+template<typename T>
+T deg2rad(T deg)
+{
+  return deg * M_PI / 180;
+}
+
+template<typename T>
+T rad2deg(T rad)
+{
+  return rad * 180 / M_PI;
+}
 #endif /* OP3_DEMO_QNODE_HPP_ */

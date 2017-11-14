@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+  <name>op3_navigation</name>
+  <version>0.0.1</version>
+  <description>
+    This package is for generating footsteps. 
+    It has several config files and launch files in order to use footstep planner package. 
+  </description>
+
+  <license>BSD</license>
+  <author email="kmjung@robotis.com">kayman</author>
+  <maintainer email="pyo@robotis.com">Pyo</maintainer>
+  <url type="bugtracker">https://github.com/ROBOTIS-GIT/ROBOTIS-THORMANG-OPC/issues</url>
+  <url type="repository">https://github.com/ROBOTIS-GIT/ROBOTIS-THORMANG-OPC</url>
+  <url type="website">http://wiki.ros.org/thormang3_navigation</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>footstep_planner</build_depend>
+  <build_depend>map_server</build_depend>
+  <build_depend>octomap_server</build_depend>
+  <run_depend>footstep_planner</run_depend>
+  <run_depend>map_server</run_depend>
+  <run_depend>octomap_server</run_depend>
+
+  <export></export>
+</package>

@@ -14,15 +14,22 @@ find_package(catkin REQUIRED COMPONENTS
   qt_build
   roscpp
   roslib
+  std_msgs
+  sensor_msgs
+  geometry_msgs
+  visualization_msgs
+  interactive_markers
   cmake_modules
   eigen_conversions
   robotis_controller_msgs
   op3_walking_module_msgs
+  humanoid_nav_msgs
 )
 
 find_package(Eigen REQUIRED)
 
 include_directories(
+  include/${PROJECT_NAME}
   ${catkin_INCLUDE_DIRS}
   ${Eigen_INCLUDE_DIRS}
 )
@@ -47,7 +54,7 @@ rosbuild_prepare_qt4(QtCore QtGui) # Add the appropriate components to the compo
 
 file(GLOB QT_FORMS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ui/*.ui)
 file(GLOB QT_RESOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} resources/*.qrc)
-file(GLOB_RECURSE QT_MOC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/op3_gui_demo/*.hpp)
+file(GLOB_RECURSE QT_MOC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/op3_gui_demo/*.hpp include/op3_gui_demo/*.h)
 
 QT4_ADD_RESOURCES(QT_RESOURCES_CPP ${QT_RESOURCES})
 QT4_WRAP_UI(QT_FORMS_HPP ${QT_FORMS})

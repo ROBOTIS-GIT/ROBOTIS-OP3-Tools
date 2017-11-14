@@ -89,6 +89,12 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
   initModeUnit();
   setUserShortcut();
   updateModuleUI();
+
+  // Set Preview widget
+  bool result = ui_.widget_preview_walking->init(&qnode_op3_);
+  if(result == false)
+    exit(0);
+
 }
 
 MainWindow::~MainWindow()
@@ -664,57 +670,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
   writeSettings();
   QMainWindow::closeEvent(event);
-}
-
-/*****************************************************************************
- ** Implementation [Util]
- *****************************************************************************/
-
-Eigen::MatrixXd MainWindow::rotateX(double s)
-{
-  Eigen::MatrixXd rotation_matrix(3, 3);
-
-  rotation_matrix << 1.0, 0.0, 0.0, 0.0, cos(s), -sin(s), 0.0, sin(s), cos(s);
-
-  return rotation_matrix;
-}
-
-Eigen::MatrixXd MainWindow::rotateY(double s)
-{
-  Eigen::MatrixXd rotation_matrix(3, 3);
-
-  rotation_matrix << cos(s), 0.0, sin(s), 0.0, 1.0, 0.0, -sin(s), 0.0, cos(s);
-
-  return rotation_matrix;
-}
-
-Eigen::MatrixXd MainWindow::rotateZ(double s)
-{
-  Eigen::MatrixXd rotation_matrix(3, 3);
-
-  rotation_matrix << cos(s), -sin(s), 0.0, sin(s), cos(s), 0.0, 0.0, 0.0, 1.0;
-
-  return rotation_matrix;
-}
-
-Eigen::MatrixXd MainWindow::convertRpy2Rotation(double r, double p, double y)
-{
-  Eigen::MatrixXd rotation_matrix = rotateZ(y) * rotateY(p) * rotateX(r);
-
-  return rotation_matrix;
-}
-
-Eigen::Quaterniond MainWindow::convertRpy2Quaternion(double r, double p, double y)
-{
-  Eigen::MatrixXd rotation_matrix = convertRpy2Rotation(r, p, y);
-
-  Eigen::Matrix3d rotation_matrix_block;
-  rotation_matrix_block = rotation_matrix.block(0, 0, 3, 3);
-
-  Eigen::Quaterniond quaternion;
-  quaternion = rotation_matrix_block;
-
-  return quaternion;
 }
 
 }  // namespace robotis_op

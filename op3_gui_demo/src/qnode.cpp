@@ -35,7 +35,8 @@ namespace robotis_op
 
 QNodeOP3::QNodeOP3(int argc, char** argv)
     : init_argc_(argc),
-      init_argv_(argv)
+      init_argv_(argv),
+      body_height_(-1.0)
 {
   // code to DEBUG
   debug_ = false;
@@ -96,6 +97,25 @@ bool QNodeOP3::init()
   get_walking_param_client_ = ros_node.serviceClient<op3_walking_module_msgs::GetWalkingParam>(
       "/robotis/walking/get_params");
 
+  // preview walking
+  foot_step_command_pub_ = ros_node.advertise<op3_wholebody_module_msgs::FootStepCommand>("/robotis/foot_step_command", 0);
+  walking_param_pub_ = ros_node.advertise<op3_wholebody_module_msgs::WalkingParam>("/robotis/walking_param", 0);
+  set_walking_footsteps_pub_ = ros_node.advertise<op3_wholebody_module_msgs::Step2DArray>(
+        "/robotis/wholebody/footsteps_2d", 0);
+
+  body_offset_pub_ = ros_node.advertise<geometry_msgs::Pose>("/robotis/wholebody/body_offset", 0);
+  foot_distance_pub_ = ros_node.advertise<std_msgs::Float64>("/robotis/wholebody/foot_distance", 0);
+  wholebody_balance_pub_ = ros_node.advertise<std_msgs::String>("/robotis/wholebody_balance_msg", 0);
+  reset_body_msg_pub_ = ros_node.advertise<std_msgs::Bool>("/robotis/reset_body", 0);
+  joint_pose_msg_pub_ = ros_node.advertise<op3_wholebody_module_msgs::JointPose>("/robotis/goal_joint_pose", 0);
+
+  humanoid_footstep_client_ = ros_node.serviceClient<humanoid_nav_msgs::PlanFootsteps>("plan_footsteps");
+  marker_pub_ = ros_node.advertise<visualization_msgs::MarkerArray>("/robotis/demo/foot_step_marker", 0);
+
+  // interacrive marker
+  rviz_clicked_point_sub_ = ros_node.subscribe("clicked_point", 0, &QNodeOP3::pointStampedCallback, this);
+  interactive_marker_server_.reset(new interactive_markers::InteractiveMarkerServer("Feet_Pose", "", false));
+
   // Action
   motion_index_pub_ = ros_node.advertise<std_msgs::Int32>("/robotis/action/page_num", 0);
 
@@ -113,8 +133,10 @@ bool QNodeOP3::init()
   // start time
   start_time_ = ros::Time::now();
 
+  tf_listener_.reset( new tf::TransformListener());
+
   // start qthread
-  start();
+  start();  
 
   return true;
 }
@@ -557,6 +579,83 @@ void QNodeOP3::initGyro()
   init_gyro_pub_.publish(init_gyro_msg);
 
   log(Info, "Initialize Gyro");
+}
+
+// Preview walking
+void QNodeOP3::sendFootStepCommandMsg(op3_wholebody_module_msgs::FootStepCommand msg)
+{
+  foot_step_command_pub_.publish(msg);
+  log( Info , "Send Foot Step Command Msg" );
+}
+
+void QNodeOP3::sendWalkingParamMsg(op3_wholebody_module_msgs::WalkingParam msg)
+{
+  walking_param_pub_.publish(msg);
+  log( Info, "Set Walking Parameter");
+}
+
+void QNodeOP3::sendBodyOffsetMsg(geometry_msgs::Pose msg)
+{
+  body_offset_pub_.publish(msg);
+  log( Info, "Send Body Offset");
+}
+
+void QNodeOP3::sendFootDistanceMsg(std_msgs::Float64 msg)
+{
+  foot_distance_pub_.publish(msg);
+  log( Info, "Send Foot Distance");
+}
+
+void QNodeOP3::sendResetBodyMsg( std_msgs::Bool msg )
+{
+  reset_body_msg_pub_.publish( msg );
+  log( Info , "Reset Body Pose" );
+}
+
+void QNodeOP3::sendWholebodyBalanceMsg(std_msgs::String msg)
+{
+  wholebody_balance_pub_.publish( msg );
+  log( Info , "Wholebody Balance Msg" );
+}
+
+void QNodeOP3::parseIniPoseData(const std::string &path)
+{
+  YAML::Node doc;
+  try
+  {
+    // load yaml
+    doc = YAML::LoadFile(path.c_str());
+  } catch (const std::exception& e)
+  {
+    ROS_ERROR_STREAM("Fail to load yaml file. [" << path << "]");
+    return;
+  }
+
+  op3_wholebody_module_msgs::JointPose msg;
+
+  // parse movement time
+  double mov_time = doc["mov_time"].as<double>();
+  msg.mov_time = mov_time;
+
+  // parse target pose
+  YAML::Node tar_pose_node = doc["tar_pose"];
+  for (YAML::iterator it = tar_pose_node.begin(); it != tar_pose_node.end(); ++it)
+  {
+    std::string joint_name = it->first.as<std::string>();
+    double value = it->second.as<double>();
+
+    msg.pose.name.push_back(joint_name);
+    msg.pose.position.push_back(value * DEG2RAD);
+  }
+
+  sendJointPoseMsg( msg );
+}
+
+void QNodeOP3::sendJointPoseMsg(op3_wholebody_module_msgs::JointPose msg)
+{
+  joint_pose_msg_pub_.publish( msg );
+
+  log( Info , "Send Joint Pose Msg" );
 }
 
 // Motion
