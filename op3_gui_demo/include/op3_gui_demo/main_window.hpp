@@ -129,15 +129,6 @@ Q_OBJECT
   void setHeadAngle(double pan, double tilt);
   void applyWalkingParams();
 
-  /******************************************
-   ** Transformation
-   *******************************************/
-  Eigen::MatrixXd rotateX(double s);
-  Eigen::MatrixXd rotateY(double s);
-  Eigen::MatrixXd rotateZ(double s);
-  Eigen::MatrixXd convertRpy2Rotation(double r, double p, double y);
-  Eigen::Quaterniond convertRpy2Quaternion(double r, double p, double y);
-
   Ui::MainWindowDesign ui_;
   QNodeOP3 qnode_op3_;
   bool debug_;
