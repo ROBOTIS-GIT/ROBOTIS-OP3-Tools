@@ -84,7 +84,7 @@ void PreviewWalkingForm::on_button_p_walking_right_clicked(bool check)
 
 void PreviewWalkingForm::on_button_set_walking_param_clicked(bool check)
 {
-  op3_wholebody_module_msgs::WalkingParam msg;
+  op3_online_walking_module_msgs::WalkingParam msg;
 
   msg.dsp_ratio = p_walking_ui->dSpinBox_dsp_ratio->value();
   msg.lipm_height = p_walking_ui->dSpinBox_lipm_height->value();
@@ -154,16 +154,17 @@ void PreviewWalkingForm::on_button_marker_clear_clicked(bool check)
 void PreviewWalkingForm::on_button_footstep_plan_clicked(bool check)
 {
   geometry_msgs::Pose target_pose;
-  target_pose.position.x = p_walking_ui->dSpinBox_marker_pos_x->value();
-  target_pose.position.y = p_walking_ui->dSpinBox_marker_pos_y->value();
-  target_pose.position.z = p_walking_ui->dSpinBox_marker_pos_z->value();
+  getPoseFromMarkerPanel(target_pose);
+//  target_pose.position.x = p_walking_ui->dSpinBox_marker_pos_x->value();
+//  target_pose.position.y = p_walking_ui->dSpinBox_marker_pos_y->value();
+//  target_pose.position.z = p_walking_ui->dSpinBox_marker_pos_z->value();
 
-  double roll = deg2rad<double>(p_walking_ui->dSpinBox_marker_ori_r->value());
-  double pitch = deg2rad<double>(p_walking_ui->dSpinBox_marker_ori_p->value());
-  double yaw = deg2rad<double>(p_walking_ui->dSpinBox_marker_ori_y->value());
+//  double roll = deg2rad<double>(p_walking_ui->dSpinBox_marker_ori_r->value());
+//  double pitch = deg2rad<double>(p_walking_ui->dSpinBox_marker_ori_p->value());
+//  double yaw = deg2rad<double>(p_walking_ui->dSpinBox_marker_ori_y->value());
 
-  Eigen::Quaterniond orientation = rpy2quaternion(roll, pitch, yaw);
-  tf::quaternionEigenToMsg(orientation, target_pose.orientation);
+//  Eigen::Quaterniond orientation = rpy2quaternion(roll, pitch, yaw);
+//  tf::quaternionEigenToMsg(orientation, target_pose.orientation);
 
   qnode_op3_->makeFootstepUsingPlanner(target_pose);
 }
@@ -217,7 +218,7 @@ void PreviewWalkingForm::on_dSpinBox_marker_ori_y_valueChanged(double value)
 
 void PreviewWalkingForm::sendPWalkingCommand(const std::string &command, bool set_start_foot)
 {
-  op3_wholebody_module_msgs::FootStepCommand msg;
+  op3_online_walking_module_msgs::FootStepCommand msg;
 
   msg.step_time = p_walking_ui->dSpinBox_p_walking_step_time->value();
   msg.step_num = p_walking_ui->dSpinBox_p_walking_step_num->value();

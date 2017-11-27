@@ -25,6 +25,30 @@
 namespace robotis_op
 {
 
+void QNodeOP3::init_preview_walking(ros::NodeHandle &ros_node)
+{
+  // preview walking
+  foot_step_command_pub_ = ros_node.advertise<op3_online_walking_module_msgs::FootStepCommand>("/robotis/online_walking/foot_step_command", 0);
+  walking_param_pub_ = ros_node.advertise<op3_online_walking_module_msgs::WalkingParam>("/robotis/online_walking/walking_param", 0);
+  set_walking_footsteps_pub_ = ros_node.advertise<op3_online_walking_module_msgs::Step2DArray>(
+        "/robotis/online_walking/footsteps_2d", 0);
+
+  body_offset_pub_ = ros_node.advertise<geometry_msgs::Pose>("/robotis/online_walking/body_offset", 0);
+  foot_distance_pub_ = ros_node.advertise<std_msgs::Float64>("/robotis/online_walking/foot_distance", 0);
+  wholebody_balance_pub_ = ros_node.advertise<std_msgs::String>("/robotis/online_walking/wholebody_balance_msg", 0);
+  reset_body_msg_pub_ = ros_node.advertise<std_msgs::Bool>("/robotis/online_walking/reset_body", 0);
+  joint_pose_msg_pub_ = ros_node.advertise<op3_online_walking_module_msgs::JointPose>("/robotis/online_walking/goal_joint_pose", 0);
+
+  humanoid_footstep_client_ = ros_node.serviceClient<humanoid_nav_msgs::PlanFootsteps>("plan_footsteps");
+  marker_pub_ = ros_node.advertise<visualization_msgs::MarkerArray>("/robotis/demo/foot_step_marker", 0);
+
+  // interacrive marker
+  rviz_clicked_point_sub_ = ros_node.subscribe("clicked_point", 0, &QNodeOP3::pointStampedCallback, this);
+  interactive_marker_server_.reset(new interactive_markers::InteractiveMarkerServer("Feet_Pose", "", false));
+
+  ROS_INFO("Initialized node handle for preview walking");
+}
+
 bool QNodeOP3::transformPose(const std::string &from_id, const std::string &to_id, const geometry_msgs::Pose &from_pose, geometry_msgs::Pose &to_pose, bool inverse)
 {
   tf::StampedTransform desired_transform;
@@ -367,11 +391,11 @@ void QNodeOP3::setWalkingFootsteps(const double &step_time)
     return;
   }
 
-  op3_wholebody_module_msgs::Step2DArray footsteps;
+  op3_online_walking_module_msgs::Step2DArray footsteps;
 
   for (int ix = 0; ix < preview_foot_steps_.size(); ix++)
   {
-    op3_wholebody_module_msgs::Step2D step;
+    op3_online_walking_module_msgs::Step2D step;
 
     step.moving_foot = preview_foot_types_[ix];
     step.step2d = preview_foot_steps_[ix];
@@ -447,16 +471,16 @@ void QNodeOP3::makeFootstepUsingPlanner(const geometry_msgs::Pose &target_foot_p
         std::string foot_string;
         if (type == humanoid_nav_msgs::StepTarget::right)
         {
-          foot_type = op3_wholebody_module_msgs::Step2D::RIGHT_FOOT_SWING;
+          foot_type = op3_online_walking_module_msgs::Step2D::RIGHT_FOOT_SWING;
           foot_string = "right";
         }
         else if (type == humanoid_nav_msgs::StepTarget::left)
         {
-          foot_type = op3_wholebody_module_msgs::Step2D::LEFT_FOOT_SWING;
+          foot_type = op3_online_walking_module_msgs::Step2D::LEFT_FOOT_SWING;
           foot_string = "left";
         }
         else
-          foot_type = op3_wholebody_module_msgs::Step2D::STANDING;
+          foot_type = op3_online_walking_module_msgs::Step2D::STANDING;
 
         std::stringstream msg_stream;
         geometry_msgs::Pose2D foot_pose = get_step.response.footsteps[ix].pose;
@@ -481,28 +505,28 @@ void QNodeOP3::makeFootstepUsingPlanner(const geometry_msgs::Pose &target_foot_p
       target_l_foot_pose.y = goal.y + ( 0.5*y_feet_offset)*cos(theta);
       target_l_foot_pose.theta = theta;
 
-      if(preview_foot_types_[preview_foot_types_.size() - 1] == op3_wholebody_module_msgs::Step2D::RIGHT_FOOT_SWING)
+      if(preview_foot_types_[preview_foot_types_.size() - 1] == op3_online_walking_module_msgs::Step2D::RIGHT_FOOT_SWING)
       {
         preview_foot_steps_.push_back(target_l_foot_pose);
-        preview_foot_types_.push_back(op3_wholebody_module_msgs::Step2D::LEFT_FOOT_SWING);
+        preview_foot_types_.push_back(op3_online_walking_module_msgs::Step2D::LEFT_FOOT_SWING);
         preview_foot_steps_.push_back(target_r_foot_pose);
-        preview_foot_types_.push_back(op3_wholebody_module_msgs::Step2D::RIGHT_FOOT_SWING);
+        preview_foot_types_.push_back(op3_online_walking_module_msgs::Step2D::RIGHT_FOOT_SWING);
         preview_foot_steps_.push_back(target_l_foot_pose);
-        preview_foot_types_.push_back(op3_wholebody_module_msgs::Step2D::LEFT_FOOT_SWING);
+        preview_foot_types_.push_back(op3_online_walking_module_msgs::Step2D::LEFT_FOOT_SWING);
       }
-      else if(preview_foot_types_[preview_foot_types_.size() - 1] == op3_wholebody_module_msgs::Step2D::LEFT_FOOT_SWING)
+      else if(preview_foot_types_[preview_foot_types_.size() - 1] == op3_online_walking_module_msgs::Step2D::LEFT_FOOT_SWING)
       {
         preview_foot_steps_.push_back(target_r_foot_pose);
-        preview_foot_types_.push_back(op3_wholebody_module_msgs::Step2D::RIGHT_FOOT_SWING);
+        preview_foot_types_.push_back(op3_online_walking_module_msgs::Step2D::RIGHT_FOOT_SWING);
         preview_foot_steps_.push_back(target_l_foot_pose);
-        preview_foot_types_.push_back(op3_wholebody_module_msgs::Step2D::LEFT_FOOT_SWING);
+        preview_foot_types_.push_back(op3_online_walking_module_msgs::Step2D::LEFT_FOOT_SWING);
       }
       else
       {
         preview_foot_steps_.push_back(target_r_foot_pose);
-        preview_foot_types_.push_back(op3_wholebody_module_msgs::Step2D::RIGHT_FOOT_SWING);
+        preview_foot_types_.push_back(op3_online_walking_module_msgs::Step2D::RIGHT_FOOT_SWING);
         preview_foot_steps_.push_back(target_l_foot_pose);
-        preview_foot_types_.push_back(op3_wholebody_module_msgs::Step2D::LEFT_FOOT_SWING);
+        preview_foot_types_.push_back(op3_online_walking_module_msgs::Step2D::LEFT_FOOT_SWING);
       }
 
       // visualize foot steps
@@ -576,7 +600,7 @@ void QNodeOP3::visualizePreviewFootsteps(bool clear)
       alpha *= 0.9;
 
       // set foot step color
-      if (preview_foot_types_[ix] == op3_wholebody_module_msgs::Step2D::LEFT_FOOT_SWING)  // left
+      if (preview_foot_types_[ix] == op3_online_walking_module_msgs::Step2D::LEFT_FOOT_SWING)  // left
       {
         rviz_marker.color.r = 0.0;
         rviz_marker.color.g = 0.0;
@@ -586,7 +610,7 @@ void QNodeOP3::visualizePreviewFootsteps(bool clear)
         Eigen::Vector3d offset_y(0, 0.015, 0);
         marker_position_offset = marker_orientation.toRotationMatrix() * offset_y;
       }
-      else if (preview_foot_types_[ix] == op3_wholebody_module_msgs::Step2D::RIGHT_FOOT_SWING)  //right
+      else if (preview_foot_types_[ix] == op3_online_walking_module_msgs::Step2D::RIGHT_FOOT_SWING)  //right
       {
         rviz_marker.color.r = 1.0;
         rviz_marker.color.g = 0.0;
@@ -618,13 +642,13 @@ void QNodeOP3::visualizePreviewFootsteps(bool clear)
 }
 
 // Preview walking
-void QNodeOP3::sendFootStepCommandMsg(op3_wholebody_module_msgs::FootStepCommand msg)
+void QNodeOP3::sendFootStepCommandMsg(op3_online_walking_module_msgs::FootStepCommand msg)
 {
   foot_step_command_pub_.publish(msg);
   log( Info , "Send Foot Step Command Msg" );
 }
 
-void QNodeOP3::sendWalkingParamMsg(op3_wholebody_module_msgs::WalkingParam msg)
+void QNodeOP3::sendWalkingParamMsg(op3_online_walking_module_msgs::WalkingParam msg)
 {
   walking_param_pub_.publish(msg);
   log( Info, "Set Walking Parameter");
@@ -667,7 +691,7 @@ void QNodeOP3::parseIniPoseData(const std::string &path)
     return;
   }
 
-  op3_wholebody_module_msgs::JointPose msg;
+  op3_online_walking_module_msgs::JointPose msg;
 
   // parse movement time
   double mov_time = doc["mov_time"].as<double>();
@@ -687,7 +711,7 @@ void QNodeOP3::parseIniPoseData(const std::string &path)
   sendJointPoseMsg( msg );
 }
 
-void QNodeOP3::sendJointPoseMsg(op3_wholebody_module_msgs::JointPose msg)
+void QNodeOP3::sendJointPoseMsg(op3_online_walking_module_msgs::JointPose msg)
 {
   joint_pose_msg_pub_.publish( msg );
 

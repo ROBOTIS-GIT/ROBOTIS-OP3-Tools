@@ -23,6 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
   eigen_conversions
   robotis_controller_msgs
   op3_walking_module_msgs
+  op3_online_walking_module_msgs
   humanoid_nav_msgs
 )
 

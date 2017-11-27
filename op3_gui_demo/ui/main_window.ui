@@ -129,7 +129,7 @@
           <bool>true</bool>
          </property>
          <property name="currentIndex">
-          <number>5</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tab_mode">
           <attribute name="title">
@@ -1211,9 +1211,9 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="tab_preview_walking_module">
+         <widget class="QWidget" name="tab_online_walking_module">
           <attribute name="title">
-           <string>Preview Walking</string>
+           <string>Online Walking</string>
           </attribute>
           <widget class="PreviewWalkingForm" name="widget_preview_walking" native="true">
            <property name="geometry">

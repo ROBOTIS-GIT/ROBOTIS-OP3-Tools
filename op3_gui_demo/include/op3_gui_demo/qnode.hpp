@@ -63,10 +63,10 @@
 #include "op3_walking_module_msgs/SetWalkingParam.h"
 
 // Preview walking
-#include "op3_wholebody_module_msgs/FootStepCommand.h"
-#include "op3_wholebody_module_msgs/WalkingParam.h"
-#include "op3_wholebody_module_msgs/JointPose.h"
-#include "op3_wholebody_module_msgs/Step2DArray.h"
+#include "op3_online_walking_module_msgs/FootStepCommand.h"
+#include "op3_online_walking_module_msgs/WalkingParam.h"
+#include "op3_online_walking_module_msgs/JointPose.h"
+#include "op3_online_walking_module_msgs/Step2DArray.h"
 #include "humanoid_nav_msgs/PlanFootsteps.h"
 
 #endif
@@ -124,6 +124,8 @@ public:
   bool isUsingModule(std::string module_name);
   void moveInitPose();
 
+  void init_default_demo(ros::NodeHandle &ros_node);
+  // Head control
   void setHeadJoint(double pan, double tilt);
 
   // Walking
@@ -134,14 +136,15 @@ public:
   void initGyro();
 
   // Preview Walking
-  void sendFootStepCommandMsg(op3_wholebody_module_msgs::FootStepCommand msg);
-  void sendWalkingParamMsg(op3_wholebody_module_msgs::WalkingParam msg);
+  void init_preview_walking(ros::NodeHandle &ros_node);
+  void sendFootStepCommandMsg(op3_online_walking_module_msgs::FootStepCommand msg);
+  void sendWalkingParamMsg(op3_online_walking_module_msgs::WalkingParam msg);
   void sendBodyOffsetMsg(geometry_msgs::Pose msg);
   void sendFootDistanceMsg(std_msgs::Float64 msg);
   void sendResetBodyMsg(std_msgs::Bool msg );
   void sendWholebodyBalanceMsg(std_msgs::String msg);
   void parseIniPoseData(const std::string &path);
-  void sendJointPoseMsg(op3_wholebody_module_msgs::JointPose msg);
+  void sendJointPoseMsg(op3_online_walking_module_msgs::JointPose msg);
 
   // Preview /w footstep
   void makeFootstepUsingPlanner();
@@ -191,9 +194,11 @@ private:
   void updateHeadJointStatesCallback(const sensor_msgs::JointState::ConstPtr &msg);
   void statusMsgCallback(const robotis_controller_msgs::StatusMsg::ConstPtr &msg);
 
+  // interactive marker
   void pointStampedCallback(const geometry_msgs::PointStamped::ConstPtr &msg);
   void interactiveMarkerFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
 
+  // localization
   bool transformPose(const std::string &from_id, const std::string &to_id, const geometry_msgs::Pose &from_pose,
                      geometry_msgs::Pose &to_pose, bool inverse = false);
 
