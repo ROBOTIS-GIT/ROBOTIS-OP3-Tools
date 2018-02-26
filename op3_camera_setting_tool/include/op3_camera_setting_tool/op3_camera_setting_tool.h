@@ -19,6 +19,9 @@
 #ifndef OP3_CAMERA_SETTING_TOOL_H_
 #define OP3_CAMERA_SETTING_TOOL_H_
 
+#include <yaml-cpp/yaml.h>
+#include <fstream>
+
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/String.h>
@@ -44,6 +47,9 @@ ros::Publisher g_param_pub;
 ros::Subscriber g_param_command_sub;
 ros::ServiceServer g_get_param_client;
 ros::ServiceServer g_set_param_client;
+
+bool g_has_path;
+std::string g_param_path;
 
 void dynParamCallback(op3_camera_setting_tool::cameraParamsConfig &config, uint32_t level);
 void changeDynParam(const std::string& param, const int& value);
