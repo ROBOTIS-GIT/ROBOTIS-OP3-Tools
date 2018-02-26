@@ -174,6 +174,7 @@ void setCameraParameterCallback(const op3_camera_setting_tool::V4lParameter::Con
   setV4lParameter(msg->name, msg->value);
 
   updateDynParam(g_dyn_config);
+  saveParameter();
 }
 
 void setCameraParametersCallback(const op3_camera_setting_tool::V4lParameters::ConstPtr &msg)
@@ -182,6 +183,7 @@ void setCameraParametersCallback(const op3_camera_setting_tool::V4lParameters::C
     setV4lParameter(msg->video_parameter[ix].name, msg->video_parameter[ix].value);
 
   updateDynParam(g_dyn_config);
+  saveParameter();
 }
 
 void setV4lParameter(const std::string& param, const std::string& value)
@@ -393,6 +395,7 @@ bool setParamCallback(op3_camera_setting_tool::SetParameters::Request &req, op3_
   g_dyn_config.white_balance_temperature      = req.params.white_balance_temperature;
 
   updateDynParam(g_dyn_config);
+  saveParameter();
 
   return true;
 }
