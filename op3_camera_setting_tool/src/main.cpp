@@ -49,7 +49,8 @@ int main(int argc, char **argv)
   ros::Subscriber camera_params_sub = nh.subscribe("/op3_camera/set_params", 1, &setCameraParametersCallback);
 
   // web setting
-  g_has_path = nh.getParam("yaml_path", g_param_path);
+  ros::NodeHandle nh_param("~");
+  g_has_path = nh_param.getParam("yaml_path", g_param_path);
 
   g_param_pub = nh.advertise<op3_camera_setting_tool::CameraParams>("/op3_camera/camera_params", 1);
   g_param_command_sub = nh.subscribe("/op3_camera/param_command", 1, &paramCommandCallback);
