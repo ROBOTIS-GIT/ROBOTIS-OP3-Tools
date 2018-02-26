@@ -237,7 +237,7 @@ void getROSParam()
   int param_int_value;
   bool param_bool_value;
   bool exist_param;
-//  std::string prefix = (g_camera_node_name == "") ? g_camera_node_name : g_camera_node_name + "/";
+  std::string prefix = (g_camera_node_name == "") ? g_camera_node_name : g_camera_node_name + "/";
 
   //exist_param = nh.getParam(prefix + "brightness", param_int_value);  //0-255
   exist_param = nh.getParam("brightness", param_int_value);  //0-255
