@@ -232,7 +232,7 @@ void setV4lParameter(const std::string& cmd)
 
 void getROSParam()
 {
-  ros::NodeHandle nh;
+  ros::NodeHandle nh("~");
 
   int param_int_value;
   bool param_bool_value;
