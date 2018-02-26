@@ -49,6 +49,13 @@ int main(int argc, char **argv)
   ros::Subscriber camera_param_sub = nh.subscribe("/op3_camera/set_param", 1, &setCameraParameterCallback);
   ros::Subscriber camera_params_sub = nh.subscribe("/op3_camera/set_params", 1, &setCameraParametersCallback);
 
+  // web setting
+  g_param_pub = nh.advertise<op3_camera_setting_tool::CameraParams>("/op3_camera/camera_params", 1);
+  g_param_command_sub = nh.subscribe("/op3_camera/param_command", 1, &paramCommandCallback);
+  g_set_param_client = nh.advertiseService("/op3_camera/set_camera_params", &setParamCallback);
+  g_get_param_client = nh.advertiseService("/op3_camera/get_camera_params", &getParamCallback);
+  //g_default_setting_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/launch/ball_detector_params_default.yaml";
+
   boost::recursive_mutex config_mutex;
 
   //dynamic_reconfigure::Server<op3_camera_setting_tool::cameraParamsConfig> param_server;
@@ -337,4 +344,62 @@ void setROSParam(const std::string& v4l_param, const int& value)
     nh.setParam(prefix + param_iter->second, value);
     ROS_INFO("Set param to parameter server : %s = %d", v4l_param.c_str(), value);
   }
+}
+
+// web setting
+void paramCommandCallback(const std_msgs::Empty::ConstPtr &msg)
+{
+
+}
+
+bool setParamCallback(op3_camera_setting_tool::SetParameters::Request &req, op3_camera_setting_tool::SetParameters::Response &res)
+{
+  setV4lParameter("brightness", req.params.brightness);
+  setV4lParameter("contrast", req.params.contrast);
+  setV4lParameter("saturation", req.params.saturation);
+  setV4lParameter("sharpness", req.params.sharpness);
+  setV4lParameter("gain", req.params.gain);
+  // focus
+  setV4lParameter("focus_auto", req.params.focus_auto);
+  if (req.params.focus_auto == false)
+  {
+    //0-255, -1 "leave alone"
+    setV4lParameter("focus_absolute", req.params.focus_absolute);
+  }
+
+  // exposure
+  // turn down exposure control (from max of 3)
+  setV4lParameter("exposure_auto", req.params.exposure_auto);
+  if (req.params.exposure_auto == 1)  // if it's manual
+  {
+    setV4lParameter("exposure_absolute", req.params.exposure_absolute);
+  }
+
+  // white balance
+  setV4lParameter("white_balance_temperature_auto", req.params.white_balance_temperature_auto);
+  if (req.params.white_balance_temperature_auto == false)
+  {
+    setV4lParameter("white_balance_temperature", req.params.white_balance_temperature);
+  }
+
+  res.returns = req.params;
+
+  // save setting value to parameter server
+
+  return true;
+}
+
+bool getParamCallback(op3_camera_setting_tool::GetParameters::Request &req, op3_camera_setting_tool::GetParameters::Response &res)
+{
+
+}
+
+void resetParameter()
+{
+
+}
+
+void publishParam()
+{
+
 }

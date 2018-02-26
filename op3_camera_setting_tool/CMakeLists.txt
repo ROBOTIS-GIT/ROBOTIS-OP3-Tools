@@ -23,6 +23,13 @@ add_message_files(
   FILES
   V4lParameter.msg
   V4lParameters.msg
+  CameraParams.msg
+)
+
+add_service_files(
+  FILES
+  GetParameters.srv
+  SetParameters.srv
 )
 
 generate_messages(
