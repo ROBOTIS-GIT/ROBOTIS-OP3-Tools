@@ -385,6 +385,8 @@ bool setParamCallback(op3_camera_setting_tool::SetParameters::Request &req, op3_
   res.returns = req.params;
 
   // save setting value to parameter server
+  op3_camera_setting_tool::CameraParams cam_params = res.returns;
+  g_param_pub.publish(cam_params);
 
   return true;
 }
