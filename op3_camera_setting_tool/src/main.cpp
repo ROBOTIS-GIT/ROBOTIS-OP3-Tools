@@ -246,7 +246,6 @@ void getROSParam()
   {
     setV4lParameter("brightness", param_int_value);
     g_dyn_config.brightness = param_int_value;
-    ROS_ERROR("brightness is set");
   }
 
   exist_param = nh.getParam("contrast", param_int_value);  //0-255
@@ -254,7 +253,6 @@ void getROSParam()
   {
     setV4lParameter("contrast", param_int_value);
     g_dyn_config.contrast = param_int_value;
-    ROS_ERROR("contrast is set");
   }
 
   exist_param = nh.getParam("saturation", param_int_value);  //0-255
