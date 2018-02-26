@@ -9,6 +9,7 @@ project(op3_camera_setting_tool)
 ################################################################################
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  roslib
   rospy
   std_msgs
   dynamic_reconfigure

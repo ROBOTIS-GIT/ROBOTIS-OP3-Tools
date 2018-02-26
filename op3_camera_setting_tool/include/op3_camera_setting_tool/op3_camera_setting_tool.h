@@ -20,6 +20,7 @@
 #define OP3_CAMERA_SETTING_TOOL_H_
 
 #include <ros/ros.h>
+#include <ros/package.h>
 #include <std_msgs/String.h>
 #include <dynamic_reconfigure/server.h>
 
