@@ -49,6 +49,8 @@ int main(int argc, char **argv)
   ros::Subscriber camera_params_sub = nh.subscribe("/op3_camera/set_params", 1, &setCameraParametersCallback);
 
   // web setting
+  g_has_path = nh.getParam("yaml_path", g_param_path);
+
   g_param_pub = nh.advertise<op3_camera_setting_tool::CameraParams>("/op3_camera/camera_params", 1);
   g_param_command_sub = nh.subscribe("/op3_camera/param_command", 1, &paramCommandCallback);
   g_set_param_client = nh.advertiseService("/op3_camera/set_camera_params", &setParamCallback);
@@ -232,14 +234,12 @@ void setV4lParameter(const std::string& cmd)
 
 void getROSParam()
 {
-  ros::NodeHandle nh;
+  ros::NodeHandle nh("~");
 
   int param_int_value;
   bool param_bool_value;
   bool exist_param;
-  std::string prefix = (g_camera_node_name == "") ? g_camera_node_name : g_camera_node_name + "/";
 
-  //exist_param = nh.getParam(prefix + "brightness", param_int_value);  //0-255
   exist_param = nh.getParam("brightness", param_int_value);  //0-255
   if (exist_param == true)
   {
@@ -256,21 +256,21 @@ void getROSParam()
     ROS_ERROR("contrast is set");
   }
 
-  exist_param = nh.getParam(prefix + "saturation", param_int_value);  //0-255
+  exist_param = nh.getParam("saturation", param_int_value);  //0-255
   if (exist_param == true)
   {
     setV4lParameter("saturation", param_int_value);
     g_dyn_config.saturation = param_int_value;
   }
 
-  exist_param = nh.getParam(prefix + "sharpness", param_int_value);  //0-255
+  exist_param = nh.getParam("sharpness", param_int_value);  //0-255
   if (exist_param == true)
   {
     setV4lParameter("sharpness", param_int_value);
     g_dyn_config.sharpness = param_int_value;
   }
 
-  exist_param = nh.getParam(prefix + "gain", param_int_value);  //0-255
+  exist_param = nh.getParam("gain", param_int_value);  //0-255
   if (exist_param == true)
   {
     setV4lParameter("gain", param_int_value);
@@ -278,7 +278,7 @@ void getROSParam()
   }
 
   // focus
-  exist_param = nh.getParam(prefix + "autofocus", param_bool_value);
+  exist_param = nh.getParam("focus_auto", param_bool_value);
   if (exist_param == true)
   {
     setV4lParameter("focus_auto", param_bool_value);
@@ -287,31 +287,31 @@ void getROSParam()
     if (param_bool_value == false)
     {
       int focus_absolute;
-      nh.param(prefix + "focus", focus_absolute, -1);  //0-255, -1 "leave alone"
+      nh.param("focus_absolute", focus_absolute, -1);  //0-255, -1 "leave alone"
       setV4lParameter("focus_absolute", focus_absolute);
       g_dyn_config.focus_absolute = focus_absolute;
     }
   }
 
   // exposure
-  exist_param = nh.getParam(prefix + "autoexposure", param_bool_value);
+  exist_param = nh.getParam("exposure_auto", param_int_value);
   if (exist_param == true)
   {
     // turn down exposure control (from max of 3)
-    setV4lParameter("exposure_auto", param_bool_value ? 0 : 1);
-    g_dyn_config.exposure_auto = param_bool_value ? 0 : 1;
+    setV4lParameter("exposure_auto", param_int_value);
+    g_dyn_config.exposure_auto = param_int_value;
 
-    if (param_bool_value == false)
+    if (param_int_value == 1)
     {
       int exposure;
-      nh.param(prefix + "exposure", exposure, 100);
+      nh.param("exposure_absolute", exposure, 100);
       setV4lParameter("exposure_absolute", exposure);
       g_dyn_config.exposure_absolute = exposure;
     }
   }
 
   // white balance
-  exist_param = nh.getParam(prefix + "auto_white_balance", param_bool_value);
+  exist_param = nh.getParam("white_balance_temperature_auto", param_bool_value);
   if (exist_param == true)
   {
     setV4lParameter("white_balance_temperature_auto", param_bool_value);
@@ -320,7 +320,7 @@ void getROSParam()
     if (param_bool_value == false)
     {
       int white_balance_temperature;
-      nh.param(prefix + "white_balance", white_balance_temperature, 4000);
+      nh.param("white_balance_temperature", white_balance_temperature, 4000);
       setV4lParameter("white_balance_temperature", white_balance_temperature);
       g_dyn_config.white_balance_temperature = white_balance_temperature;
     }
@@ -329,26 +329,10 @@ void getROSParam()
 
 void setROSParam(const std::string& v4l_param, const int& value)
 {
-  std::map<std::string, std::string>::iterator param_iter;
+  ros::NodeHandle nh("~");
 
-  param_iter = g_param_list.find(v4l_param);
-
-  if (param_iter == g_param_list.end())
-    return;
-
-  ros::NodeHandle nh;
-  std::string prefix = (g_camera_node_name == "") ? g_camera_node_name : g_camera_node_name + "/";
-
-  if (v4l_param == "exposure_auto")
-  {
-    nh.setParam(prefix + param_iter->second, (value == 1) ? false : true);
-    ROS_INFO("Set param to parameter server : %s = %s", v4l_param.c_str(), (value == 1) ? "false" : "true");
-  }
-  else
-  {
-    nh.setParam(prefix + param_iter->second, value);
-    ROS_INFO("Set param to parameter server : %s = %d", v4l_param.c_str(), value);
-  }
+  nh.setParam(v4l_param, value);
+  ROS_INFO("Set param to parameter server : %s = %d", v4l_param.c_str(), value);
 }
 
 // web setting
@@ -434,15 +418,65 @@ bool getParamCallback(op3_camera_setting_tool::GetParameters::Request &req, op3_
 void resetParameter()
 {
   // reset parameter
+  YAML::Node doc;
 
+  try
+  {
+    // load yaml
+    doc = YAML::LoadFile(g_default_setting_path.c_str());
+
+    // parse
+    g_dyn_config.brightness = doc["brightness"].as<int>();
+    g_dyn_config.contrast = doc["contrast"].as<int>();
+    g_dyn_config.saturation = doc["saturation"].as<int>();
+    g_dyn_config.sharpness = doc["sharpness"].as<int>();
+    g_dyn_config.gain = doc["gain"].as<int>();
+    g_dyn_config.focus_auto = doc["focus_auto"].as<bool>();
+    g_dyn_config.focus_absolute = doc["focus_absolute"].as<int>();
+    g_dyn_config.exposure_auto = doc["exposure_auto"].as<int>();
+    g_dyn_config.exposure_absolute = doc["exposure_absolute"].as<int>();
+    g_dyn_config.white_balance_temperature_auto = doc["white_balance_temperature_auto"].as<bool>();
+    g_dyn_config.white_balance_temperature = doc["white_balance_temperature"].as<int>();
+
+  } catch (const std::exception& e)
+  {
+    ROS_ERROR_STREAM("Failed to Get default parameters : " << g_default_setting_path);
+    return;
+  }
+
+  // apply the parameters
+  setV4lParameter("brightness", g_dyn_config.brightness);
+  setV4lParameter("contrast", g_dyn_config.contrast);
+  setV4lParameter("saturation", g_dyn_config.saturation);
+  setV4lParameter("sharpness", g_dyn_config.sharpness);
+  setV4lParameter("gain", g_dyn_config.gain);
+  // focus
+  setV4lParameter("focus_auto", g_dyn_config.focus_auto);
+  if (g_dyn_config.focus_auto == false)
+  {
+    //0-255, -1 "leave alone"
+    setV4lParameter("focus_absolute", g_dyn_config.focus_absolute);
+  }
+
+  // exposure
+  // turn down exposure control (from max of 3)
+  setV4lParameter("exposure_auto", g_dyn_config.exposure_auto);
+  if (g_dyn_config.exposure_auto == 1)  // if it's manual
+  {
+    setV4lParameter("exposure_absolute", g_dyn_config.exposure_absolute);
+  }
+
+  // white balance
+  setV4lParameter("white_balance_temperature_auto", g_dyn_config.white_balance_temperature_auto);
+  if (g_dyn_config.white_balance_temperature_auto == false)
+  {
+    setV4lParameter("white_balance_temperature", g_dyn_config.white_balance_temperature);
+  }
+
+  updateDynParam(g_dyn_config);
 
   // publish current parameters
   publishParam();
-}
-
-void saveParameter()
-{
-
 }
 
 void publishParam()
@@ -462,4 +496,30 @@ void publishParam()
   cam_params.white_balance_temperature      = g_dyn_config.white_balance_temperature;
 
   g_param_pub.publish(cam_params);
+}
+
+void saveParameter()
+{
+  if (g_has_path == false)
+    return;
+
+  YAML::Emitter yaml_out;
+
+  yaml_out << YAML::BeginMap;
+  yaml_out << YAML::Key << "brightness" << YAML::Value << g_dyn_config.brightness;
+  yaml_out << YAML::Key << "contrast" << YAML::Value << g_dyn_config.contrast;
+  yaml_out << YAML::Key << "saturation" << YAML::Value << g_dyn_config.saturation;
+  yaml_out << YAML::Key << "sharpness" << YAML::Value << g_dyn_config.sharpness;
+  yaml_out << YAML::Key << "gain" << YAML::Value << g_dyn_config.gain;
+  yaml_out << YAML::Key << "focus_auto" << YAML::Value << g_dyn_config.focus_auto;
+  yaml_out << YAML::Key << "focus_absolute" << YAML::Value << g_dyn_config.focus_absolute;
+  yaml_out << YAML::Key << "exposure_auto" << YAML::Value << g_dyn_config.exposure_auto;
+  yaml_out << YAML::Key << "exposure_absolute" << YAML::Value << g_dyn_config.exposure_absolute;
+  yaml_out << YAML::Key << "white_balance_temperature_auto" << YAML::Value << g_dyn_config.white_balance_temperature_auto;
+  yaml_out << YAML::Key << "white_balance_temperature" << YAML::Value << g_dyn_config.white_balance_temperature;
+  yaml_out << YAML::EndMap;
+
+  // output to file
+  std::ofstream fout(g_param_path.c_str());
+  fout << yaml_out.c_str();
 }

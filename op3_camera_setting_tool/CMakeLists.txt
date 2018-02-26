@@ -66,6 +66,7 @@ add_dependencies(op3_camera_setting_tool ${${PROJECT_NAME}_EXPORTED_TARGETS} ${c
 
 target_link_libraries(op3_camera_setting_tool
   ${catkin_LIBRARIES}
+  yaml-cpp
 )
 
 ################################################################################
