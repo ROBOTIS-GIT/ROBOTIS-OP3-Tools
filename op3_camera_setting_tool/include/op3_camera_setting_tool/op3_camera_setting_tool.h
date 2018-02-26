@@ -20,7 +20,7 @@
 #define OP3_CAMERA_SETTING_TOOL_H_
 
 #include <ros/ros.h>
-#include <std_msgs/Empty.h>
+#include <std_msgs/String.h>
 #include <dynamic_reconfigure/server.h>
 
 #include "op3_camera_setting_tool/V4lParameter.h"
@@ -58,10 +58,11 @@ void setV4lParameter(const std::string& cmd);
 void getROSParam();
 void setROSParam(const std::string& param, const int& value);
 
-void paramCommandCallback(const std_msgs::Empty::ConstPtr &msg);
+void paramCommandCallback(const std_msgs::String::ConstPtr &msg);
 bool setParamCallback(op3_camera_setting_tool::SetParameters::Request &req, op3_camera_setting_tool::SetParameters::Response &res);
 bool getParamCallback(op3_camera_setting_tool::GetParameters::Request &req, op3_camera_setting_tool::GetParameters::Response &res);
 void resetParameter();
+void saveParameter();
 void publishParam();
 
 #endif /* OP3_CAMERA_SETTING_TOOL_H_ */

@@ -28,7 +28,6 @@ int main(int argc, char **argv)
 
   // get param to use
   nh.param("video_device", g_device_name, std::string("/dev/video0"));
-  nh.param("camera_node_name", g_camera_node_name, std::string("/usb_cam_node"));
 
   // v4l param name, ros param name
   g_param_list["brightness"] = "brightness";
@@ -54,7 +53,7 @@ int main(int argc, char **argv)
   g_param_command_sub = nh.subscribe("/op3_camera/param_command", 1, &paramCommandCallback);
   g_set_param_client = nh.advertiseService("/op3_camera/set_camera_params", &setParamCallback);
   g_get_param_client = nh.advertiseService("/op3_camera/get_camera_params", &getParamCallback);
-  //g_default_setting_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/launch/ball_detector_params_default.yaml";
+  g_default_setting_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/launch/camera_parameter_default.yaml";
 
   boost::recursive_mutex config_mutex;
 
@@ -63,8 +62,11 @@ int main(int argc, char **argv)
   g_param_server.reset(new dynamic_reconfigure::Server<op3_camera_setting_tool::cameraParamsConfig>(config_mutex));
 
   g_param_server->getConfigDefault(g_dyn_config);
+
   // get param to set camera
   getROSParam();
+
+  publishParam();
 
   updateDynParam(g_dyn_config);
 
@@ -235,20 +237,23 @@ void getROSParam()
   int param_int_value;
   bool param_bool_value;
   bool exist_param;
-  std::string prefix = (g_camera_node_name == "") ? g_camera_node_name : g_camera_node_name + "/";
+//  std::string prefix = (g_camera_node_name == "") ? g_camera_node_name : g_camera_node_name + "/";
 
-  exist_param = nh.getParam(prefix + "brightness", param_int_value);  //0-255
+  //exist_param = nh.getParam(prefix + "brightness", param_int_value);  //0-255
+  exist_param = nh.getParam("brightness", param_int_value);  //0-255
   if (exist_param == true)
   {
     setV4lParameter("brightness", param_int_value);
     g_dyn_config.brightness = param_int_value;
+    ROS_ERROR("brightness is set");
   }
 
-  exist_param = nh.getParam(prefix + "contrast", param_int_value);  //0-255
+  exist_param = nh.getParam("contrast", param_int_value);  //0-255
   if (exist_param == true)
   {
     setV4lParameter("contrast", param_int_value);
     g_dyn_config.contrast = param_int_value;
+    ROS_ERROR("contrast is set");
   }
 
   exist_param = nh.getParam(prefix + "saturation", param_int_value);  //0-255
@@ -347,9 +352,16 @@ void setROSParam(const std::string& v4l_param, const int& value)
 }
 
 // web setting
-void paramCommandCallback(const std_msgs::Empty::ConstPtr &msg)
+void paramCommandCallback(const std_msgs::String::ConstPtr &msg)
 {
-
+  if(msg->data == "save")
+  {
+    saveParameter();
+  }
+  else if(msg->data == "reset")
+  {
+    resetParameter();
+  }
 }
 
 bool setParamCallback(op3_camera_setting_tool::SetParameters::Request &req, op3_camera_setting_tool::SetParameters::Response &res)
@@ -420,6 +432,15 @@ bool getParamCallback(op3_camera_setting_tool::GetParameters::Request &req, op3_
 }
 
 void resetParameter()
+{
+  // reset parameter
+
+
+  // publish current parameters
+  publishParam();
+}
+
+void saveParameter()
 {
 
 }
