@@ -385,15 +385,38 @@ bool setParamCallback(op3_camera_setting_tool::SetParameters::Request &req, op3_
   res.returns = req.params;
 
   // save setting value to parameter server
-  op3_camera_setting_tool::CameraParams cam_params = res.returns;
-  g_param_pub.publish(cam_params);
+  g_dyn_config.brightness                     = req.params.brightness;
+  g_dyn_config.contrast                       = req.params.contrast;
+  g_dyn_config.saturation                     = req.params.saturation;
+  g_dyn_config.sharpness                      = req.params.sharpness;
+  g_dyn_config.gain                           = req.params.gain;
+  g_dyn_config.focus_auto                     = req.params.focus_auto;
+  g_dyn_config.focus_absolute                 = req.params.focus_absolute;
+  g_dyn_config.exposure_auto                  = req.params.exposure_auto;
+  g_dyn_config.exposure_absolute              = req.params.exposure_absolute;
+  g_dyn_config.white_balance_temperature_auto = req.params.white_balance_temperature_auto;
+  g_dyn_config.white_balance_temperature      = req.params.white_balance_temperature;
+
+  updateDynParam(g_dyn_config);
 
   return true;
 }
 
 bool getParamCallback(op3_camera_setting_tool::GetParameters::Request &req, op3_camera_setting_tool::GetParameters::Response &res)
 {
+  res.returns.brightness                     = g_dyn_config.brightness;
+  res.returns.contrast                       = g_dyn_config.contrast;
+  res.returns.saturation                     = g_dyn_config.saturation;
+  res.returns.sharpness                      = g_dyn_config.sharpness;
+  res.returns.gain                           = g_dyn_config.gain;
+  res.returns.focus_auto                     = g_dyn_config.focus_auto;
+  res.returns.focus_absolute                 = g_dyn_config.focus_absolute;
+  res.returns.exposure_auto                  = g_dyn_config.exposure_auto;
+  res.returns.exposure_absolute              = g_dyn_config.exposure_absolute;
+  res.returns.white_balance_temperature_auto = g_dyn_config.white_balance_temperature_auto;
+  res.returns.white_balance_temperature      = g_dyn_config.white_balance_temperature;
 
+  return true;
 }
 
 void resetParameter()
@@ -403,5 +426,19 @@ void resetParameter()
 
 void publishParam()
 {
+  op3_camera_setting_tool::CameraParams cam_params;
 
+  cam_params.brightness                     = g_dyn_config.brightness;
+  cam_params.contrast                       = g_dyn_config.contrast;
+  cam_params.saturation                     = g_dyn_config.saturation;
+  cam_params.sharpness                      = g_dyn_config.sharpness;
+  cam_params.gain                           = g_dyn_config.gain;
+  cam_params.focus_auto                     = g_dyn_config.focus_auto;
+  cam_params.focus_absolute                 = g_dyn_config.focus_absolute;
+  cam_params.exposure_auto                  = g_dyn_config.exposure_auto;
+  cam_params.exposure_absolute              = g_dyn_config.exposure_absolute;
+  cam_params.white_balance_temperature_auto = g_dyn_config.white_balance_temperature_auto;
+  cam_params.white_balance_temperature      = g_dyn_config.white_balance_temperature;
+
+  g_param_pub.publish(cam_params);
 }
