@@ -476,6 +476,7 @@ void resetParameter()
   }
 
   updateDynParam(g_dyn_config);
+  saveParameter();
 
   // publish current parameters
   publishParam();
