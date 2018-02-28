@@ -9,6 +9,7 @@ project(op3_camera_setting_tool)
 ################################################################################
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  roslib
   rospy
   std_msgs
   dynamic_reconfigure
@@ -23,6 +24,13 @@ add_message_files(
   FILES
   V4lParameter.msg
   V4lParameters.msg
+  CameraParams.msg
+)
+
+add_service_files(
+  FILES
+  GetParameters.srv
+  SetParameters.srv
 )
 
 generate_messages(
@@ -58,6 +66,7 @@ add_dependencies(op3_camera_setting_tool ${${PROJECT_NAME}_EXPORTED_TARGETS} ${c
 
 target_link_libraries(op3_camera_setting_tool
   ${catkin_LIBRARIES}
+  yaml-cpp
 )
 
 ################################################################################

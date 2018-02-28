@@ -1773,7 +1773,7 @@ void ActionEditor::goCmd(int index)
       distance = goal_position - start_position;
 
 //    wDistance = 200;
-    distance = distance * 0.05;
+    distance = distance * 0.03;
 
     if (max_distance < distance)
       max_distance = distance;

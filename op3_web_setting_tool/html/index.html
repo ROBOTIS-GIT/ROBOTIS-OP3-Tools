@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ROBOTIS OP3 Demo</title>
+	<meta charset="utf-8" />
+
+	<style type="text/css">
+		body{
+			margin-top: 10px;
+			font-family: 'Trebuchet MS', serif;
+			line-height: 1.6
+		}
+
+		.container{
+			width: 90%;
+			margin: 0 auto;
+		}
+
+		.block_common{
+			display: inline-block;
+			width: 48%;
+			margin: 1% auto;
+		}
+
+		.left_box{
+			display: inline;
+			width: 45%;
+		}
+
+		.right_box{
+			display: inline;
+			width: 45%;
+		}
+
+		ul.tabs{
+			margin: 0px;
+			padding: 0px;
+			list-style: none;
+		}
+
+		ul.tabs li{
+			background: none;
+			color: #222;
+			display: inline-block;
+			padding: 10px 15px;
+			cursor: pointer;
+		}
+
+		ul.tabs li.current{
+			background: #ededed;
+			color: #222;
+		}
+
+		.tab-content{
+			display: none;
+			background: #ededed;
+			padding: 15px;
+		}
+
+		.tab-content.current{
+			display: inherit;
+		}
+		
+		.action_button{
+			height:60px;
+			width:150px;
+		}
+	</style>
+
+	<link rel="stylesheet" href="js/jquery-ui.css">
+	<script type="text/javascript" src="js/EventEmitter2.js"></script>
+	<script type="text/javascript" src="js/mjpegcanvas.js"></script>
+	<script type="text/javascript" src="js/roslib.js"></script>
+	<script type="text/javascript" src="js/jquery.js" ></script>
+	<script type="text/javascript" src="js/jquery-ui.js" ></script>
+
+	<script type="text/javascript" type="text/javascript">
+
+
+		// ==================================================================
+		// Variable
+		var server_ip="10.42.0.1";
+		var image_prefix = "http://10.42.0.1:8080/stream?topic=";
+		var image_prefix_2 = ":8080/stream?topic=";
+		var image_surfix = "&type=ros_compressed";
+		var images = new Array("/ball_detector_node/image_out", "/facerec/image_raw", "/usb_cam_node/image_raw");
+		var ball_parameters = {
+			gaussian_blur_size : 7,
+			gaussian_blur_sigma : 2.0,
+			canny_edge_th : 100,
+			hough_accum_resolution : 1.0,
+			hough_accum_th : 28.0,
+			min_circle_dist : 100,
+			min_radius : 20,
+			max_radius : 300,
+			filter_h_min : 350,
+			filter_h_max : 20,
+			filter_s_min : 222,
+			filter_s_max : 255,
+			filter_v_min : 30,
+			filter_v_max : 255,
+			ellipse_size : 2
+		}	
+		var camera_parameters = {
+			brightness : 64,
+			contrast : 128,
+			saturation : 128,
+			sharpness : 128,
+			gain : 255,
+			focus_auto : false,
+			focus_absolute : -1,
+			exposure_auto : 1,
+			exposure_absolute : 80,
+			white_balance_temperature_auto : false,
+			white_balance_temperature : 4000
+		}
+
+		// ==================================================================
+		// Connecting to ROS
+		// ==================================================================
+		var full_add = location.href;
+		var add_array = full_add.split("/");
+		console.log("address : " + add_array[2]);
+		
+		change_server_ip(add_array[2]);
+		
+		var ros = new ROSLIB.Ros({
+			//url: 'ws://10.42.0.1:9090'
+			url: 'ws://' + server_ip + ':9090'
+		});
+
+		ros.on('connection', function () {
+			console.log('Connected to websocket server.');
+		});
+
+		ros.on('error', function (error) {
+			console.log('Error connecting to websocket server: ', error);
+		});
+
+		ros.on('close', function () {
+			console.log('Connection to websocket server closed.');
+		});
+		
+		// ==================================================================
+		// Publishing a Topic
+		// ==================================================================
+		
+		var demoModeCommand = new ROSLIB.Topic({
+			ros: ros,
+			name: '/robotis/mode_command',
+			messageType: 'std_msgs/String'
+		});
+
+		function publishModeCommand(mode_command) {
+			var message = new ROSLIB.Message({
+				data: mode_command
+			});
+			demoModeCommand.publish(message);
+			console.log('publish Mode Command : ' + mode_command);
+		}
+		
+		var demoCommand = new ROSLIB.Topic({
+			ros: ros,
+			name: '/robotis/demo_command',
+			messageType: 'std_msgs/String'
+		});
+
+		function publishDemoCommand(demo_command) {
+			var message = new ROSLIB.Message({
+				data: demo_command
+			});
+			demoCommand.publish(message);
+			console.log('publish Demo Command : ' + demo_command);
+		}
+		var paramCommand = new ROSLIB.Topic({
+			ros: ros,
+			name: '/ball_detector_node/param_command',
+			messageType: 'std_msgs/String'
+		});
+				
+		function publishParamCommand(param_command) {
+			var message = new ROSLIB.Message({
+				data: param_command
+			});
+			paramCommand.publish(message);
+			console.log('publish Parameter Command : ' + param_command);
+		}
+		
+		var cameraCommand = new ROSLIB.Topic({
+			ros: ros,
+			name: '/op3_camera/param_command',
+			messageType: 'std_msgs/String'
+		});
+
+		function publishCameraCommand(camera_command) {
+			var message = new ROSLIB.Message({
+				data: camera_command
+			});
+			cameraCommand.publish(message);
+			console.log('publish Camera Command : ' + camera_command);
+		}
+		
+		var actionIndex = new ROSLIB.Topic({
+			ros: ros,
+			name: '/robotis/action/page_num',
+			messageType: 'std_msgs/Int32'
+		});
+
+		function publishActionIndex(action_index) {
+			var message = new ROSLIB.Message({
+				data: action_index
+			});
+			actionIndex.publish(message);
+			console.log('publish Action Index : ' + action_index);
+		}
+		
+		// ==================================================================
+		// Subscribing to a Topic
+		// ==================================================================
+		var param_listener = new ROSLIB.Topic({
+			ros: ros,
+			name: '/ball_detector_node/current_params',
+			messageType: 'ball_detector/BallDetectorParams'
+		});
+
+		param_listener.subscribe(function (message) {
+				ball_parameters.gaussian_blur_size  	 = message.gaussian_blur_size;
+				ball_parameters.gaussian_blur_sigma      = message.gaussian_blur_sigma;
+				ball_parameters.canny_edge_th            = message.canny_edge_th;
+				ball_parameters.hough_accum_resolution   = message.hough_accum_resolution;
+				ball_parameters.min_circle_dist          = message.min_circle_dist;
+				ball_parameters.hough_accum_th           = message.hough_accum_th;
+				ball_parameters.min_radius               = message.min_radius;
+				ball_parameters.max_radius               = message.max_radius;
+				ball_parameters.ellipse_size			 = message.ellipse_size;
+				                                         
+				ball_parameters.filter_h_min             = message.filter_h_min;
+				ball_parameters.filter_h_max             = message.filter_h_max;
+				ball_parameters.filter_s_min             = message.filter_s_min;
+				ball_parameters.filter_s_max             = message.filter_s_max;
+				ball_parameters.filter_v_min             = message.filter_v_min;
+				ball_parameters.filter_v_max             = message.filter_v_max;
+				
+				refresh_ball_detector_parameters();
+				console.log('ball detector parameter is refreshed.');
+		});
+
+		var camera_param_listener = new ROSLIB.Topic({
+			ros: ros,
+			name: '/op3_camera/camera_params',
+			messageType: 'op3_camera_setting_tool/CameraParams'
+		});
+
+		camera_param_listener.subscribe(function (message) {
+			camera_parameters.brightness						= message.brightness;
+			camera_parameters.contrast							= message.contrast;
+			camera_parameters.saturation						= message.saturation;
+			camera_parameters.sharpness							= message.sharpness;
+			camera_parameters.gain								= message.gain;
+			camera_parameters.focus_auto						= message.focus_auto;
+			camera_parameters.focus_absolute					= message.focus_absolute;
+			camera_parameters.exposure_auto						= message.exposure_auto;
+			camera_parameters.exposure_absolute					= message.exposure_absolute;
+			camera_parameters.white_balance_temperature_auto	= message.white_balance_temperature_auto;
+			camera_parameters.white_balance_temperature   		= message.white_balance_temperature;
+			
+			refresh_camera_parameters();
+		});
+		
+		
+		// ==================================================================
+		// Calling the service
+		// ==================================================================
+		var setBallDetectorParamClient = new ROSLIB.Service({
+		 ros : ros,
+		 name : '/ball_detector_node/set_param',
+		 serviceType : 'ball_detector/SetParameters'
+		});
+		
+		var getBallDetectorParamClient = new ROSLIB.Service({
+		 ros : ros,
+		 name : '/ball_detector_node/get_param',
+		 serviceType : 'ball_detector/GetParameters'
+		});
+				
+		function callServiceSetBallDetectorParams(new_params) {
+			var request = new ROSLIB.ServiceRequest({
+				params : new_params
+			});
+			setBallDetectorParamClient.callService(request, function(result) {
+				console.log('Result for service call : set ball detector params ' + result.returns.gaussian_blur_size);
+			});
+		}
+		
+		function callServiceGetBallDetectorParams() {
+			var request = new ROSLIB.ServiceRequest();
+			getBallDetectorParamClient.callService(request, function(result) {
+				ball_parameters.gaussian_blur_size  	 = result.returns.gaussian_blur_size;
+				ball_parameters.gaussian_blur_sigma      = result.returns.gaussian_blur_sigma;
+				ball_parameters.canny_edge_th            = result.returns.canny_edge_th;
+				ball_parameters.hough_accum_resolution   = result.returns.hough_accum_resolution;
+				ball_parameters.min_circle_dist          = result.returns.min_circle_dist;
+				ball_parameters.hough_accum_th           = result.returns.hough_accum_th;
+				ball_parameters.min_radius               = result.returns.min_radius;
+				ball_parameters.max_radius               = result.returns.max_radius;
+				ball_parameters.ellipse_size			 = result.returns.ellipse_size;
+				                                         
+				ball_parameters.filter_h_min             = result.returns.filter_h_min;
+				ball_parameters.filter_h_max             = result.returns.filter_h_max;
+				ball_parameters.filter_s_min             = result.returns.filter_s_min;
+				ball_parameters.filter_s_max             = result.returns.filter_s_max;
+				ball_parameters.filter_v_min             = result.returns.filter_v_min;
+				ball_parameters.filter_v_max             = result.returns.filter_v_max;
+				
+				refresh_ball_detector_parameters();
+			});
+		}
+		
+		// camera		
+		var setCameraParamClient = new ROSLIB.Service({
+		 ros : ros,
+		 name : '/op3_camera/set_camera_params',
+		 serviceType : 'op3_camera_setting_tool/SetParameters'
+		});
+		
+		var getCameraParamClient = new ROSLIB.Service({
+		 ros : ros,
+		 name : '/op3_camera/get_camera_params',
+		 serviceType : 'op3_camera_setting_tool/GetParameters'
+		});
+		
+		
+		function callServiceSetCameraParams(new_params) {
+			var request = new ROSLIB.ServiceRequest({
+				params : new_params
+			});
+			setCameraParamClient.callService(request, function(result) {
+				console.log('Result for service call : set camera params');
+			});
+		}
+		
+		function callServiceGetCameraParams() {
+			var request = new ROSLIB.ServiceRequest();
+			
+			getCameraParamClient.callService(request, function(result) {
+				camera_parameters.brightness						= result.returns.brightness;
+				camera_parameters.contrast							= result.returns.contrast;
+				camera_parameters.saturation						= result.returns.saturation;
+				camera_parameters.sharpness							= result.returns.sharpness;
+				camera_parameters.gain								= result.returns.gain;
+				camera_parameters.focus_auto						= result.returns.focus_auto;
+				camera_parameters.focus_absolute					= result.returns.focus_absolute;
+				camera_parameters.exposure_auto						= result.returns.exposure_auto;
+				camera_parameters.exposure_absolute					= result.returns.exposure_absolute;
+				camera_parameters.white_balance_temperature_auto	= result.returns.white_balance_temperature_auto;
+				camera_parameters.white_balance_temperature   		= result.returns.white_balance_temperature;
+				
+				refresh_camera_parameters();
+			});
+		}
+		
+        // ==================================================================
+		// Getting and setting a param value
+        // ==================================================================
+		/**
+		 * Setup all visualization elements when the page is loaded.
+		 */
+
+		function init() {
+			console.log('called init function');
+			console.log("server ip : " + server_ip);
+			
+		}
+
+		function change_mode(value) {
+			console.log('Mode: ' + value);
+			window.document.getElementById("mode_text").innerText = "Mode : " + value;
+			publishModeCommand(value);
+		}
+
+		function send_demo_command(value) {
+			console.log('send demo command : ' + value);
+			publishDemoCommand(value);
+		}
+
+		function id(e){return document.getElementById(e)}
+		
+		// ==================================================================
+		// UI - Tab
+		// ==================================================================
+		$(document).ready(function(){
+			$('ul.tabs li').click(function(){
+				var tab_id = $(this).attr('data-tab');
+
+				$('ul.tabs li').removeClass('current');
+				$('.tab-content').removeClass('current');
+				var old_id = $('.tab-content').attr('id');
+				disable_image(old_id);
+
+				$(this).addClass('current');
+				$("#"+tab_id).addClass('current');				
+				handle_tab(tab_id);
+			})
+		})
+
+		function handle_tab(tab_name) {
+			console.log("enable image");
+			if(tab_name == "tab-2")
+			{
+				window.document.getElementById("tab-2-image").src = "http://" + server_ip + image_prefix_2 + images[0] + image_surfix;
+				
+				callServiceGetBallDetectorParams();
+			}
+			else if(tab_name == "tab-3")
+			{
+				window.document.getElementById("tab-3-image").src = "http://" + server_ip + image_prefix_2 + images[1] + image_surfix;
+			}
+			else if(tab_name == "tab-5")
+			{
+				window.document.getElementById("tab-5-image").src = "http://" + server_ip + image_prefix_2 + images[2] + image_surfix;
+				
+				callServiceGetCameraParams();
+			}
+		}
+
+		function disable_image(tab_name) {
+			console.log("disable image - " + tab_name);
+			window.document.getElementById("tab-2-image").src = "";
+			window.document.getElementById("tab-3-image").src = "";
+			window.document.getElementById("tab-5-image").src = "";
+		}
+		
+		$( function() {
+			$("#input_server_ip").val(server_ip);
+		});
+		
+		// ==================================================================
+		// UI - ball detector parameter
+		// ==================================================================
+		$( function() {
+			$( "#ball_detector_slider_01" ).slider({
+				value: 7,
+				min: 1,
+				max: 11,
+				step: 1,
+				slide: function (event, ui) {
+					$("#ball_detector_value_01").val(ui.value);
+					ball_parameters['gaussian_blur_size'] = ui.value;
+				},
+				stop: function (event, ui) {
+					if(ui.value % 2 == 0)
+						ball_parameters['gaussian_blur_size'] = ui.value - 1;
+					change_ball_detector_parameters();
+				}
+			});
+			$("#ball_detector_value_01").val($("#ball_detector_slider_01").slider("value"));
+            $( "#ball_detector_value_01" ).on( "change", function() {
+                $( "#ball_detector_slider_01" ).slider( "value", this.value );
+				
+				var target = $("#ball_detector_slider_01").slider("value");				
+				if(target % 2 == 0)
+					ball_parameters['gaussian_blur_size'] = target - 1;
+				else
+					ball_parameters['gaussian_blur_size'] = target;
+				change_ball_detector_parameters();
+            });
+		});
+
+		$( function() {
+			$( "#ball_detector_slider_02" ).slider({
+				value: 2.0,
+				min: 1.0,
+				max: 5.0,
+				step : 0.1,
+				slide: function (event, ui) {
+					$("#ball_detector_value_02").val(ui.value);
+					ball_parameters['gaussian_blur_sigma'] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_ball_detector_parameters();
+				}
+			});
+			$("#ball_detector_value_02").val($("#ball_detector_slider_02").slider("value"));
+            $( "#ball_detector_value_02" ).on( "change", function() {
+                $( "#ball_detector_slider_02" ).slider( "value", this.value );
+				
+				var target = $("#ball_detector_slider_02").slider("value");
+				ball_parameters['gaussian_blur_sigma'] = target;
+				change_ball_detector_parameters();
+            });
+		});
+
+		$( function() {
+			$( "#ball_detector_slider_03" ).slider({
+				value: 100.0,
+				min: 50.0,
+				max: 200.0,
+				step : 0.5,
+				slide: function (event, ui) {
+					$("#ball_detector_value_03").val(ui.value);
+					ball_parameters['canny_edge_th'] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_ball_detector_parameters();
+				}
+			});
+			$("#ball_detector_value_03").val($("#ball_detector_slider_03").slider("value"));
+            $( "#ball_detector_slider_03" ).on( "change", function() {
+                $( "#ball_detector_slider_03" ).slider( "value", this.value );
+				
+				var target = $("#ball_detector_slider_03").slider("value");
+				ball_parameters['canny_edge_th'] = target;
+				change_ball_detector_parameters();
+            });
+		});
+
+		$( function() {
+			$( "#ball_detector_slider_04" ).slider({
+				value: 1.0,
+				min: 1.0,
+				max: 8.0,
+				step : 0.1,
+				slide: function (event, ui) {
+					$("#ball_detector_value_04").val(ui.value);
+					ball_parameters['hough_accum_resolution'] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_ball_detector_parameters();
+				}
+			});
+			$("#ball_detector_value_04").val($("#ball_detector_slider_04").slider("value"));
+            $( "#ball_detector_value_04" ).on( "change", function() {
+                $( "#ball_detector_slider_04" ).slider( "value", this.value );
+				
+				var target = $("#ball_detector_slider_04").slider("value");
+				ball_parameters['hough_accum_resolution'] = target;
+				change_ball_detector_parameters();
+            });
+		});
+
+		$( function() {
+			$( "#ball_detector_slider_05" ).slider({
+				value: 100.0,
+				min: 10.0,
+				max: 200.0,
+				step : 1,
+				slide: function (event, ui) {
+					$("#ball_detector_value_05").val(ui.value);
+					ball_parameters['min_circle_dist'] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_ball_detector_parameters();
+				}
+			});
+			$("#ball_detector_value_05").val($("#ball_detector_slider_05").slider("value"));
+            $( "#ball_detector_value_05" ).on( "change", function() {
+                $( "#ball_detector_slider_05" ).slider( "value", this.value );
+				
+				var target = $("#ball_detector_slider_05").slider("value");
+				ball_parameters['min_circle_dist'] = target;
+				change_ball_detector_parameters();
+            });
+		});
+
+		$( function() {
+			$( "#ball_detector_slider_06" ).slider({
+				value: 28.0,
+				min: 10.0,
+				max: 200.0,
+				step : 1,
+				slide: function (event, ui) {
+					$("#ball_detector_value_06").val(ui.value);
+					ball_parameters['hough_accum_th'] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_ball_detector_parameters();
+				}
+			});
+			$("#ball_detector_value_06").val($("#ball_detector_slider_06").slider("value"));
+            $( "#ball_detector_value_06" ).on( "change", function() {
+                $( "#ball_detector_slider_06" ).slider( "value", this.value );
+				
+				var target = $("#ball_detector_slider_06").slider("value");
+				ball_parameters['hough_accum_th'] = target;
+				change_ball_detector_parameters();
+            });
+		});
+
+		$( function() {
+			$( "#ball_detector_slider_07" ).slider({
+				value: 20,
+				min: 10,
+				max: 200,
+				step : 1,
+				slide: function (event, ui) {
+					$("#ball_detector_value_07").val(ui.value);
+					ball_parameters['min_radius'] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_ball_detector_parameters();
+				}
+			});
+			$("#ball_detector_value_07").val($("#ball_detector_slider_07").slider("value"));
+            $( "#ball_detector_value_07" ).on( "change", function() {
+                $( "#ball_detector_slider_07" ).slider( "value", this.value );
+				
+				var target = $("#ball_detector_slider_07").slider("value");
+				ball_parameters['min_radius'] = target;
+				change_ball_detector_parameters();
+            });
+		});
+
+		$( function() {
+			$( "#ball_detector_slider_08" ).slider({
+				value: 300,
+				min: 100,
+				max: 600,
+				step : 1,
+				slide: function (event, ui) {
+					$("#ball_detector_value_08").val(ui.value);
+					ball_parameters['max_radius'] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_ball_detector_parameters();
+				}
+			});
+			$("#ball_detector_value_08").val($("#ball_detector_slider_08").slider("value"));
+            $( "#ball_detector_value_08" ).on( "change", function() {
+                $( "#ball_detector_slider_08" ).slider( "value", this.value );
+				
+				var target = $("#ball_detector_slider_08").slider("value");
+				ball_parameters['max_radius'] = target;
+				change_ball_detector_parameters();
+            });
+		});
+
+		$( function() {
+			$( "#ball_detector_slider_09" ).slider({
+				value: 2,
+				min: 1,
+				max: 9,
+				step : 1,
+				slide: function (event, ui) {
+					$("#ball_detector_value_09").val(ui.value);
+					ball_parameters['ellipse_size'] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_ball_detector_parameters();
+				}
+			});
+			$("#ball_detector_value_09").val($("#ball_detector_slider_09").slider("value"));
+            $( "#ball_detector_value_09" ).on( "change", function() {
+                $( "#ball_detector_slider_09" ).slider( "value", this.value );
+				
+				var target = $("#ball_detector_slider_09").slider("value");
+				ball_parameters['ellipse_size'] = target;
+				change_ball_detector_parameters();
+            });
+		});
+		// ==================================================================
+		// UI - ball detector / color filter
+		// ==================================================================
+		$( function() {
+			$( "#ball_detector_color_filter_slider_01" ).slider({
+				value: 350,
+				min: 0,
+				max: 359,
+				step : 1,
+				slide: function (event, ui) {
+					$("#ball_detector_color_filter_value_01").val(ui.value);
+					ball_parameters['filter_h_min'] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_ball_detector_parameters();
+				}
+			});
+			$("#ball_detector_color_filter_value_01").val($("#ball_detector_color_filter_slider_01").slider("value"));
+            $( "#ball_detector_color_filter_value_01" ).on( "change", function() {
+                $( "#ball_detector_color_filter_slider_01" ).slider( "value", this.value );
+				
+				var target = $("#ball_detector_color_filter_slider_01").slider("value");
+				ball_parameters['filter_h_min'] = target;
+				change_ball_detector_parameters();
+            });
+		});
+		
+		$( function() {
+			$( "#ball_detector_color_filter_slider_02" ).slider({
+				value: 20,
+				min: 0,
+				max: 359,
+				step : 1,
+				slide: function (event, ui) {
+					$("#ball_detector_color_filter_value_02").val(ui.value);
+					ball_parameters['filter_h_max'] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_ball_detector_parameters();
+				}
+			});
+			$("#ball_detector_color_filter_value_02").val($("#ball_detector_color_filter_slider_02").slider("value"));
+            $( "#ball_detector_color_filter_value_02" ).on( "change", function() {
+                $( "#ball_detector_color_filter_slider_02" ).slider( "value", this.value );
+				
+				var target = $("#ball_detector_color_filter_slider_02").slider("value");
+				ball_parameters['filter_h_max'] = target;
+				change_ball_detector_parameters();
+            });
+		});
+		
+		$( function() {
+			$( "#ball_detector_color_filter_slider_03" ).slider({
+				value: 222,
+				min: 0,
+				max: 255,
+				step : 1,
+				slide: function (event, ui) {
+					$("#ball_detector_color_filter_value_03").val(ui.value);
+					ball_parameters['filter_s_min'] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_ball_detector_parameters();
+				}
+			});
+			$("#ball_detector_color_filter_value_03").val($("#ball_detector_color_filter_slider_03").slider("value"));
+            $( "#ball_detector_color_filter_value_03" ).on( "change", function() {
+                $( "#ball_detector_color_filter_slider_03" ).slider( "value", this.value );
+				
+				var target = $("#ball_detector_color_filter_slider_03").slider("value");
+				ball_parameters['filter_s_min'] = target;
+				change_ball_detector_parameters();
+            });
+		});
+		
+		$( function() {
+			$( "#ball_detector_color_filter_slider_04" ).slider({
+				value: 255,
+				min: 0,
+				max: 255,
+				step : 1,
+				slide: function (event, ui) {
+					$("#ball_detector_color_filter_value_04").val(ui.value);
+					ball_parameters['filter_s_max'] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_ball_detector_parameters();
+				}
+			});
+			$("#ball_detector_color_filter_value_04").val($("#ball_detector_color_filter_slider_04").slider("value"));
+            $( "#ball_detector_color_filter_value_04" ).on( "change", function() {
+                $( "#ball_detector_color_filter_slider_04" ).slider( "value", this.value );
+				
+				var target = $("#ball_detector_color_filter_slider_04").slider("value");
+				ball_parameters['filter_s_max'] = target;
+				change_ball_detector_parameters();
+            });
+		});
+		
+		$( function() {
+			$( "#ball_detector_color_filter_slider_05" ).slider({
+				value: 30,
+				min: 0,
+				max: 255,
+				step : 1,
+				slide: function (event, ui) {
+					$("#ball_detector_color_filter_value_05").val(ui.value);
+					ball_parameters['filter_v_min'] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_ball_detector_parameters();
+				}
+			});
+			$("#ball_detector_color_filter_value_05").val($("#ball_detector_color_filter_slider_05").slider("value"));
+            $( "#ball_detector_color_filter_value_05" ).on( "change", function() {
+                $( "#ball_detector_color_filter_slider_05" ).slider( "value", this.value );
+				
+				var target = $("#ball_detector_color_filter_slider_05").slider("value");
+				ball_parameters['filter_v_min'] = target;
+				change_ball_detector_parameters();
+            });
+		});
+		
+		$( function() {
+			$( "#ball_detector_color_filter_slider_06" ).slider({
+				value: 255,
+				min: 0,
+				max: 255,
+				step : 1,
+				slide: function (event, ui) {
+					$("#ball_detector_color_filter_value_06").val(ui.value);
+					ball_parameters['filter_v_max'] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_ball_detector_parameters();
+				}
+			});
+			$("#ball_detector_color_filter_value_06").val($("#ball_detector_color_filter_slider_06").slider("value"));
+            $( "#ball_detector_color_filter_value_06" ).on( "change", function() {
+                $( "#ball_detector_color_filter_slider_06" ).slider( "value", this.value );
+				
+				var target = $("#ball_detector_color_filter_slider_06").slider("value");
+				ball_parameters['filter_v_max'] = target;
+				change_ball_detector_parameters();
+            });
+		});
+				
+		function change_debug_image(value) {
+			if(value == "true")
+			{
+				console.log('change image to debug');
+				publishParamCommand('debug');
+			}
+			else
+			{
+				console.log('change image to normal');
+				publishParamCommand('normal');
+			}
+		}
+		
+		function send_ball_detector_reset() {
+			console.log('send ball detector parameter reset command');
+			publishParamCommand('reset');
+		}
+		
+        function change_server_ip() {
+			server_ip = $("#input_server_ip").val();
+			console.log("ip changed - " + server_ip);
+        }
+		
+		function change_server_ip(ip_address) {
+			server_ip = ip_address;
+			$("#input_server_ip").val(server_ip);
+			console.log("ip changed : " + server_ip);
+		}
+		
+		function change_ball_detector_parameters() {
+			for(p in ball_parameters)
+				console.log(p + ", " + ball_parameters[p]); 
+
+			callServiceSetBallDetectorParams(ball_parameters);
+		}
+		
+		function refresh_ball_detector_parameters() {
+		
+			$("#ball_detector_value_01").val(ball_parameters.gaussian_blur_size );
+			$("#ball_detector_value_02").val(ball_parameters.gaussian_blur_sigma );
+			$("#ball_detector_value_03").val(ball_parameters.canny_edge_th );
+			$("#ball_detector_value_04").val(ball_parameters.hough_accum_resolution );
+			$("#ball_detector_value_05").val(ball_parameters.min_circle_dist );
+			$("#ball_detector_value_06").val(ball_parameters.hough_accum_th );
+			$("#ball_detector_value_07").val(ball_parameters.min_radius );
+			$("#ball_detector_value_08").val(ball_parameters.max_radius );
+			$("#ball_detector_value_09").val(ball_parameters.ellipse_size );
+			
+			$("#ball_detector_color_filter_value_01").val(ball_parameters.filter_h_min );
+			$("#ball_detector_color_filter_value_02").val(ball_parameters.filter_h_max );
+			$("#ball_detector_color_filter_value_03").val(ball_parameters.filter_s_min );
+			$("#ball_detector_color_filter_value_04").val(ball_parameters.filter_s_max );
+			$("#ball_detector_color_filter_value_05").val(ball_parameters.filter_v_min );
+			$("#ball_detector_color_filter_value_06").val(ball_parameters.filter_v_max );
+			
+		
+			$( "#ball_detector_slider_01" ).slider( "value", ball_parameters.gaussian_blur_size );
+			$( "#ball_detector_slider_02" ).slider( "value", ball_parameters.gaussian_blur_sigma );
+			$( "#ball_detector_slider_03" ).slider( "value", ball_parameters.canny_edge_th );
+			$( "#ball_detector_slider_04" ).slider( "value", ball_parameters.hough_accum_resolution );
+			$( "#ball_detector_slider_05" ).slider( "value", ball_parameters.min_circle_dist );
+			$( "#ball_detector_slider_06" ).slider( "value", ball_parameters.hough_accum_th );
+			$( "#ball_detector_slider_07" ).slider( "value", ball_parameters.min_radius );
+			$( "#ball_detector_slider_08" ).slider( "value", ball_parameters.max_radius );
+			$( "#ball_detector_slider_09" ).slider( "value", ball_parameters.ellipse_size );
+			
+			$( "#ball_detector_color_filter_slider_01" ).slider( "value", ball_parameters.filter_h_min );
+			$( "#ball_detector_color_filter_slider_02" ).slider( "value", ball_parameters.filter_h_max );
+			$( "#ball_detector_color_filter_slider_03" ).slider( "value", ball_parameters.filter_s_min );
+			$( "#ball_detector_color_filter_slider_04" ).slider( "value", ball_parameters.filter_s_max );
+			$( "#ball_detector_color_filter_slider_05" ).slider( "value", ball_parameters.filter_v_min );
+			$( "#ball_detector_color_filter_slider_06" ).slider( "value", ball_parameters.filter_v_max );
+			
+			
+			for(p in ball_parameters)
+				console.log(p + ", " + ball_parameters[p]); 
+			console.log('refresh ball detector params');
+		}
+		
+		// ==================================================================
+		// UI - camera_setting
+		// ==================================================================		
+		$( function() {
+			var label_text = id('camera_setting_label_01').innerHTML;
+			label_text = label_text.split(' ').join('')
+			$("#camera_setting_slider_01").slider({
+				value: camera_parameters[label_text],
+				min: 0,
+				max: 255,
+				step : 1,
+				slide: function (event, ui) {
+					$("#camera_setting_input_01").val(ui.value);
+					camera_parameters[label_text] = ui.value;
+					console.log("label " + label_text);
+				},
+				stop: function (event, ui) {
+					change_camera_parameters();
+				}
+			});
+			$("#camera_setting_input_01").val($("#camera_setting_slider_01").slider("value"));
+            $( "#camera_setting_input_01" ).on( "change", function() {
+                $( "#camera_setting_slider_01" ).slider( "value", this.value );
+				
+				var target = $("#camera_setting_slider_01").slider("value");
+				camera_parameters[label_text] = target;
+				change_camera_parameters();
+            });
+		});
+			
+		$( function() {
+			var label_text = id('camera_setting_label_02').innerHTML;
+			label_text = label_text.split(' ').join('')
+			$("#camera_setting_slider_02").slider({
+				value: camera_parameters[label_text],
+				min: 0,
+				max: 255,
+				step : 1,
+				slide: function (event, ui) {
+					$("#camera_setting_input_02").val(ui.value);
+					camera_parameters[label_text] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_camera_parameters();
+				}
+			});
+			$("#camera_setting_input_02").val($("#camera_setting_slider_02").slider("value"));
+            $( "#camera_setting_input_02" ).on( "change", function() {
+                $( "#camera_setting_slider_02" ).slider( "value", this.value );
+				
+				var target = $("#camera_setting_slider_02").slider("value");
+				camera_parameters[label_text] = target;
+				change_camera_parameters();
+            });
+		});
+		
+		$( function() {
+			var label_text = id('camera_setting_label_03').innerHTML;
+			label_text = label_text.split(' ').join('')
+			$("#camera_setting_slider_03").slider({
+				value: camera_parameters[label_text],
+				min: 0,
+				max: 255,
+				step : 1,
+				slide: function (event, ui) {
+					$("#camera_setting_input_03").val(ui.value);
+					camera_parameters[label_text] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_camera_parameters();
+				}
+			});
+			$("#camera_setting_input_03").val($("#camera_setting_slider_03").slider("value"));
+            $( "#camera_setting_input_03" ).on( "change", function() {
+                $( "#camera_setting_slider_03" ).slider( "value", this.value );
+				
+				var target = $("#camera_setting_slider_03").slider("value");
+				camera_parameters[label_text] = target;
+				change_camera_parameters();
+            });
+		});
+		
+		$( function() {
+			var label_text = id('camera_setting_label_04').innerHTML;
+			label_text = label_text.split(' ').join('')
+			$("#camera_setting_slider_04").slider({
+				value: camera_parameters[label_text],
+				min: 0,
+				max: 255,
+				step : 1,
+				slide: function (event, ui) {
+					$("#camera_setting_input_04").val(ui.value);
+					camera_parameters[label_text] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_camera_parameters();
+				}
+			});
+			$("#camera_setting_input_04").val($("#camera_setting_slider_04").slider("value"));
+            $( "#camera_setting_input_04" ).on( "change", function() {
+                $( "#camera_setting_slider_04" ).slider( "value", this.value );
+				
+				var target = $("#camera_setting_slider_04").slider("value");
+				camera_parameters[label_text] = target;
+				change_camera_parameters();
+            });
+		});
+		
+		$( function() {
+			var label_text = id('camera_setting_label_05').innerHTML;
+			label_text = label_text.split(' ').join('')
+			$("#camera_setting_slider_05").slider({
+				value: camera_parameters[label_text],
+				min: 0,
+				max: 255,
+				step : 1,
+				slide: function (event, ui) {
+					$("#camera_setting_input_05").val(ui.value);
+					camera_parameters[label_text] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_camera_parameters();
+				}
+			});
+			$("#camera_setting_input_05").val($("#camera_setting_slider_05").slider("value"));
+            $( "#camera_setting_input_05" ).on( "change", function() {
+                $( "#camera_setting_slider_05" ).slider( "value", this.value );
+				
+				var target = $("#camera_setting_slider_05").slider("value");
+				camera_parameters[label_text] = target;
+				 change_camera_parameters();
+            });
+		});
+				
+		// auto focus_absolute
+		$( function() {
+			var label_text = id('camera_setting_checkbox_label_01').innerHTML;
+			label_text = label_text.split(' ').join('')
+			console.log(label_text + " : " + camera_parameters[label_text]);
+			id('camera_setting_checkbox_01').checked = camera_parameters[label_text];
+		});
+		
+		function auto_focus_clicked() {
+			var label_text = id('camera_setting_checkbox_label_01').innerHTML;
+			label_text = label_text.split(' ').join('');
+			var target = id('camera_setting_checkbox_01').checked;
+			console.log(label_text + " is changed : " + target);
+			camera_parameters[label_text] = target;
+			
+			change_camera_parameters();		
+		}
+				
+		$( function() {
+			var label_text = id('camera_setting_label_06').innerHTML;
+			label_text = label_text.split(' ').join('')
+			$("#camera_setting_slider_06").slider({
+				value: camera_parameters[label_text],
+				min: -1,
+				max: 255,
+				step : 1,
+				slide: function (event, ui) {
+					$("#camera_setting_input_06").val(ui.value);
+					camera_parameters[label_text] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_camera_parameters();
+				}
+			});
+			$("#camera_setting_input_06").val($("#camera_setting_slider_06").slider("value"));
+            $( "#camera_setting_input_06" ).on( "change", function() {
+                $( "#camera_setting_slider_06" ).slider( "value", this.value );
+				
+				var target = $("#camera_setting_slider_06").slider("value");
+				camera_parameters[label_text] = target;
+				 change_camera_parameters();
+            });
+		});
+		
+		$( function() {
+			var label_text = id('combobox_exposure_label').innerHTML;
+			label_text = label_text.split(' ').join('')
+			console.log(label_text + " : " + camera_parameters[label_text]);
+			id('combobox_exposure').selectedIndex = camera_parameters[label_text];
+		});
+		
+		function combobox_exposure_changed() {
+			var label_text = id('combobox_exposure_label').innerHTML;
+			label_text = label_text.split(' ').join('');
+			var target = id('combobox_exposure').selectedIndex;
+			console.log(label_text + " is changed : " + target);
+			camera_parameters[label_text] = target;
+			
+			change_camera_parameters();
+		}
+		
+		$( function() {
+			var label_text = id('camera_setting_label_07').innerHTML;
+			label_text = label_text.split(' ').join('')
+			$("#camera_setting_slider_07").slider({
+				value: camera_parameters[label_text],
+				min: 0,
+				max: 255,
+				step : 1,
+				slide: function (event, ui) {
+					$("#camera_setting_input_07").val(ui.value);
+					camera_parameters[label_text] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_camera_parameters();
+				}
+			});
+			$("#camera_setting_input_07").val($("#camera_setting_slider_07").slider("value"));
+            $( "#camera_setting_input_07" ).on( "change", function() {
+                $( "#camera_setting_slider_07" ).slider( "value", this.value );
+				
+				var target = $("#camera_setting_slider_07").slider("value");
+				camera_parameters[label_text] = target;
+				 change_camera_parameters();
+            });
+		});
+		
+		// white_balance_temperature
+		// checkbox
+		$( function() {
+			var label_text = id('camera_setting_checkbox_label_02').innerHTML;
+			label_text = label_text.split(' ').join('')
+			console.log(label_text + " : " + camera_parameters[label_text]);
+			id('camera_setting_checkbox_02').checked = camera_parameters[label_text];
+		});
+		
+		function auto_white_balance_clicked() {
+			var label_text = id('camera_setting_checkbox_label_02').innerHTML;
+			label_text = label_text.split(' ').join('');
+			var target = id('camera_setting_checkbox_02').checked;
+			console.log(label_text + " is changed : " + target);
+			camera_parameters[label_text] = target;
+			
+			change_camera_parameters();		
+		}
+		
+		$( function() {
+			var label_text = id('camera_setting_label_08').innerHTML;
+			label_text = label_text.split(' ').join('')
+			$("#camera_setting_slider_08").slider({
+				value: camera_parameters[label_text],
+				min: 2000,
+				max: 6500,
+				step : 1,
+				slide: function (event, ui) {
+					$("#camera_setting_input_08").val(ui.value);
+					camera_parameters[label_text] = ui.value;
+				},
+				stop: function (event, ui) {
+					change_camera_parameters();
+				}
+			});
+			$("#camera_setting_input_08").val($("#camera_setting_slider_08").slider("value"));
+            $( "#camera_setting_input_08" ).on( "change", function() {
+                $( "#camera_setting_slider_08" ).slider( "value", this.value );
+				
+				var target = $("#camera_setting_slider_08").slider("value");
+				camera_parameters[label_text] = target;
+				 change_camera_parameters();
+            });
+		});
+		
+		function change_camera_parameters() {		
+			for(p in camera_parameters)
+				console.log(p + ", " + camera_parameters[p]); 
+			
+			callServiceSetCameraParams(camera_parameters);
+		}
+		
+		function refresh_camera_parameters() {
+		
+			$("#camera_setting_input_01").val(camera_parameters.brightness );
+			$("#camera_setting_input_02").val(camera_parameters.contrast );
+			$("#camera_setting_input_03").val(camera_parameters.saturation );
+			$("#camera_setting_input_04").val(camera_parameters.sharpness );
+			$("#camera_setting_input_05").val(camera_parameters.gain );
+			// auto_focus
+			$("#camera_setting_input_06").val(camera_parameters.focus_absolute );
+			// auto_exposure
+			$("#camera_setting_input_07").val(camera_parameters.exposure_absolute );
+			// auto white balance
+			$("#camera_setting_input_08").val(camera_parameters.white_balance_temperature );			
+		
+			$( "#camera_setting_slider_01" ).slider( "value", camera_parameters.brightness );
+			$( "#camera_setting_slider_02" ).slider( "value", camera_parameters.contrast );
+			$( "#camera_setting_slider_03" ).slider( "value", camera_parameters.saturation );
+			$( "#camera_setting_slider_04" ).slider( "value", camera_parameters.sharpness );
+			$( "#camera_setting_slider_05" ).slider( "value", camera_parameters.gain );
+			id('camera_setting_checkbox_01').checked = camera_parameters.focus_auto;
+			$( "#camera_setting_slider_06" ).slider( "value", camera_parameters.focus_absolute );
+			id('combobox_exposure').selectedIndex = camera_parameters.exposure_auto;
+			$( "#camera_setting_slider_07" ).slider( "value", camera_parameters.exposure_absolute );
+			id('camera_setting_checkbox_02').checked = camera_parameters.white_balance_temperature_auto;
+			$( "#camera_setting_slider_08" ).slider( "value", camera_parameters.white_balance_temperature );
+						
+			for(p in camera_parameters)
+				console.log(p + ", " + camera_parameters[p]); 
+				
+			console.log('refresh camera params');
+		}
+		
+		function send_camera_command(command) {
+			publishCameraCommand(command);
+		}
+		
+		function send_playing_index_action(action_index) {
+			publishActionIndex(action_index);
+		}
+		
+		function send_playing_action() {
+			var action_index = $("#action_index").val();
+			if(action_index == "")
+			{
+				console.log('index is not defined');
+				return;
+			}
+			publishActionIndex(Number(action_index));
+		}
+		
+	</script>
+</head>
+
+<body onload="init()">
+	<h1>ROBOTIS OP3 parameter setting</h1>
+
+	<div class="container">
+
+		<ul class="tabs">
+			<li class="tab-link current" data-tab="tab-1">Demo</li>
+			<li class="tab-link" data-tab="tab-2">Soccer</li>
+			<li class="tab-link" data-tab="tab-3">Vision</li>
+			<li class="tab-link" data-tab="tab-4">Action</li>
+			<li class="tab-link" data-tab="tab-5">Camera</li>
+		</ul>
+
+		<div id="tab-1" class="tab-content current">
+			<h4 id="mode_text">Mode</h4>
+			<button type="button" class="action_button" onclick="change_mode('ready')"> Ready </button>
+			<button type="button" class="action_button" onclick="change_mode('soccer')"> Soccer </button>
+			<button type="button" class="action_button" onclick="change_mode('action')"> Action </button>
+			<button type="button" class="action_button" onclick="change_mode('vision')"> Vision </button>
+
+			<h4 id="command_text">Demo Command</h4>
+			<button type="button" class="action_button" onclick="send_demo_command('start')"> Start </button>
+			<button type="button" class="action_button" onclick="send_demo_command('stop')"> Stop </button>
+		</div>
+
+		<div id="tab-2" class="tab-content">
+			<h4>Ball detector</h4>
+			<table border='1'>
+				<tr>
+					<td rowspan='3' width="50%">
+						<img id="tab-2-image" src="" width="100%">
+					</td>
+					<td width="50%">
+						<table cellspacing="10" width="100%">
+						<tr>
+							<td width="35%">
+								<label id = "ball_detector_value_label_01"> gaussian blur size </label>
+							</td>
+							<td width="45%">
+								<div id="ball_detector_slider_01"></div>
+							</td>
+							<td width="*%">
+								<input type = "text" id = "ball_detector_value_01" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "ball_detector_value_label_02"> gaussian blur sigma </label>
+							</td>
+							<td >
+								<div id="ball_detector_slider_02"></div>
+							</td>
+							<td >
+								<input type = "text" id = "ball_detector_value_02" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "ball_detector_value_label_03"> canny edge threshold </label>
+							</td>
+							<td >
+								<div id="ball_detector_slider_03"></div>
+							</td>
+							<td >
+								<input type = "text" id = "ball_detector_value_03" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "ball_detector_value_label_04"> hough accum resolution </label>
+							</td>
+							<td >
+								<div id="ball_detector_slider_04"></div>
+							</td>
+							<td >
+								<input type = "text" id = "ball_detector_value_04" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "ball_detector_value_label_05"> min circle distance </label>
+							</td>
+							<td >
+								<div id="ball_detector_slider_05"></div>
+							</td>
+							<td >
+								<input type = "text" id = "ball_detector_value_05" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "ball_detector_value_label_06"> hough accum threshold </label>
+							</td>
+							<td >
+								<div id="ball_detector_slider_06"></div>
+							</td>
+							<td >
+								<input type = "text" id = "ball_detector_value_06" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "ball_detector_value_label_07"> min radius </label>
+							</td>
+							<td >
+								<div id="ball_detector_slider_07"></div>
+							</td>
+							<td >
+								<input type = "text" id = "ball_detector_value_07" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "ball_detector_value_label_08"> max radius </label>
+							</td>
+							<td >
+								<div id="ball_detector_slider_08"></div>
+							</td>
+							<td >
+								<input type = "text" id = "ball_detector_value_08" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "ball_detector_value_label_09"> ellipse size </label>
+							</td>
+							<td >
+								<div id="ball_detector_slider_09"></div>
+							</td>
+							<td >
+								<input type = "text" id = "ball_detector_value_09" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td width="50%">
+						<table cellspacing="10" width="100%">
+						<tr>
+							<td width="35%">
+								<label id = "ball_detector_color_filter_value_label_01"> Hue min </label>
+							</td>
+							<td width="45%">
+								<div id="ball_detector_color_filter_slider_01"></div>
+							</td>
+							<td width="*">
+								<input type = "text" id = "ball_detector_color_filter_value_01" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "ball_detector_color_filter_value_label_02"> Hue max </label>
+							</td>
+							<td >
+								<div id="ball_detector_color_filter_slider_02"></div>
+							</td>
+							<td >
+								<input type = "text" id = "ball_detector_color_filter_value_02" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "ball_detector_color_filter_value_label_03"> Saturation min </label>
+							</td>
+							<td >
+								<div id="ball_detector_color_filter_slider_03"></div>
+							</td>
+							<td >
+								<input type = "text" id = "ball_detector_color_filter_value_03" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "ball_detector_color_filter_value_label_04"> Saturation max </label>
+							</td>
+							<td >
+								<div id="ball_detector_color_filter_slider_04"></div>
+							</td>
+							<td >
+								<input type = "text" id = "ball_detector_color_filter_value_04" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "ball_detector_color_filter_value_label_05"> Value min </label>
+							</td>
+							<td >
+								<div id="ball_detector_color_filter_slider_05"></div>
+							</td>
+							<td >
+								<input type = "text" id = "ball_detector_color_filter_value_05" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "ball_detector_color_filter_value_label_06"> Value max </label>
+							</td>
+							<td >
+								<div id="ball_detector_color_filter_slider_06"></div>
+							</td>
+							<td >
+								<input type = "text" id = "ball_detector_color_filter_value_06" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td width="50%">
+						<table cellspacing="10" width="100%">
+							<tr>
+								<td>							
+									<button type="button" onclick="change_debug_image('true')"> Debug Image </button>
+									<button type="button" onclick="change_debug_image('false')"> Normal Image </button>
+								</td>
+								<td>							
+									<button type="button" onclick="send_ball_detector_reset()"> Reset parameters </button>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>				
+			</table>
+		</div>
+
+		
+		<div id="tab-3" class="tab-content">
+			<h4>Face tracker</h4>
+			<img id="tab-3-image" src="" width="50%">
+		</div>
+
+		
+		<div id="tab-4" class="tab-content">
+			<h4>Action</h4>
+			
+			<button type="button" class="action_button" onclick="send_playing_index_action(9)" > Walking Ready </button>
+			<button type="button" class="action_button" onclick="send_playing_index_action(15)" > Sit Down </button>
+			<button type="button" class="action_button" onclick="send_playing_index_action(1)" > Stand Up </button>
+			<button type="button" class="action_button" onclick="send_playing_index_action(4)" > Thank you </button>
+			<br><br>
+			<button type="button" class="action_button" onclick="send_playing_index_action(122)"> Get up(Front) </button>
+			<button type="button" class="action_button" onclick="send_playing_index_action(123)"> Get up(Back) </button>
+			<button type="button" class="action_button" onclick="send_playing_index_action(121)"> Right Kick </button>
+			<button type="button" class="action_button" onclick="send_playing_index_action(120)"> Left Kick </button>
+			<br><br>
+			<label for = "action_index" style="border: 0; color: # f6931f; font-style: italic; font-size: small"> Action Index : </label>
+			<input type = "text" id = "action_index" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+			<button type="button" onclick="send_playing_action()"> Play Action </button>
+		</div>
+
+		
+		<div id="tab-5" class="tab-content">
+			<h4 id="image_text">usb_cam_node</h4>
+			<table border='1'>
+				<tr>
+					<td rowspan='2' width="50%">
+						<img id="tab-5-image" src="" width="100%">
+					</td>
+					<td width="50%">
+						<table cellspacing="10" width="100%">
+						<tr>
+							<td width="35%">
+								<label id = "camera_setting_label_01"> brightness </label>
+							</td>
+							<td width="45%">
+								<div id="camera_setting_slider_01"></div>
+							</td>
+							<td width="*">
+								<input type = "text" id = "camera_setting_input_01" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "camera_setting_label_02"> contrast </label>
+							</td>
+							<td >
+								<div id="camera_setting_slider_02"></div>
+							</td>
+							<td >
+								<input type = "text" id = "camera_setting_input_02" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "camera_setting_label_03"> saturation </label>
+							</td>
+							<td >
+								<div id="camera_setting_slider_03"></div>
+							</td>
+							<td >
+								<input type = "text" id = "camera_setting_input_03" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "camera_setting_label_04"> sharpness </label>
+							</td>
+							<td >
+								<div id="camera_setting_slider_04"></div>
+							</td>
+							<td >
+								<input type = "text" id = "camera_setting_input_04" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "camera_setting_label_05"> gain </label>
+							</td>
+							<td >
+								<div id="camera_setting_slider_05"></div>
+							</td>
+							<td >
+								<input type = "text" id = "camera_setting_input_05" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "camera_setting_checkbox_label_01"> focus_auto </label>
+							</td>
+							<td >
+								<input type = "checkbox" id = "camera_setting_checkbox_01" onclick="auto_focus_clicked()">
+							</td>
+							<td >
+								
+							</td>
+						</tr>
+						
+						<tr>
+							<td >
+								<label id = "camera_setting_label_06"> focus_absolute </label>
+							</td>
+							<td >
+								<div id="camera_setting_slider_06"></div>
+							</td>
+							<td >
+								<input type = "text" id = "camera_setting_input_06" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						
+						<tr>
+							<td >
+								<label id = "combobox_exposure_label"> exposure_auto </label>
+							</td>
+							<td >
+								<select id="combobox_exposure" onchange="combobox_exposure_changed()">
+									<option>auto(0)</option>
+									<option>manual(1)</option>
+									<option>shutter_priority(2)</option>
+									<option>aperture_priority(3)</option>
+								</select>
+							</td>
+							<td >
+								
+							</td>
+						</tr>
+						<tr>
+							<td >
+								<label id = "camera_setting_label_07"> exposure_absolute </label>
+							</td>
+							<td >
+								<div id="camera_setting_slider_07"></div>
+							</td>
+							<td >
+								<input type = "text" id = "camera_setting_input_07" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						
+						<tr>
+							<td >
+								<label id = "camera_setting_checkbox_label_02"> white_balance_temperature_auto </label>
+							</td>
+							<td >
+								<input type = "checkbox" id = "camera_setting_checkbox_02" onclick="auto_white_balance_clicked()">
+							</td>
+							<td >
+								
+							</td>
+						</tr>						
+						<tr>
+							<td >
+								<label id = "camera_setting_label_08"> white_balance_temperature </label>
+							</td>
+							<td >
+								<div id="camera_setting_slider_08"></div>
+							</td>
+							<td >
+								<input type = "text" id = "camera_setting_input_08" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td width="100%">
+						<table cellspacing="10" width="100%">
+						<tr>
+							<td width="50%">							
+									<button type="button" onclick="send_camera_command('reset')"> Reset parameters </button>
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>	
+</body>
+</html>
+
