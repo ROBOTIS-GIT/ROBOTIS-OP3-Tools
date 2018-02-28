@@ -43,7 +43,7 @@ void QNodeOP3::init_default_demo(ros::NodeHandle &ros_node)
   motion_index_pub_ = ros_node.advertise<std_msgs::Int32>("/robotis/action/page_num", 0);
 
   // Demo
-  demo_command_pub_ = ros_node.advertise<std_msgs::String>("/ball_tracker/command", 0);
+  demo_command_pub_ = ros_node.advertise<std_msgs::String>("/robotis/demo_command", 0);
 
   std::string default_motion_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/gui_motion.yaml";
   parseMotionMapFromYaml(default_motion_path);
