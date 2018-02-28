@@ -60,6 +60,11 @@
 		.tab-content.current{
 			display: inherit;
 		}
+		
+		.action_button{
+			height:60px;
+			width:150px;
+		}
 	</style>
 
 	<link rel="stylesheet" href="js/jquery-ui.css">
@@ -68,7 +73,6 @@
 	<script type="text/javascript" src="js/roslib.js"></script>
 	<script type="text/javascript" src="js/jquery.js" ></script>
 	<script type="text/javascript" src="js/jquery-ui.js" ></script>
-	<!-- <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> -->
 
 	<script type="text/javascript" type="text/javascript">
 
@@ -194,6 +198,20 @@
 			});
 			cameraCommand.publish(message);
 			console.log('publish Camera Command : ' + camera_command);
+		}
+		
+		var actionIndex = new ROSLIB.Topic({
+			ros: ros,
+			name: '/robotis/action/page_num',
+			messageType: 'std_msgs/Int32'
+		});
+
+		function publishActionIndex(action_index) {
+			var message = new ROSLIB.Message({
+				data: action_index
+			});
+			actionIndex.publish(message);
+			console.log('publish Action Index : ' + action_index);
 		}
 		
 		// ==================================================================
@@ -1174,6 +1192,20 @@
 			publishCameraCommand(command);
 		}
 		
+		function send_playing_index_action(action_index) {
+			publishActionIndex(action_index);
+		}
+		
+		function send_playing_action() {
+			var action_index = $("#action_index").val();
+			if(action_index == "")
+			{
+				console.log('index is not defined');
+				return;
+			}
+			publishActionIndex(Number(action_index));
+		}
+		
 	</script>
 </head>
 
@@ -1191,19 +1223,15 @@
 		</ul>
 
 		<div id="tab-1" class="tab-content current">
-			<h4 id="server_ip_text">Server IP</h4>			
-			<label for = "input_server_ip" style="border: 0; color: # f6931f; font-style: italic; font-size: small"> (Default IP : 10.42.0.1)  </label>
-			<input onchange="change_server_ip()" id="input_server_ip" style="border: 0; color: # f6931f; font-weight: bold;" value="10.42.0.1">
-			
 			<h4 id="mode_text">Mode</h4>
-			<button type="button" onclick="change_mode('ready')"> Ready </button>
-			<button type="button" onclick="change_mode('soccer')"> Soccer </button>
-			<button type="button" onclick="change_mode('action')"> Action </button>
-			<button type="button" onclick="change_mode('vision')"> Vision </button>
+			<button type="button" class="action_button" onclick="change_mode('ready')"> Ready </button>
+			<button type="button" class="action_button" onclick="change_mode('soccer')"> Soccer </button>
+			<button type="button" class="action_button" onclick="change_mode('action')"> Action </button>
+			<button type="button" class="action_button" onclick="change_mode('vision')"> Vision </button>
 
 			<h4 id="command_text">Demo Command</h4>
-			<button type="button" onclick="send_demo_command('start')"> Start </button>
-			<button type="button" onclick="send_demo_command('stop')"> Stop </button>
+			<button type="button" class="action_button" onclick="send_demo_command('start')"> Start </button>
+			<button type="button" class="action_button" onclick="send_demo_command('stop')"> Stop </button>
 		</div>
 
 		<div id="tab-2" class="tab-content">
@@ -1216,102 +1244,102 @@
 					<td width="50%">
 						<table cellspacing="10" width="100%">
 						<tr>
-							<td width="25%">
+							<td width="35%">
 								<label id = "ball_detector_value_label_01"> gaussian blur size </label>
 							</td>
 							<td width="45%">
 								<div id="ball_detector_slider_01"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "ball_detector_value_01" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td width="*%">
+								<input type = "text" id = "ball_detector_value_01" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "ball_detector_value_label_02"> gaussian blur sigma </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="ball_detector_slider_02"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "ball_detector_value_02" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "ball_detector_value_02" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "ball_detector_value_label_03"> canny edge threshold </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="ball_detector_slider_03"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "ball_detector_value_03" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "ball_detector_value_03" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "ball_detector_value_label_04"> hough accum resolution </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="ball_detector_slider_04"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "ball_detector_value_04" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "ball_detector_value_04" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "ball_detector_value_label_05"> min circle distance </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="ball_detector_slider_05"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "ball_detector_value_05" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "ball_detector_value_05" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "ball_detector_value_label_06"> hough accum threshold </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="ball_detector_slider_06"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "ball_detector_value_06" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "ball_detector_value_06" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "ball_detector_value_label_07"> min radius </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="ball_detector_slider_07"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "ball_detector_value_07" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "ball_detector_value_07" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "ball_detector_value_label_08"> max radius </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="ball_detector_slider_08"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "ball_detector_value_08" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "ball_detector_value_08" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "ball_detector_value_label_09"> ellipse size </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="ball_detector_slider_09"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "ball_detector_value_09" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "ball_detector_value_09" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						</table>
@@ -1321,69 +1349,69 @@
 					<td width="50%">
 						<table cellspacing="10" width="100%">
 						<tr>
-							<td width="25%">
+							<td width="35%">
 								<label id = "ball_detector_color_filter_value_label_01"> Hue min </label>
 							</td>
 							<td width="45%">
 								<div id="ball_detector_color_filter_slider_01"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "ball_detector_color_filter_value_01" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td width="*">
+								<input type = "text" id = "ball_detector_color_filter_value_01" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "ball_detector_color_filter_value_label_02"> Hue max </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="ball_detector_color_filter_slider_02"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "ball_detector_color_filter_value_02" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "ball_detector_color_filter_value_02" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "ball_detector_color_filter_value_label_03"> Saturation min </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="ball_detector_color_filter_slider_03"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "ball_detector_color_filter_value_03" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "ball_detector_color_filter_value_03" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "ball_detector_color_filter_value_label_04"> Saturation max </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="ball_detector_color_filter_slider_04"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "ball_detector_color_filter_value_04" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "ball_detector_color_filter_value_04" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "ball_detector_color_filter_value_label_05"> Value min </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="ball_detector_color_filter_slider_05"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "ball_detector_color_filter_value_05" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "ball_detector_color_filter_value_05" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "ball_detector_color_filter_value_label_06"> Value max </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="ball_detector_color_filter_slider_06"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "ball_detector_color_filter_value_06" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "ball_detector_color_filter_value_06" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						</table>
@@ -1416,7 +1444,20 @@
 		
 		<div id="tab-4" class="tab-content">
 			<h4>Action</h4>
-
+			
+			<button type="button" class="action_button" onclick="send_playing_index_action(9)" > Walking Ready </button>
+			<button type="button" class="action_button" onclick="send_playing_index_action(15)" > Sit Down </button>
+			<button type="button" class="action_button" onclick="send_playing_index_action(1)" > Stand Up </button>
+			<button type="button" class="action_button" onclick="send_playing_index_action(4)" > Thank you </button>
+			<br><br>
+			<button type="button" class="action_button" onclick="send_playing_index_action(122)"> Get up(Front) </button>
+			<button type="button" class="action_button" onclick="send_playing_index_action(123)"> Get up(Back) </button>
+			<button type="button" class="action_button" onclick="send_playing_index_action(121)"> Right Kick </button>
+			<button type="button" class="action_button" onclick="send_playing_index_action(120)"> Left Kick </button>
+			<br><br>
+			<label for = "action_index" style="border: 0; color: # f6931f; font-style: italic; font-size: small"> Action Index : </label>
+			<input type = "text" id = "action_index" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
+			<button type="button" onclick="send_playing_action()"> Play Action </button>
 		</div>
 
 		
@@ -1430,89 +1471,89 @@
 					<td width="50%">
 						<table cellspacing="10" width="100%">
 						<tr>
-							<td width="25%">
+							<td width="35%">
 								<label id = "camera_setting_label_01"> brightness </label>
 							</td>
 							<td width="45%">
 								<div id="camera_setting_slider_01"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "camera_setting_input_01" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td width="*">
+								<input type = "text" id = "camera_setting_input_01" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "camera_setting_label_02"> contrast </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="camera_setting_slider_02"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "camera_setting_input_02" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "camera_setting_input_02" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "camera_setting_label_03"> saturation </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="camera_setting_slider_03"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "camera_setting_input_03" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "camera_setting_input_03" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "camera_setting_label_04"> sharpness </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="camera_setting_slider_04"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "camera_setting_input_04" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "camera_setting_input_04" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "camera_setting_label_05"> gain </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="camera_setting_slider_05"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "camera_setting_input_05" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "camera_setting_input_05" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "camera_setting_checkbox_label_01"> focus_auto </label>
 							</td>
-							<td width="45%">
+							<td >
 								<input type = "checkbox" id = "camera_setting_checkbox_01" onclick="auto_focus_clicked()">
 							</td>
-							<td width="30%">
+							<td >
 								
 							</td>
 						</tr>
 						
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "camera_setting_label_06"> focus_absolute </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="camera_setting_slider_06"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "camera_setting_input_06" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "camera_setting_input_06" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "combobox_exposure_label"> exposure_auto </label>
 							</td>
-							<td width="45%">
+							<td >
 								<select id="combobox_exposure" onchange="combobox_exposure_changed()">
 									<option>auto(0)</option>
 									<option>manual(1)</option>
@@ -1520,42 +1561,42 @@
 									<option>aperture_priority(3)</option>
 								</select>
 							</td>
-							<td width="30%">
+							<td >
 								
 							</td>
 						</tr>
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "camera_setting_label_07"> exposure_absolute </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="camera_setting_slider_07"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "camera_setting_input_07" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "camera_setting_input_07" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "camera_setting_checkbox_label_02"> white_balance_temperature_auto </label>
 							</td>
-							<td width="45%">
+							<td >
 								<input type = "checkbox" id = "camera_setting_checkbox_02" onclick="auto_white_balance_clicked()">
 							</td>
-							<td width="30%">
+							<td >
 								
 							</td>
 						</tr>						
 						<tr>
-							<td width="25%">
+							<td >
 								<label id = "camera_setting_label_08"> white_balance_temperature </label>
 							</td>
-							<td width="45%">
+							<td >
 								<div id="camera_setting_slider_08"></div>
 							</td>
-							<td width="30%">
-								<input type = "text" id = "camera_setting_input_08" style = "border: 0; color: # f6931f; font-weight: bold;">
+							<td >
+								<input type = "text" id = "camera_setting_input_08" style = "border: 0; color: # f6931f; font-weight: bold;" size="5">
 							</td>
 						</tr>
 						</table>
