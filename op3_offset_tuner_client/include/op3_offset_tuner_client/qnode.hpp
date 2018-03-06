@@ -96,7 +96,7 @@ Q_OBJECT
   std::map<int, std::string> body_offset_group_;
 
  public Q_SLOTS:
-  void getPresentJointOffsetData();
+  void getPresentJointOffsetData(bool recalculate_offset = false);
 
 Q_SIGNALS:
   void loggingUpdated();

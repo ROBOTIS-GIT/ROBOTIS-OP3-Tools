@@ -39,8 +39,8 @@ using namespace Qt;
  *****************************************************************************/
 
 MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
-    : QMainWindow(parent),
-      qnode_(argc, argv)
+  : QMainWindow(parent),
+    qnode_(argc, argv)
 {
   ui_.setupUi(this);  // Calling this incidentally connects all ui's triggers to on_...() callbacks in this class.
   QObject::connect(ui_.actionAbout_Qt, SIGNAL(triggered(bool)), qApp, SLOT(aboutQt()));  // qApp is a global variable for the application
@@ -130,7 +130,7 @@ void MainWindow::clickedAllTorqueOnButton(QObject *button_group)
       torque_buttons[ix]->click();
   }
 
-  qnode_.getPresentJointOffsetData();
+  qnode_.getPresentJointOffsetData(true);
 
   all_torque_on_ = false;
 }
@@ -183,7 +183,7 @@ void MainWindow::publishTorqueMsgs(std::string &joint_name, bool torque_on)
   qnode_.sendTorqueEnableMsg(torque_array_msg);
 
   if (all_torque_on_ == false)
-    qnode_.getPresentJointOffsetData();
+    qnode_.getPresentJointOffsetData(true);
 }
 
 void MainWindow::changedSpinBoxValue(QString q_joint_name)
@@ -368,7 +368,7 @@ void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QB
     QLabel *joint_label = new QLabel(q_joint_name);
     grid_layout->addWidget(joint_label, num_row, num_col++, 1, spinbox_size);
 
-    // double spin box
+    // double spin box : goal, offset, mod, present
     for (int ix = 0; ix < 4; ix++)
     {
       QDoubleSpinBox *spin_box = new QDoubleSpinBox();
@@ -379,15 +379,15 @@ void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QB
 
       switch (ix)
       {
-        case 2:
-        case 3:
-          spin_box->setReadOnly(true);
-          break;
+      case 2:
+      case 3:
+        spin_box->setReadOnly(true);
+        break;
 
-        default:
-          spingox_signalMapper->setMapping(spin_box, q_joint_name);
-          QObject::connect(spin_box, SIGNAL(valueChanged(QString)), spingox_signalMapper, SLOT(map()));
-          break;
+      default:
+        spingox_signalMapper->setMapping(spin_box, q_joint_name);
+        QObject::connect(spin_box, SIGNAL(valueChanged(QString)), spingox_signalMapper, SLOT(map()));
+        break;
       }
 
       grid_layout->addWidget(spin_box, num_row, num_col++, 1, spinbox_size);
@@ -395,28 +395,36 @@ void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QB
       spinbox_list.append(spin_box);
     }
 
-    // spin box
+    // spin box : p gain, i gain, d gain
     for (int ix = 0; ix < 3; ix++)
     {
       QSpinBox *spin_box = new QSpinBox();
       spin_box->setWhatsThis(tr(spinBox_list_[ix + 4].c_str()));
       spin_box->setMinimum(0);
-      spin_box->setMaximum(1000);
-      spin_box->setSingleStep(1);
+      spin_box->setMaximum(16000);
+      spin_box->setSingleStep(10);
 
       switch (ix)
       {
-        case 0:
-          spin_box->setValue(800);
+      case 0:
+        spin_box->setValue(640);
+        break;
 
-          spingox_signalMapper->setMapping(spin_box, q_joint_name);
-          QObject::connect(spin_box, SIGNAL(valueChanged(QString)), spingox_signalMapper, SLOT(map()));
-          break;
+      case 1:
+        spin_box->setValue(0);
+        break;
 
-        default:
-          spin_box->setReadOnly(true);
-          break;
+      case 2:
+        spin_box->setValue(4000);
+        break;
+
+      default:
+        spin_box->setReadOnly(true);
+        break;
       }
+
+      spingox_signalMapper->setMapping(spin_box, q_joint_name);
+      QObject::connect(spin_box, SIGNAL(valueChanged(QString)), spingox_signalMapper, SLOT(map()));
 
       grid_layout->addWidget(spin_box, num_row, num_col++, 1, spinbox_size);
 

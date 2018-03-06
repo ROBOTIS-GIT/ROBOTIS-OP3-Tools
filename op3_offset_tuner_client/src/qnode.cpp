@@ -119,7 +119,7 @@ void QNode::sendCommandMsg(std_msgs::String msg)
   log(Info, log_msg.str());
 }
 
-void QNode::getPresentJointOffsetData()
+void QNode::getPresentJointOffsetData(bool recalculate_offset)
 {
   is_refresh_ = true;
 
@@ -134,6 +134,9 @@ void QNode::getPresentJointOffsetData()
     {
       op3_offset_tuner_msgs::JointOffsetPositionData _temp =
           _get_present_joint_offset_data.response.present_data_array[id];
+
+      if(recalculate_offset == true)
+        _temp.offset_value = _temp.present_value - _temp.goal_value;
 
       Q_EMIT updatePresentJointOffsetData(_temp);
     }

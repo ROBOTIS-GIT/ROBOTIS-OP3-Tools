@@ -90,6 +90,7 @@ class OffsetTunerServer : public robotis_framework::Singleton<OffsetTunerServer>
   const int POWER_CTRL_TABLE = 24;
 
   void setCtrlModule(std::string module);
+  void getInitPose(const std::string &path);
 
   robotis_framework::RobotisController* controller_;
 
