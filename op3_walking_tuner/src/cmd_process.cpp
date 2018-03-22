@@ -164,8 +164,10 @@ bool InitializeWalkingTuner(std::string robot_file_path, std::string init_file_p
   dynamixel::PacketHandler *_packet_h = dynamixel::PacketHandler::getPacketHandler(1.0);
 
   int _return = _packet_h->write1ByteTxRx(_port_h, 200, 24, 1);
-  ROS_INFO("Torque on DXLs! [%d]", _return);
-  _packet_h->printTxRxResult(_return);
+  if(_return != 0)
+    ROS_ERROR("Torque on DXLs! [%s]", _packet_h->getRxPacketError(_return));
+  else
+    ROS_INFO("Torque on DXLs!");
 
   _port_h->closePort();
 
