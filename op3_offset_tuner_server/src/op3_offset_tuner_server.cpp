@@ -61,8 +61,11 @@ bool OffsetTunerServer::initialize()
   dynamixel::PacketHandler *packet_handler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
 
   int return_data = packet_handler->write1ByteTxRx(port_handler, SUB_CONTROLLER_ID, POWER_CTRL_TABLE, 1);
-  ROS_INFO("Torque on DXLs! [%d]", return_data);
-  packet_handler->printTxRxResult(return_data);
+
+  if(return_data != 0)
+    ROS_ERROR("Torque on DXLs! [%s]", packet_handler->getRxPacketError(return_data));
+  else
+    ROS_INFO("Torque on DXLs!");
 
   port_handler->closePort();
 
