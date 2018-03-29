@@ -1,24 +1,20 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>op3_navigation</name>
-  <version>0.0.1</version>
+  <version>0.2.0</version>
   <description>
     This package is for generating footsteps of ROBOTIS-OP3.
     It has several config files and launch files in order to use footstep planner package. 
   </description>
-
-  <license>Apache License 2.0</license>
+  <license>Apache 2.0</license>
   <author email="kmjung@robotis.com">kayman</author>
   <maintainer email="pyo@robotis.com">Pyo</maintainer>
-
+  <url type="website">http://wiki.ros.org/op3_navigation</url>
+  <url type="emanual">http://emanual.robotis.com/docs/en/platform/op3/introduction/</url>
+  <url type="repository">https://github.com/ROBOTIS-GIT/ROBOTIS-OP3-Tools</url>
+  <url type="bugtracker">https://github.com/ROBOTIS-GIT/ROBOTIS-OP3-Tools/issues</url>
   <buildtool_depend>catkin</buildtool_depend>
-  
-  <build_depend>footstep_planner</build_depend>
-  <build_depend>map_server</build_depend>
-  <build_depend>octomap_server</build_depend>
-  <run_depend>footstep_planner</run_depend>
-  <run_depend>map_server</run_depend>
-  <run_depend>octomap_server</run_depend>
-
-  <export></export>
+  <depend>footstep_planner</depend>
+  <depend>map_server</depend>
+  <depend>octomap_server</depend>
 </package>
