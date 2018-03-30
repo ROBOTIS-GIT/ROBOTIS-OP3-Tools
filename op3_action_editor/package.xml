@@ -20,7 +20,7 @@
   <depend>robotis_controller</depend>
   <depend>robotis_device</depend>
   <depend>op3_action_module</depend>
-  <depend>ncurses++</depend>
+  <depend>libncurses-dev</depend>
   <depend>yaml-cpp</depend>
   <exec_depend>op3_manager</exec_depend>
   <exec_depend>ros_mpg321_player</exec_depend>
