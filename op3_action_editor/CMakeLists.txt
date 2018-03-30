@@ -17,11 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 # find_package(PkgConfig REQUIRED)
-# pkg_check_modules(ncurses++ REQUIRED libncurses-dev)
-# pkg_check_modules(NCURSES REQUIRED libncurses-dev)
-# find_package(libncurses-dev REQUIRED)
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(ncurses++ REQUIRED ncurses++)
+# pkg_check_modules(ncurses++ REQUIRED ncurses++)
+find_package(Curses REQUIRED)
 
 ## Resolve system dependency on yaml-cpp, which apparently does not
 ## provide a CMake find_package() module.
@@ -75,14 +72,16 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
-  # ${NCURSES_INCLUDE_DIRS}
+  ${CURSES_INCLUDE_DIRS}
 )
 
 add_executable(${PROJECT_NAME} src/main.cpp src/action_editor.cpp)
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 # target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${YAML_CPP_LIBRARIES} ncurses)
 # target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${YAML_CPP_LIBRARIES} ${NCURSES_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${YAML_CPP_LIBRARIES} ncurses)
+# target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${YAML_CPP_LIBRARIES} ncurses)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${YAML_CPP_LIBRARIES} ${CURSES_LIBRARIES})
+
 
 ################################################################################
 # Install
