@@ -16,6 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
   op3_action_module
 )
 
+find_package(libncurses-dev REQUIRED)
+
 ## Resolve system dependency on yaml-cpp, which apparently does not
 ## provide a CMake find_package() module.
 ## Insert your header file compatible specified path like '#include <yaml-cpp/yaml.h>'
@@ -59,6 +61,7 @@ catkin_package(
     robotis_controller
     robotis_device
     op3_action_module
+  DEPENDS libncurses-dev
 )
 
 ################################################################################
