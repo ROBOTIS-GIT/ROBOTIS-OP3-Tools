@@ -62,7 +62,6 @@ catkin_package(
     robotis_controller
     robotis_device
     op3_action_module
-  DEPENDS libncurses-dev
 )
 
 ################################################################################
