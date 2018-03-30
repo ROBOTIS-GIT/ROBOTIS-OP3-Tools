@@ -13,8 +13,11 @@
   <url type="repository">https://github.com/ROBOTIS-GIT/ROBOTIS-OP3-Tools</url>
   <url type="bugtracker">https://github.com/ROBOTIS-GIT/ROBOTIS-OP3-Tools/issues</url>
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>qt_build</depend>
   <depend>roscpp</depend>
-  <depend>libqt4-dev</depend>
+  <depend>roslib</depend>
+  <depend>std_msgs</depend>
   <depend>op3_offset_tuner_msgs</depend>
+  <depend>qt_build</depend>
+  <depend>libqt4-dev</depend>
+  <exec_depend>op3_offset_tuner_server</exec_depend>
 </package>

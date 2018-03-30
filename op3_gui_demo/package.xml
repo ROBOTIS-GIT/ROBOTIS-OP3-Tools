@@ -19,13 +19,16 @@
   <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>visualization_msgs</depend>
-  <depend>interactive_markers</depend>
-  <depend>cmake_modules</depend>
-  <depend>eigen_conversions</depend>
+  <depend>humanoid_nav_msgs</depend>
   <depend>robotis_controller_msgs</depend>
   <depend>op3_walking_module_msgs</depend>
   <depend>op3_online_walking_module_msgs</depend>
-  <depend>humanoid_nav_msgs</depend>
+  <depend>cmake_modules</depend>
+  <depend>interactive_markers</depend>
+  <depend>eigen_conversions</depend>
   <depend>qt_build</depend>
   <depend>libqt4-dev</depend>
+  <depend>boost</depend>
+  <depend>eigen</depend>
+  <exec_depend>op3_navigation</exec_depend>
 </package>

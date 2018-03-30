@@ -16,9 +16,9 @@
   <buildtool_depend>catkin</buildtool_depend>  
   <depend>roscpp</depend>
   <depend>std_msgs</depend>  
-  <depend>cmake_modules</depend>
-  <depend>robotis_controller</depend>  
-  <depend>op3_base_module</depend>  
   <depend>op3_offset_tuner_msgs</depend>
+  <depend>dynamixel_sdk</depend>
+  <depend>robotis_controller</depend>
+  <depend>op3_base_module</depend>  
   <depend>yaml-cpp</depend>
 </package>

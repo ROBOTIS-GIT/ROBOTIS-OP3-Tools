@@ -19,7 +19,6 @@
   <exec_depend>op3_navigation</exec_depend>
   <exec_depend>op3_offset_tuner_client</exec_depend>
   <exec_depend>op3_offset_tuner_server</exec_depend>
-  <exec_depend>op3_walking_tuner</exec_depend>
   <exec_depend>op3_web_setting_tool</exec_depend>
   <export><metapackage/></export>
 </package>
