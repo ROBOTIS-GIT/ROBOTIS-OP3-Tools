@@ -1,0 +1,1 @@
+- git: {local-name: humanoid_navigation, uri: 'https://github.com/ROBOTIS-GIT/humanoid_navigation.git', version: master}
