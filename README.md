@@ -14,7 +14,6 @@
 - http://wiki.ros.org/op3_navigation
 - http://wiki.ros.org/op3_offset_tuner_client
 - http://wiki.ros.org/op3_offset_tuner_server
-- http://wiki.ros.org/op3_walking_tuner
 - http://wiki.ros.org/op3_web_setting_tool
 
 ## Open Source related to ROBOTIS OP3
