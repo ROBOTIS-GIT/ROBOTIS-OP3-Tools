@@ -16,8 +16,6 @@
 
 /* Author: Kayman Jung*/
 
-#include <ros/ros.h>
-
 #include "op3_camera_setting_tool/op3_camera_setting_tool.h"
 
 int main(int argc, char **argv)
@@ -56,13 +54,13 @@ int main(int argc, char **argv)
   g_param_command_sub = nh.subscribe("/op3_camera/param_command", 1, &paramCommandCallback);
   g_set_param_client = nh.advertiseService("/op3_camera/set_camera_params", &setParamCallback);
   g_get_param_client = nh.advertiseService("/op3_camera/get_camera_params", &getParamCallback);
-  g_default_setting_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/launch/camera_parameter_default.yaml";
+  g_default_setting_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/camera_parameter_default.yaml";
 
   boost::recursive_mutex config_mutex;
 
-  //dynamic_reconfigure::Server<op3_camera_setting_tool::cameraParamsConfig> param_server;
-  dynamic_reconfigure::Server<op3_camera_setting_tool::cameraParamsConfig>::CallbackType callback_fnc;
-  g_param_server.reset(new dynamic_reconfigure::Server<op3_camera_setting_tool::cameraParamsConfig>(config_mutex));
+  //dynamic_reconfigure::Server<op3_camera_setting_tool::CameraParamsConfig> param_server;
+  dynamic_reconfigure::Server<op3_camera_setting_tool::CameraParamsConfig>::CallbackType callback_fnc;
+  g_param_server.reset(new dynamic_reconfigure::Server<op3_camera_setting_tool::CameraParamsConfig>(config_mutex));
 
   g_param_server->getConfigDefault(g_dyn_config);
 
@@ -131,7 +129,7 @@ void changeDynParam(const std::string& param, const int& value)
   }
 }
 
-void dynParamCallback(op3_camera_setting_tool::cameraParamsConfig &config, uint32_t level)
+void dynParamCallback(op3_camera_setting_tool::CameraParamsConfig &config, uint32_t level)
 {
   g_dyn_config = config;
 
@@ -164,7 +162,7 @@ void dynParamCallback(op3_camera_setting_tool::cameraParamsConfig &config, uint3
   }
 }
 
-void updateDynParam(op3_camera_setting_tool::cameraParamsConfig &config)
+void updateDynParam(op3_camera_setting_tool::CameraParamsConfig &config)
 {
   g_param_server->updateConfig(config);
 }

@@ -1,34 +1,46 @@
 ################################################################################
-# CMake
+# Set minimum required version of cmake, project name and compile options
 ################################################################################
 cmake_minimum_required(VERSION 2.8.3)
 project(op3_offset_tuner_server)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+## Compile as C++11, supported in ROS Kinetic and newer
+add_compile_options(-std=c++11)
 
 ################################################################################
-# Packages
+# Find catkin packages and libraries for catkin and system dependencies
 ################################################################################
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  roslib
   std_msgs
-  cmake_modules
-  dynamixel_sdk
-  robotis_device
-  robotis_framework_common
-  robotis_math
-  op3_base_module
-  op3_kinematics_dynamics
-  robotis_controller_msgs
-  robotis_controller
   op3_offset_tuner_msgs
+  dynamixel_sdk
+  robotis_controller
+  op3_base_module 
 )
 
-find_package(Eigen REQUIRED)
-
+## Resolve system dependency on yaml-cpp, which apparently does not
+## provide a CMake find_package() module.
+## Insert your header file compatible specified path like '#include <yaml-cpp/yaml.h>'
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(yaml_cpp REQUIRED yaml-cpp)
+pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
+find_path(YAML_CPP_INCLUDE_DIR
+  NAMES yaml_cpp.h
+  PATHS ${YAML_CPP_INCLUDE_DIRS}
+)
+find_library(YAML_CPP_LIBRARY
+  NAMES YAML_CPP
+  PATHS ${YAML_CPP_LIBRARY_DIRS}
+)
+link_directories(${YAML_CPP_LIBRARY_DIRS})
+
+if(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
+add_definitions(-DHAVE_NEW_YAMLCPP)
+endif(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
+
+################################################################################
+# Setup for python modules and scripts
+################################################################################
 
 ################################################################################
 # Declare ROS messages, services and actions
@@ -39,10 +51,17 @@ pkg_check_modules(yaml_cpp REQUIRED yaml-cpp)
 ################################################################################
 
 ################################################################################
-# Catkin specific configuration
+# Declare catkin specific configuration to be passed to dependent projects
 ################################################################################
 catkin_package(
   INCLUDE_DIRS include
+  CATKIN_DEPENDS
+    roscpp
+    std_msgs
+    op3_offset_tuner_msgs
+    dynamixel_sdk
+    robotis_controller
+    op3_base_module
 )
 
 ################################################################################
@@ -51,22 +70,27 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${Eigen_INCLUDE_DIRS}
+  ${YAML_CPP_INCLUDE_DIRS}
 )
 
-add_executable(offset_tuner_server_node 
-   src/op3_offset_tuner_server.cpp
-   src/main.cpp
-)
-
-target_link_libraries(offset_tuner_server_node
-  ${yaml_cpp_LIBRARIES}
-  ${catkin_LIBRARIES}
-)
+add_executable(offset_tuner_server_node src/op3_offset_tuner_server.cpp src/main.cpp)
+add_dependencies(offset_tuner_server_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(offset_tuner_server_node ${catkin_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
 ################################################################################
 # Install
 ################################################################################
+install(TARGETS offset_tuner_server_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
+install(DIRECTORY launch 
+	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
 ################################################################################
 # Test

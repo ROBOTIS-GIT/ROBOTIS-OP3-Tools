@@ -36,8 +36,6 @@
 
 #include <ros/ros.h>
 #include <ros/package.h>
-#include <tf/tf.h>
-#include <tf/transform_listener.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
@@ -45,12 +43,15 @@
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PointStamped.h>
-#include <yaml-cpp/yaml.h>
-#include <Eigen/Dense>
 #include <visualization_msgs/MarkerArray.h>
-#include <interactive_markers/interactive_marker_server.h>
 #include <visualization_msgs/InteractiveMarker.h>
+#include <tf/tf.h>
+#include <tf/transform_listener.h>
+#include <interactive_markers/interactive_marker_server.h>
 #include <eigen_conversions/eigen_msg.h>
+#include <boost/thread.hpp>
+#include <eigen3/Eigen/Eigen>
+#include <yaml-cpp/yaml.h>
 
 #include "robotis_controller_msgs/JointCtrlModule.h"
 #include "robotis_controller_msgs/GetJointModule.h"

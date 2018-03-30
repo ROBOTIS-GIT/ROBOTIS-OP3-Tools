@@ -1,22 +1,23 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>op3_offset_tuner_client</name>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <description>
-
-     thormang3_offset_tuner_client
-
+    thormang3_offset_tuner_client
   </description>
-  <license>Apache License 2.0</license>
+  <license>Apache 2.0</license>
   <author email="kmjung@robotis.com">Kayman</author>
   <maintainer email="pyo@robotis.com">Pyo</maintainer>
+  <url type="website">http://wiki.ros.org/op3_offset_tuner_client</url>
+  <url type="emanual">http://emanual.robotis.com/docs/en/platform/op3/introduction/</url>
+  <url type="repository">https://github.com/ROBOTIS-GIT/ROBOTIS-OP3-Tools</url>
+  <url type="bugtracker">https://github.com/ROBOTIS-GIT/ROBOTIS-OP3-Tools/issues</url>
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>qt_build</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>libqt4-dev</build_depend>
-  <build_depend>op3_offset_tuner_msgs</build_depend>  
-  <run_depend>qt_build</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>libqt4-dev</run_depend>
-  <run_depend>op3_offset_tuner_msgs</run_depend> 
+  <depend>roscpp</depend>
+  <depend>roslib</depend>
+  <depend>std_msgs</depend>
+  <depend>op3_offset_tuner_msgs</depend>
+  <depend>qt_build</depend>
+  <depend>libqt4-dev</depend>
+  <exec_depend>op3_offset_tuner_server</exec_depend>
 </package>
