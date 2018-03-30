@@ -20,8 +20,8 @@ find_package(catkin REQUIRED COMPONENTS
 # pkg_check_modules(ncurses++ REQUIRED libncurses-dev)
 # pkg_check_modules(NCURSES REQUIRED libncurses-dev)
 # find_package(libncurses-dev REQUIRED)
-find_package( PkgConfig REQUIRED )
-pkg_check_modules( ncurses++ REQUIRED ncurses++ )
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(ncurses++ REQUIRED ncurses++)
 
 ## Resolve system dependency on yaml-cpp, which apparently does not
 ## provide a CMake find_package() module.
