@@ -2,6 +2,10 @@
 Changelog for package op3_action_editor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.2.2 (2018-04-20)
+------------------
+* none
+
 0.2.1 (2018-04-19)
 ------------------
 * tested for dependencies of ncurses

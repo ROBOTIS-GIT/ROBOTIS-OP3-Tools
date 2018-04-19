@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>op3_gui_demo</name>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
   <description>
     The op3_gui_demo is a GUI software to control ROBOTIS-OP3. Within this program, user can perform module settings, walking tuner, head joint control and play actions.
   </description>
@@ -30,5 +30,6 @@
   <depend>libqt4-dev</depend>
   <depend>boost</depend>
   <depend>eigen</depend>
+  <depend>yaml-cpp</depend>
   <exec_depend>op3_navigation</exec_depend>
 </package>

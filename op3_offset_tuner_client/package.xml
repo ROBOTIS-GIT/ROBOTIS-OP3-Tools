@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>op3_offset_tuner_client</name>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
   <description>
     The op3_offset_tuner_client package
   </description>
@@ -19,5 +19,6 @@
   <depend>op3_offset_tuner_msgs</depend>
   <depend>qt_build</depend>
   <depend>libqt4-dev</depend>
+  <depend>yaml-cpp</depend>
   <exec_depend>op3_offset_tuner_server</exec_depend>
 </package>
