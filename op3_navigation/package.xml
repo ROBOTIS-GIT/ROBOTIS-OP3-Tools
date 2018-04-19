@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>op3_navigation</name>
-  <version>0.2.0</version>
+  <version>0.2.1</version>
   <description>
     This package is for generating footsteps of ROBOTIS-OP3.
     It has several config files and launch files in order to use footstep planner package. 

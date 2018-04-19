@@ -35,5 +35,6 @@
 
 ## Documents and Videos related to ROBOTIS OP3
 - [ROBOTIS e-Manual for ROBOTIS OP3](http://emanual.robotis.com/docs/en/platform/op3/introduction/)
+- [ROBOTIS e-Manual for ROBOTIS THORMANG3](http://emanual.robotis.com/docs/en/platform/thormang3/introduction/)
 - [ROBOTIS e-Manual for ROBOTIS Framework](http://emanual.robotis.com/docs/en/software/robotis_framework_packages/)
 - [ROBOTIS e-Manual for Dynamixel SDK](http://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_sdk/overview/)

@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>op3_offset_tuner_client</name>
-  <version>0.2.0</version>
+  <version>0.2.1</version>
   <description>
-    thormang3_offset_tuner_client
+    The op3_offset_tuner_client package
   </description>
   <license>Apache 2.0</license>
   <author email="kmjung@robotis.com">Kayman</author>
