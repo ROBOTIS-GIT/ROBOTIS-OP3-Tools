@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>op3_camera_setting_tool</name>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
   <description>
     The op3_camera_setting_tool package</description>
   <license>Apache 2.0</license>
@@ -17,6 +17,7 @@
   <depend>std_msgs</depend>  
   <depend>dynamic_reconfigure</depend>
   <depend>boost</depend>
+  <depend>yaml-cpp</depend>
   <build_depend>message_generation</build_depend>
   <build_export_depend>message_runtime</build_export_depend>
   <exec_depend>message_runtime</exec_depend>
