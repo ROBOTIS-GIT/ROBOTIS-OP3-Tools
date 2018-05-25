@@ -22,6 +22,7 @@
 
 #include <QtGui>
 #include <QMessageBox>
+#include <QCheckBox>
 #include <iostream>
 #include "../include/op3_offset_tuner_client/main_window.hpp"
 

@@ -27,7 +27,7 @@
 #include <QtGui>
 #include <QList>
 #include <QSpinBox>
-#include <QtGui/QMainWindow>
+#include <QMainWindow>
 
 #include <math.h>
 

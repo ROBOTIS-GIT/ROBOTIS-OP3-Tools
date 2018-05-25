@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>op3_gui_demo</name>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
   <description>
 
      op3_gui_demo
@@ -11,8 +11,8 @@
   <maintainer email="pyo@robotis.com">Pyo</maintainer>
   <author email="kmjung@robotis.com">Kayman</author>
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>qt_build</build_depend>
-  <build_depend>libqt4-dev</build_depend>
+  <build_depend>rqt_gui</build_depend>
+  <build_depend>rqt_gui_cpp</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>roslib</build_depend>
   <build_depend>std_msgs</build_depend>
@@ -26,8 +26,8 @@
   <build_depend>op3_walking_module_msgs</build_depend>
   <build_depend>op3_online_walking_module_msgs</build_depend>
   <build_depend>humanoid_nav_msgs</build_depend>
-  <run_depend>qt_build</run_depend>
-  <run_depend>libqt4-dev</run_depend>
+  <run_depend>rqt_gui</run_depend>
+  <run_depend>rqt_gui_cpp</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>roslib</run_depend>
   <run_depend>std_msgs</run_depend>
