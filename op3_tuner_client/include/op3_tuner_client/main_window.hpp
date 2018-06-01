@@ -27,7 +27,8 @@
 #include <QtGui>
 #include <QList>
 #include <QSpinBox>
-#include <QtGui/QMainWindow>
+#include <QCheckBox>
+#include <QMainWindow>
 
 #include <math.h>
 
@@ -64,9 +65,11 @@ Q_OBJECT
    *******************************************/
   void on_actionAbout_triggered();
 
-  void on_save_button_clicked(bool check);
+  void on_save_offset_button_clicked(bool check);
+  void on_save_gain_button_clicked(bool check);
   void on_refresh_button_clicked(bool check);
   void on_inipose_button_clicked(bool checck);
+  void on_tuning_pose_button_clicked(bool check);
 
   /******************************************
    ** Manual connections

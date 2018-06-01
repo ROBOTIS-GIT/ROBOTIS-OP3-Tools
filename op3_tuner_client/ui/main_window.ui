@@ -20,7 +20,7 @@
    <string>QRosApp</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../../op3_gui_demo/resources/images.qrc">
+   <iconset resource="../../../thormang3_test_gui/resources/images.qrc">
     <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
   </property>
   <property name="locale">
@@ -808,39 +808,83 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>80</height>
+        </size>
+       </property>
        <property name="maximumSize">
         <size>
          <width>16777215</width>
          <height>50</height>
         </size>
        </property>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
+       <layout class="QGridLayout" name="gridLayout_12">
+        <item row="0" column="1">
          <widget class="QPushButton" name="inipose_button">
           <property name="text">
            <string>Initial Pose</string>
           </property>
          </widget>
         </item>
-        <item>
+        <item row="1" column="1">
          <widget class="QPushButton" name="refresh_button">
           <property name="text">
            <string>Refresh</string>
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QPushButton" name="save_button">
+        <item row="1" column="2">
+         <widget class="QPushButton" name="save_offset_button">
           <property name="text">
-           <string>Save</string>
+           <string>Save Offset</string>
           </property>
          </widget>
         </item>
-        <item>
+        <item row="0" column="4">
+         <widget class="QPushButton" name="tuning_pose_button">
+          <property name="text">
+           <string>Tuning Pose</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
          <widget class="QPushButton" name="quit_button">
           <property name="text">
            <string>Quit</string>
           </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QPushButton" name="save_gain_button">
+          <property name="text">
+           <string>Save Gain</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2" colspan="2">
+         <widget class="QComboBox" name="tuning_pose_comboBox">
+          <item>
+           <property name="text">
+            <string>tune_pose_01</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>tune_pose_02</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>tune_pose_03</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>tune_pose_04</string>
+           </property>
+          </item>
          </widget>
         </item>
        </layout>
@@ -877,7 +921,7 @@
   </action>
  </widget>
  <resources>
-  <include location="../../op3_gui_demo/resources/images.qrc"/>
+  <include location="../../../thormang3_test_gui/resources/images.qrc"/>
  </resources>
  <connections>
   <connection>

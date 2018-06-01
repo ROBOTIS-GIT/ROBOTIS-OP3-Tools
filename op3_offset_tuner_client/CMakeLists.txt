@@ -9,7 +9,6 @@ project(op3_offset_tuner_client)
 # Catkin
 ##############################################################################
 
-# qt_build provides the qt cmake glue, roscpp the comms for a default talker
 find_package(catkin REQUIRED COMPONENTS
   rqt_gui
   rqt_gui_cpp

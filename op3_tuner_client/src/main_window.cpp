@@ -94,10 +94,18 @@ MainWindow::~MainWindow()
  ** Implementation [Slots]
  *****************************************************************************/
 
-void MainWindow::on_save_button_clicked(bool check)
+void MainWindow::on_save_offset_button_clicked(bool check)
 {
   std_msgs::String msg;
-  msg.data = "save";
+  msg.data = "save_offset";
+
+  qnode_.sendCommandMsg(msg);
+}
+
+void MainWindow::on_save_gain_button_clicked(bool check)
+{
+  std_msgs::String msg;
+  msg.data = "save_gain";
 
   qnode_.sendCommandMsg(msg);
 }
@@ -107,7 +115,15 @@ void MainWindow::on_inipose_button_clicked(bool checck)
   std_msgs::String msg;
   msg.data = "ini_pose";
 
-  qnode_.sendCommandMsg(msg);
+  qnode_.sendTuningPoseMsg(msg);
+}
+
+void MainWindow::on_tuning_pose_button_clicked(bool check)
+{
+  std_msgs::String msg;
+  msg.data = ui_.tuning_pose_comboBox->currentText().toStdString();
+
+  qnode_.sendTuningPoseMsg(msg);
 }
 
 void MainWindow::on_refresh_button_clicked(bool check)
@@ -404,8 +420,6 @@ void MainWindow::makeUI()
 void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QButtonGroup *button_group,
                            std::map<int, std::string> &offset_group)
 {
-  int ix = 0;
-
   QSignalMapper *torque_checkbox_signalMapper = new QSignalMapper(this);
 
   QGridLayout *grid_layout = (QGridLayout *) joint_widget->layout();
@@ -413,8 +427,6 @@ void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QB
 
   button_group = new QButtonGroup();
   button_group->setExclusive(false);
-
-  std::cout << "ERROR : " << ix++ << std::endl;
 
   int num_row = 3;
   int torque_checkbox_index = 0;

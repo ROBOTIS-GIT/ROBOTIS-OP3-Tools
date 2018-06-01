@@ -338,8 +338,6 @@ void MainWindow::makeUI()
 void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QButtonGroup *button_group,
                            std::map<int, std::string> &offset_group)
 {
-  int ix = 0;
-
   QSignalMapper *torque_checkbox_signalMapper = new QSignalMapper(this);
 
   QGridLayout *grid_layout = (QGridLayout *) joint_widget->layout();
@@ -347,8 +345,6 @@ void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QB
 
   button_group = new QButtonGroup();
   button_group->setExclusive(false);
-
-  std::cout << "ERROR : " << ix++ << std::endl;
 
   int num_row = 3;
   int torque_checkbox_index = 0;

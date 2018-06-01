@@ -69,13 +69,14 @@ bool QNode::init()
   joint_gain_data_pub_ = ros_node.advertise<op3_tuning_module_msgs::JointOffsetData>(
       "/robotis/tuning_module/joint_gain_data", 0);
   torque_enable_pub_ = ros_node.advertise<op3_tuning_module_msgs::JointTorqueOnOffArray>(
-      "/robotis/offset_tuner/torque_enable", 0);
-  command_pub_ = ros_node.advertise<std_msgs::String>("/robotis/offset_tuner/command", 0);
+      "/robotis/tuning_module/torque_enable", 0);
+  command_pub_ = ros_node.advertise<std_msgs::String>("/robotis/tuning_module/command", 0);
+  tuning_pose_pub_ = ros_node.advertise<std_msgs::String>("/robotis/tuning_module/tuning_pose", 0);
 
   get_present_joint_offset_data_client_ = ros_node.serviceClient<op3_tuning_module_msgs::GetPresentJointOffsetData>(
-      "/robotis/offset_tuner/get_present_joint_offset_data");
+      "/robotis/tuning_module/get_present_joint_offset_data");
 
-  std::string default_config_path = ros::package::getPath("op3_tuner_client") + "/config/joint_data.yaml";
+  std::string default_config_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/joint_data.yaml";
   parseOffsetGroup(default_config_path);
 
   start();
@@ -124,6 +125,16 @@ void QNode::sendCommandMsg(std_msgs::String msg)
 
   std::stringstream log_msg;
   log_msg << "Send Command : " << msg.data;
+
+  log(Info, log_msg.str());
+}
+
+void QNode::sendTuningPoseMsg(std_msgs::String msg)
+{
+  tuning_pose_pub_.publish(msg);
+
+  std::stringstream log_msg;
+  log_msg << "Send Tuning Pose : " << msg.data;
 
   log(Info, log_msg.str());
 }

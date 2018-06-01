@@ -86,6 +86,7 @@ Q_OBJECT
   void sendJointOffsetDataMsg(op3_tuning_module_msgs::JointOffsetData msg);
   void sendJointGainDataMsg(op3_tuning_module_msgs::JointOffsetData msg);
   void sendCommandMsg(std_msgs::String msg);
+  void sendTuningPoseMsg(std_msgs::String msg);
   bool isRefresh()
   {
     return is_refresh_;
@@ -117,6 +118,7 @@ Q_SIGNALS:
   ros::Publisher joint_gain_data_pub_;
   ros::Publisher torque_enable_pub_;
   ros::Publisher command_pub_;
+  ros::Publisher tuning_pose_pub_;
 
   ros::ServiceClient get_present_joint_offset_data_client_;
 };
