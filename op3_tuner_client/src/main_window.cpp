@@ -237,30 +237,6 @@ void MainWindow::changedOffsetSpinBoxValue(QString q_joint_name)
     {
       mod_spinBox = qobject_cast<QDoubleSpinBox*>(spinbox_list[ix]);
     }
-    //    else if (spinbox_list[ix]->whatsThis().toStdString() == "p_gain")
-    //    {
-    //      QSpinBox* spinBox = qobject_cast<QSpinBox*>(spinbox_list[ix]);
-    //      if (!spinBox)  // this is just a safety check
-    //        continue;
-
-    //      msg.p_gain = spinBox->value();
-    //    }
-    //    else if (spinbox_list[ix]->whatsThis().toStdString() == "i_gain")
-    //    {
-    //      QSpinBox* spinBox = qobject_cast<QSpinBox*>(spinbox_list[ix]);
-    //      if (!spinBox)  // this is just a safety check
-    //        continue;
-
-    //      msg.i_gain = spinBox->value();
-    //    }
-    //    else if (spinbox_list[ix]->whatsThis().toStdString() == "d_gain")
-    //    {
-    //      QSpinBox* spinBox = qobject_cast<QSpinBox*>(spinbox_list[ix]);
-    //      if (!spinBox)  // this is just a safety check
-    //        continue;
-
-    //      msg.d_gain = spinBox->value();
-    //    }
   }
 
   if (mod_spinBox)  // this is just a safety check
@@ -284,26 +260,6 @@ void MainWindow::changedGainSpinBoxValue(QString q_joint_name)
 
   for (int ix = 0; ix < spinbox_list.size(); ix++)
   {
-    //    if (spinbox_list[ix]->whatsThis().toStdString() == "goal")
-    //    {
-    //      QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(spinbox_list[ix]);
-    //      if (!spinBox)  // this is just a safety check
-    //        continue;
-
-    //      msg.goal_value = spinBox->value() * M_PI / 180.0;
-    //    }
-    //    else if (spinbox_list[ix]->whatsThis().toStdString() == "offset")
-    //    {
-    //      QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(spinbox_list[ix]);
-    //      if (!spinBox)  // this is just a safety check
-    //        continue;
-
-    //      msg.offset_value = spinBox->value() * M_PI / 180.0;
-    //    }
-    //    else if (spinbox_list[ix]->whatsThis().toStdString() == "mod")
-    //    {
-    //      mod_spinBox = qobject_cast<QDoubleSpinBox*>(spinbox_list[ix]);
-    //    }
     if (spinbox_list[ix]->whatsThis().toStdString() == "p_gain")
     {
       QSpinBox* spinBox = qobject_cast<QSpinBox*>(spinbox_list[ix]);
@@ -329,9 +285,6 @@ void MainWindow::changedGainSpinBoxValue(QString q_joint_name)
       msg.d_gain = spinBox->value();
     }
   }
-
-//  if (mod_spinBox)  // this is just a safety check
-//    mod_spinBox->setValue((msg.goal_value + msg.offset_value) * 180.0 / M_PI);
 
   qnode_.sendJointGainDataMsg(msg);
 }

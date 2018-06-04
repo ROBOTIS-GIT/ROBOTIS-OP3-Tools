@@ -17,11 +17,11 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>QRosApp</string>
+   <string>ROBOTIS-OP3 Tuner Client</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../../../thormang3_test_gui/resources/images.qrc">
-    <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
+   <iconset resource="../resources/images.qrc">
+    <normaloff>:/images/robotis_icon.png</normaloff>:/images/robotis_icon.png</iconset>
   </property>
   <property name="locale">
    <locale language="English" country="Australia"/>
@@ -921,7 +921,7 @@
   </action>
  </widget>
  <resources>
-  <include location="../../../thormang3_test_gui/resources/images.qrc"/>
+  <include location="../resources/images.qrc"/>
  </resources>
  <connections>
   <connection>
