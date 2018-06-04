@@ -1,10 +1,6 @@
 <?xml version="1.0" ?>
 
-<launch>    		
-    <include file="$(find op3_manager)/launch/op3_manager.launch" />
-
-    <!-- OP3 Localization -->
-    <node pkg="op3_localization" type="op3_localization" name="op3_localization" output="screen"/>
+<launch>    
 	
     <node name="tuner_client" pkg="op3_tuner_client" type="op3_tuner_client" output="screen"/>    
     
