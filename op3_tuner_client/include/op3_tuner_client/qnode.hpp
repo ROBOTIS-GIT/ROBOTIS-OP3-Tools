@@ -81,6 +81,7 @@ Q_OBJECT
     return &logging_model_;
   }
   void log(const LogLevel &level, const std::string &msg);
+  void clearLog();
 
   void sendTorqueEnableMsg(op3_tuning_module_msgs::JointTorqueOnOffArray msg);
   void sendJointOffsetDataMsg(op3_tuning_module_msgs::JointOffsetData msg);

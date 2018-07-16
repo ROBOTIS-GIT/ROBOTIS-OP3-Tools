@@ -126,6 +126,11 @@ void MainWindow::on_tuning_pose_button_clicked(bool check)
   qnode_.sendTuningPoseMsg(msg);
 }
 
+void MainWindow::on_clear_button_clicked(bool check)
+{
+  qnode_.clearLog();
+}
+
 void MainWindow::on_refresh_button_clicked(bool check)
 {
   qnode_.getPresentJointOffsetData();
@@ -183,7 +188,6 @@ void MainWindow::clickedTorqueCheckbox(QWidget *widget)
   }
 
   publishTorqueMsgs(joint_name, is_on);
-
 }
 
 void MainWindow::publishTorqueMsgs(std::string &joint_name, bool torque_on)
@@ -312,6 +316,14 @@ void MainWindow::updateJointOffsetSpinbox(op3_tuning_module_msgs::JointOffsetPos
         continue;
 
       spinBox->setValue(msg.offset_value * 180.0 / M_PI);
+    }
+    else if (spinbox_list[ix]->whatsThis().toStdString() == "mod")
+    {
+      QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(spinbox_list[ix]);
+      if (!spinBox)  // this is just a safety check
+        continue;
+
+      spinBox->setValue(msg.goal_value * 180.0 / M_PI + msg.offset_value * 180.0 / M_PI);
     }
     else if (spinbox_list[ix]->whatsThis().toStdString() == "present")
     {

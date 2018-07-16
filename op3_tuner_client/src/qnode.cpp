@@ -155,8 +155,8 @@ void QNode::getPresentJointOffsetData(bool recalculate_offset)
       op3_tuning_module_msgs::JointOffsetPositionData _temp =
           _get_present_joint_offset_data.response.present_data_array[id];
 
-      if(recalculate_offset == true)
-        _temp.offset_value = _temp.present_value - _temp.goal_value;
+//      if(recalculate_offset == true)
+//        _temp.offset_value = _temp.present_value - _temp.goal_value;
 
       Q_EMIT updatePresentJointOffsetData(_temp);
     }
@@ -208,6 +208,14 @@ void QNode::log(const LogLevel &level, const std::string &msg)
   QVariant new_row(QString(logging_model_msg.str().c_str()));
   logging_model_.setData(logging_model_.index(logging_model_.rowCount() - 1), new_row);
   Q_EMIT loggingUpdated();  // used to readjust the scrollbar
+}
+
+void QNode::clearLog()
+{
+  if (logging_model_.rowCount() == 0)
+    return;
+
+  logging_model_.removeRows(0, logging_model_.rowCount());
 }
 
 void QNode::parseOffsetGroup(const std::string &path)

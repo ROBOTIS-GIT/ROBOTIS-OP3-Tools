@@ -52,7 +52,7 @@
        <locale language="English" country="Australia"/>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_status">
        <attribute name="title">
@@ -74,15 +74,17 @@
            <item row="0" column="0">
             <widget class="QListView" name="view_logging"/>
            </item>
+           <item row="1" column="0">
+            <widget class="QPushButton" name="clear_button">
+             <property name="text">
+              <string>Clear</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
        </layout>
-      </widget>
-      <widget class="QWidget" name="tab_graph">
-       <attribute name="title">
-        <string>Graph</string>
-       </attribute>
       </widget>
      </widget>
     </item>
@@ -94,7 +96,7 @@
      <x>0</x>
      <y>0</y>
      <width>1644</width>
-     <height>22</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -201,7 +203,7 @@
                  <x>0</x>
                  <y>0</y>
                  <width>1038</width>
-                 <height>736</height>
+                 <height>742</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -387,8 +389,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1038</width>
-                 <height>736</height>
+                 <width>417</width>
+                 <height>166</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -562,8 +564,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1038</width>
-                 <height>736</height>
+                 <width>416</width>
+                 <height>166</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -719,8 +721,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1038</width>
-                 <height>736</height>
+                 <width>416</width>
+                 <height>180</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -923,10 +925,17 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="2">
+        <item row="1" column="3">
          <widget class="QPushButton" name="save_offset_button">
           <property name="text">
            <string>Save Offset</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
+         <widget class="QPushButton" name="save_gain_button">
+          <property name="text">
+           <string>Save Gain</string>
           </property>
          </widget>
         </item>
@@ -937,21 +946,7 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="4">
-         <widget class="QPushButton" name="quit_button">
-          <property name="text">
-           <string>Quit</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QPushButton" name="save_gain_button">
-          <property name="text">
-           <string>Save Gain</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2" colspan="2">
+        <item row="0" column="3">
          <widget class="QComboBox" name="tuning_pose_comboBox">
           <item>
            <property name="text">
@@ -1024,22 +1019,6 @@
     </hint>
     <hint type="destinationlabel">
      <x>399</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>quit_button</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindowDesign</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>859</x>
-     <y>552</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>469</x>
      <y>299</y>
     </hint>
    </hints>
