@@ -20,11 +20,11 @@
 #define OP3_OFFSET_TUNER_SERVER_H_
 
 #include <map>
-#include <yaml-cpp/yaml.h>
 #include <fstream>
-
 #include <ros/ros.h>
+#include <yaml-cpp/yaml.h>
 
+#include "dynamixel_sdk/dynamixel_sdk.h"
 #include "robotis_controller/robotis_controller.h"
 #include "op3_base_module/base_module.h"
 #include "op3_offset_tuner_msgs/JointOffsetData.h"

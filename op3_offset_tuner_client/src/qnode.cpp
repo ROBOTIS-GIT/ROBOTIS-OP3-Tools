@@ -20,11 +20,11 @@
  ** Includes
  *****************************************************************************/
 
+#include <string>
+#include <sstream>
 #include <ros/ros.h>
 #include <ros/network.h>
-#include <string>
 #include <std_msgs/String.h>
-#include <sstream>
 #include "../include/op3_offset_tuner_client/qnode.hpp"
 
 /*****************************************************************************

@@ -28,20 +28,18 @@
  *****************************************************************************/
 #ifndef Q_MOC_RUN
 
-#include <ros/ros.h>
-#include <ros/package.h>
 #include <string>
 #include <QThread>
 #include <QStringListModel>
-#include <yaml-cpp/yaml.h>
-
+#include <ros/ros.h>
+#include <ros/package.h>
 #include <std_msgs/String.h>
+#include <yaml-cpp/yaml.h>
 
 #include "op3_offset_tuner_msgs/JointOffsetData.h"
 #include "op3_offset_tuner_msgs/JointOffsetPositionData.h"
 #include "op3_offset_tuner_msgs/JointTorqueOnOff.h"
 #include "op3_offset_tuner_msgs/JointTorqueOnOffArray.h"
-
 #include "op3_offset_tuner_msgs/GetPresentJointOffsetData.h"
 
 #endif
