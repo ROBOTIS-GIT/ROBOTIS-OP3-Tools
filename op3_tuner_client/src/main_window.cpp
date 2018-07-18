@@ -51,6 +51,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 
   all_torque_on_ = false;
 
+  // set list to make spinboxs
   spinBox_list_.push_back("goal");
   spinBox_list_.push_back("offset");
   spinBox_list_.push_back("mod");
@@ -128,6 +129,7 @@ void MainWindow::on_tuning_pose_button_clicked(bool check)
 
 void MainWindow::on_clear_button_clicked(bool check)
 {
+  // clear log window
   qnode_.clearLog();
 }
 
@@ -170,7 +172,6 @@ void MainWindow::clickedAllTorqueOffButton(QObject *button_group)
   }
 }
 
-//void MainWindow::checkbox_clicked(QString joint_name)
 void MainWindow::clickedTorqueCheckbox(QWidget *widget)
 {
   QCheckBox* checkBox = qobject_cast<QCheckBox*>(widget);
