@@ -16,8 +16,8 @@
 
 /* Author: Kayman Jung */
 
-#ifndef OP3_OFFSET_TUNER_CLIENT_MAIN_WINDOW_H
-#define OP3_OFFSET_TUNER_CLIENT_MAIN_WINDOW_H
+#ifndef op3_tuner_client_MAIN_WINDOW_H
+#define op3_tuner_client_MAIN_WINDOW_H
 
 /*****************************************************************************
  ** Includes
@@ -27,6 +27,7 @@
 #include <QtGui>
 #include <QList>
 #include <QSpinBox>
+#include <QCheckBox>
 #include <QMainWindow>
 
 #include <math.h>
@@ -39,7 +40,7 @@
  ** Namespace
  *****************************************************************************/
 
-namespace op3_offset_tuner_client
+namespace op3_tuner_client
 {
 
 /*****************************************************************************
@@ -64,18 +65,22 @@ Q_OBJECT
    *******************************************/
   void on_actionAbout_triggered();
 
-  void on_save_button_clicked(bool check);
+  void on_save_offset_button_clicked(bool check);
+  void on_save_gain_button_clicked(bool check);
   void on_refresh_button_clicked(bool check);
   void on_inipose_button_clicked(bool checck);
+  void on_tuning_pose_button_clicked(bool check);
+  void on_clear_button_clicked(bool check);
 
   /******************************************
    ** Manual connections
    *******************************************/
   void updateLoggingView();  // no idea why this can't connect automatically
 
-  void updateJointOffsetSpinbox(op3_offset_tuner_msgs::JointOffsetPositionData msg);
+  void updateJointOffsetSpinbox(op3_tuning_module_msgs::JointOffsetPositionData msg);
 
-  void changedSpinBoxValue(QString q_joint_name);
+  void changedOffsetSpinBoxValue(QString q_joint_name);
+  void changedGainSpinBoxValue(QString q_joint_name);
   void clickedTorqueCheckbox(QWidget *widget);
   void clickedAllTorqueOnButton(QObject *button_group);
   void clickedAllTorqueOffButton(QObject *button_group);
@@ -100,6 +105,6 @@ Q_OBJECT
   std::map<std::string, QList<QAbstractSpinBox *> > joint_spinbox_map_;
 };
 
-}  // namespace op3_offset_tuner_client
+}  // namespace op3_tuner_client
 
-#endif // OP3_OFFSET_TUNER_CLIENT_MAIN_WINDOW_H
+#endif // op3_tuner_client_MAIN_WINDOW_H

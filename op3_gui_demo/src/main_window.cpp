@@ -22,6 +22,7 @@
 
 #include <QtGui>
 #include <QMessageBox>
+#include <QShortcut>
 #include <iostream>
 #include "../include/op3_gui_demo/main_window.hpp"
 

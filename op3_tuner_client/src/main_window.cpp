@@ -22,15 +22,14 @@
 
 #include <QtGui>
 #include <QMessageBox>
-#include <QCheckBox>
 #include <iostream>
-#include "../include/op3_offset_tuner_client/main_window.hpp"
+#include "../include/op3_tuner_client/main_window.hpp"
 
 /*****************************************************************************
  ** Namespaces
  *****************************************************************************/
 
-namespace op3_offset_tuner_client
+namespace op3_tuner_client
 {
 
 using namespace Qt;
@@ -52,6 +51,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 
   all_torque_on_ = false;
 
+  // set list to make spinboxs
   spinBox_list_.push_back("goal");
   spinBox_list_.push_back("offset");
   spinBox_list_.push_back("mod");
@@ -64,9 +64,9 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
    ** Connect
    ****************************/
 
-  qRegisterMetaType<op3_offset_tuner_msgs::JointOffsetPositionData>("op3_offset_tuner_msgs::JointOffsetPositionData");
-  QObject::connect(&qnode_, SIGNAL(updatePresentJointOffsetData(op3_offset_tuner_msgs::JointOffsetPositionData)), this,
-                   SLOT(updateJointOffsetSpinbox(op3_offset_tuner_msgs::JointOffsetPositionData)));
+  qRegisterMetaType<op3_tuning_module_msgs::JointOffsetPositionData>("op3_tuning_module_msgs::JointOffsetPositionData");
+  QObject::connect(&qnode_, SIGNAL(updatePresentJointOffsetData(op3_tuning_module_msgs::JointOffsetPositionData)), this,
+                   SLOT(updateJointOffsetSpinbox(op3_tuning_module_msgs::JointOffsetPositionData)));
 
   /*********************
    ** Logging
@@ -95,10 +95,18 @@ MainWindow::~MainWindow()
  ** Implementation [Slots]
  *****************************************************************************/
 
-void MainWindow::on_save_button_clicked(bool check)
+void MainWindow::on_save_offset_button_clicked(bool check)
 {
   std_msgs::String msg;
-  msg.data = "save";
+  msg.data = "save_offset";
+
+  qnode_.sendCommandMsg(msg);
+}
+
+void MainWindow::on_save_gain_button_clicked(bool check)
+{
+  std_msgs::String msg;
+  msg.data = "save_gain";
 
   qnode_.sendCommandMsg(msg);
 }
@@ -108,7 +116,21 @@ void MainWindow::on_inipose_button_clicked(bool checck)
   std_msgs::String msg;
   msg.data = "ini_pose";
 
-  qnode_.sendCommandMsg(msg);
+  qnode_.sendTuningPoseMsg(msg);
+}
+
+void MainWindow::on_tuning_pose_button_clicked(bool check)
+{
+  std_msgs::String msg;
+  msg.data = ui_.tuning_pose_comboBox->currentText().toStdString();
+
+  qnode_.sendTuningPoseMsg(msg);
+}
+
+void MainWindow::on_clear_button_clicked(bool check)
+{
+  // clear log window
+  qnode_.clearLog();
 }
 
 void MainWindow::on_refresh_button_clicked(bool check)
@@ -150,7 +172,6 @@ void MainWindow::clickedAllTorqueOffButton(QObject *button_group)
   }
 }
 
-//void MainWindow::checkbox_clicked(QString joint_name)
 void MainWindow::clickedTorqueCheckbox(QWidget *widget)
 {
   QCheckBox* checkBox = qobject_cast<QCheckBox*>(widget);
@@ -168,13 +189,12 @@ void MainWindow::clickedTorqueCheckbox(QWidget *widget)
   }
 
   publishTorqueMsgs(joint_name, is_on);
-
 }
 
 void MainWindow::publishTorqueMsgs(std::string &joint_name, bool torque_on)
 {
-  op3_offset_tuner_msgs::JointTorqueOnOffArray torque_array_msg;
-  op3_offset_tuner_msgs::JointTorqueOnOff torque_msg;
+  op3_tuning_module_msgs::JointTorqueOnOffArray torque_array_msg;
+  op3_tuning_module_msgs::JointTorqueOnOff torque_msg;
 
   torque_msg.joint_name = joint_name;
   torque_msg.torque_enable = torque_on;
@@ -187,12 +207,12 @@ void MainWindow::publishTorqueMsgs(std::string &joint_name, bool torque_on)
     qnode_.getPresentJointOffsetData(true);
 }
 
-void MainWindow::changedSpinBoxValue(QString q_joint_name)
+void MainWindow::changedOffsetSpinBoxValue(QString q_joint_name)
 {
   if (qnode_.isRefresh() == true)
     return;
 
-  op3_offset_tuner_msgs::JointOffsetData msg;
+  op3_tuning_module_msgs::JointOffsetData msg;
   std::string joint_name = q_joint_name.toStdString();
 
   QList<QAbstractSpinBox *> spinbox_list = joint_spinbox_map_[joint_name];
@@ -222,7 +242,30 @@ void MainWindow::changedSpinBoxValue(QString q_joint_name)
     {
       mod_spinBox = qobject_cast<QDoubleSpinBox*>(spinbox_list[ix]);
     }
-    else if (spinbox_list[ix]->whatsThis().toStdString() == "p_gain")
+  }
+
+  if (mod_spinBox)  // this is just a safety check
+    mod_spinBox->setValue((msg.goal_value + msg.offset_value) * 180.0 / M_PI);
+
+  qnode_.sendJointOffsetDataMsg(msg);
+}
+
+void MainWindow::changedGainSpinBoxValue(QString q_joint_name)
+{
+  if (qnode_.isRefresh() == true)
+    return;
+
+  op3_tuning_module_msgs::JointOffsetData msg;
+  std::string joint_name = q_joint_name.toStdString();
+
+  QList<QAbstractSpinBox *> spinbox_list = joint_spinbox_map_[joint_name];
+  QDoubleSpinBox *mod_spinBox;
+
+  msg.joint_name = joint_name;
+
+  for (int ix = 0; ix < spinbox_list.size(); ix++)
+  {
+    if (spinbox_list[ix]->whatsThis().toStdString() == "p_gain")
     {
       QSpinBox* spinBox = qobject_cast<QSpinBox*>(spinbox_list[ix]);
       if (!spinBox)  // this is just a safety check
@@ -248,13 +291,10 @@ void MainWindow::changedSpinBoxValue(QString q_joint_name)
     }
   }
 
-  if (mod_spinBox)  // this is just a safety check
-    mod_spinBox->setValue((msg.goal_value + msg.offset_value) * 180.0 / M_PI);
-
-  qnode_.sendJointOffsetDataMsg(msg);
+  qnode_.sendJointGainDataMsg(msg);
 }
 
-void MainWindow::updateJointOffsetSpinbox(op3_offset_tuner_msgs::JointOffsetPositionData msg)
+void MainWindow::updateJointOffsetSpinbox(op3_tuning_module_msgs::JointOffsetPositionData msg)
 {
   std::string joint_name = msg.joint_name;
 
@@ -277,6 +317,14 @@ void MainWindow::updateJointOffsetSpinbox(op3_offset_tuner_msgs::JointOffsetPosi
         continue;
 
       spinBox->setValue(msg.offset_value * 180.0 / M_PI);
+    }
+    else if (spinbox_list[ix]->whatsThis().toStdString() == "mod")
+    {
+      QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(spinbox_list[ix]);
+      if (!spinBox)  // this is just a safety check
+        continue;
+
+      spinBox->setValue(msg.goal_value * 180.0 / M_PI + msg.offset_value * 180.0 / M_PI);
     }
     else if (spinbox_list[ix]->whatsThis().toStdString() == "present")
     {
@@ -352,7 +400,8 @@ void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QB
   int torque_col = 0;
   for (std::map<int, std::string>::iterator map_it = offset_group.begin(); map_it != offset_group.end(); ++map_it)
   {
-    QSignalMapper *spingox_signalMapper = new QSignalMapper(this);
+    QSignalMapper *spinbox_offset_signalMapper = new QSignalMapper(this);
+    QSignalMapper *spinbox_gain_signalMapper = new QSignalMapper(this);
     QList<QAbstractSpinBox *> spinbox_list;
 
     // spin_box
@@ -382,8 +431,8 @@ void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QB
         break;
 
       default:
-        spingox_signalMapper->setMapping(spin_box, q_joint_name);
-        QObject::connect(spin_box, SIGNAL(valueChanged(QString)), spingox_signalMapper, SLOT(map()));
+        spinbox_offset_signalMapper->setMapping(spin_box, q_joint_name);
+        QObject::connect(spin_box, SIGNAL(valueChanged(QString)), spinbox_offset_signalMapper, SLOT(map()));
         break;
       }
 
@@ -404,7 +453,7 @@ void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QB
       switch (ix)
       {
       case 0:
-        spin_box->setValue(640);
+        spin_box->setValue(800);
         break;
 
       case 1:
@@ -412,7 +461,7 @@ void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QB
         break;
 
       case 2:
-        spin_box->setValue(4000);
+        spin_box->setValue(0);
         break;
 
       default:
@@ -420,8 +469,8 @@ void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QB
         break;
       }
 
-      spingox_signalMapper->setMapping(spin_box, q_joint_name);
-      QObject::connect(spin_box, SIGNAL(valueChanged(QString)), spingox_signalMapper, SLOT(map()));
+      spinbox_gain_signalMapper->setMapping(spin_box, q_joint_name);
+      QObject::connect(spin_box, SIGNAL(valueChanged(QString)), spinbox_gain_signalMapper, SLOT(map()));
 
       grid_layout->addWidget(spin_box, num_row, num_col++, 1, spinbox_size);
 
@@ -430,7 +479,8 @@ void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QB
 
     // spinbox
     joint_spinbox_map_[joint_name] = spinbox_list;
-    QObject::connect(spingox_signalMapper, SIGNAL(mapped(QString)), this, SLOT(changedSpinBoxValue(QString)));
+    QObject::connect(spinbox_offset_signalMapper, SIGNAL(mapped(QString)), this, SLOT(changedOffsetSpinBoxValue(QString)));
+    QObject::connect(spinbox_gain_signalMapper, SIGNAL(mapped(QString)), this, SLOT(changedGainSpinBoxValue(QString)));
 
     num_row += 1;
 
@@ -486,5 +536,5 @@ void MainWindow::closeEvent(QCloseEvent *event)
   QMainWindow::closeEvent(event);
 }
 
-}  // namespace op3_offset_tuner_client
+}  // namespace op3_tuner_client
 

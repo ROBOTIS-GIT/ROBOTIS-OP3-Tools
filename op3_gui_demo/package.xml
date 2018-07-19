@@ -1,35 +1,44 @@
 <?xml version="1.0"?>
-<package format="2">
+<package>
   <name>op3_gui_demo</name>
-  <version>0.2.2</version>
+  <version>0.3.0</version>
   <description>
-    The op3_gui_demo is a GUI software to control ROBOTIS-OP3. Within this program, user can perform module settings, walking tuner, head joint control and play actions.
+
+     op3_gui_demo
+
   </description>
-  <license>Apache 2.0</license>
-  <author email="kmjung@robotis.com">Kayman</author>
+  <license>Apache License 2.0</license>
   <maintainer email="pyo@robotis.com">Pyo</maintainer>
-  <url type="website">http://wiki.ros.org/op3_gui_demo</url>
-  <url type="emanual">http://emanual.robotis.com/docs/en/platform/op3/introduction/</url>
-  <url type="repository">https://github.com/ROBOTIS-GIT/ROBOTIS-OP3-Tools</url>
-  <url type="bugtracker">https://github.com/ROBOTIS-GIT/ROBOTIS-OP3-Tools/issues</url>
+  <author email="kmjung@robotis.com">Kayman</author>
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>roscpp</depend>
-  <depend>roslib</depend>
-  <depend>std_msgs</depend>
-  <depend>sensor_msgs</depend>
-  <depend>geometry_msgs</depend>
-  <depend>visualization_msgs</depend>
-  <depend>humanoid_nav_msgs</depend>
-  <depend>robotis_controller_msgs</depend>
-  <depend>op3_walking_module_msgs</depend>
-  <depend>op3_online_walking_module_msgs</depend>
-  <depend>cmake_modules</depend>
-  <depend>interactive_markers</depend>
-  <depend>eigen_conversions</depend>
-  <depend>qt_build</depend>
-  <depend>libqt4-dev</depend>
-  <depend>boost</depend>
-  <depend>eigen</depend>
-  <depend>yaml-cpp</depend>
-  <exec_depend>op3_navigation</exec_depend>
+  <build_depend>rqt_gui</build_depend>
+  <build_depend>rqt_gui_cpp</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>roslib</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>interactive_markers</build_depend>
+  <build_depend>cmake_modules</build_depend>
+  <build_depend>eigen_conversions</build_depend>
+  <build_depend>robotis_controller_msgs</build_depend>
+  <build_depend>op3_walking_module_msgs</build_depend>
+  <build_depend>op3_online_walking_module_msgs</build_depend>
+  <build_depend>humanoid_nav_msgs</build_depend>
+  <run_depend>rqt_gui</run_depend>
+  <run_depend>rqt_gui_cpp</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>roslib</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+  <run_depend>interactive_markers</run_depend>
+  <run_depend>cmake_modules</run_depend>
+  <run_depend>eigen_conversions</run_depend>
+  <run_depend>robotis_controller_msgs</run_depend>
+  <run_depend>op3_walking_module_msgs</run_depend>
+  <run_depend>op3_online_walking_module_msgs</run_depend>
+  <run_depend>humanoid_nav_msgs</run_depend>
 </package>
