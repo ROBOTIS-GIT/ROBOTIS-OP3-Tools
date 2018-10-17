@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 
 <launch>
-    <arg  name="config_path" default="$(find op3_camera_setting_tool)/launch/camera_parameter.yaml"/>
-    <param name="video_device" type="string" value="/dev/video0" />
+  <arg  name="config_path" default="$(find op3_camera_setting_tool)/launch/camera_parameter.yaml"/>
+  <param name="video_device" type="string" value="/dev/video0" />
 	
-    <node pkg="op3_camera_setting_tool" type="op3_camera_setting_tool" name="op3_camera_setting_node" output="screen">
-        <rosparam command="load" file="$(arg config_path)"/>  
-        <param name="yaml_path" type="string" value="$(arg config_path)"/>
-        <!-- <param name="camera_node_name" type="string" value="/usb_cam_node" /> -->
-    </node>
+  <node pkg="op3_camera_setting_tool" type="op3_camera_setting_tool" name="op3_camera_setting_node" output="screen">
+    <rosparam command="load" file="$(arg config_path)"/>
+    <param name="yaml_path" type="string" value="$(arg config_path)"/>
+    <!-- <param name="camera_node_name" type="string" value="/usb_cam_node" /> -->
+  </node>
 </launch>
