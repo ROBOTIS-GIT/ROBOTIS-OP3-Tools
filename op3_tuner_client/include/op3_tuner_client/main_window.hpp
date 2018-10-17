@@ -70,6 +70,7 @@ Q_OBJECT
   void on_refresh_button_clicked(bool check);
   void on_inipose_button_clicked(bool checck);
   void on_tuning_pose_button_clicked(bool check);
+  void on_clear_button_clicked(bool check);
 
   /******************************************
    ** Manual connections

@@ -14,7 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
-/* Author: JaySong */
+/* Author: Jay Song */
 
 #include "op3_action_editor/action_editor.h"
 
@@ -329,7 +329,7 @@ bool ActionEditor::initializeActionEditor(std::string robot_file_path, std::stri
         8);
   }
 
-  default_editor_script_path_ = ros::package::getPath("op3_action_editor") + "/script/editor_script.yaml";
+  default_editor_script_path_ = ros::package::getPath("op3_action_editor") + "/config/editor_script.yaml";
   mirror_joint_file_path_ = ros::package::getPath("op3_action_editor") + "/config/config_mirror_joint.yaml";
 
   // for mirroring

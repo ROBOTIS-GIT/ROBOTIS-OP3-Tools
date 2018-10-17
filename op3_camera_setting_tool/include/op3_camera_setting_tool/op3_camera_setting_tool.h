@@ -19,17 +19,17 @@
 #ifndef OP3_CAMERA_SETTING_TOOL_H_
 #define OP3_CAMERA_SETTING_TOOL_H_
 
-#include <yaml-cpp/yaml.h>
 #include <fstream>
-
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/String.h>
 #include <dynamic_reconfigure/server.h>
+#include <boost/thread.hpp>
+#include <yaml-cpp/yaml.h>
 
 #include "op3_camera_setting_tool/V4lParameter.h"
 #include "op3_camera_setting_tool/V4lParameters.h"
-#include "op3_camera_setting_tool/cameraParamsConfig.h"
+#include "op3_camera_setting_tool/CameraParamsConfig.h"
 
 #include "op3_camera_setting_tool/GetParameters.h"
 #include "op3_camera_setting_tool/SetParameters.h"
@@ -38,8 +38,8 @@ std::string g_device_name;
 std::string g_camera_node_name;
 std::map<std::string, std::string> g_param_list;
 
-boost::shared_ptr<dynamic_reconfigure::Server< op3_camera_setting_tool::cameraParamsConfig> > g_param_server;
-op3_camera_setting_tool::cameraParamsConfig g_dyn_config;
+boost::shared_ptr<dynamic_reconfigure::Server< op3_camera_setting_tool::CameraParamsConfig> > g_param_server;
+op3_camera_setting_tool::CameraParamsConfig g_dyn_config;
 
 // web setting
 std::string g_default_setting_path;
@@ -51,9 +51,9 @@ ros::ServiceServer g_set_param_client;
 bool g_has_path;
 std::string g_param_path;
 
-void dynParamCallback(op3_camera_setting_tool::cameraParamsConfig &config, uint32_t level);
+void dynParamCallback(op3_camera_setting_tool::CameraParamsConfig &config, uint32_t level);
 void changeDynParam(const std::string& param, const int& value);
-void updateDynParam(op3_camera_setting_tool::cameraParamsConfig &config);
+void updateDynParam(op3_camera_setting_tool::CameraParamsConfig &config);
 
 void setCameraParameterCallback(const op3_camera_setting_tool::V4lParameter::ConstPtr &msg);
 void setCameraParametersCallback(const op3_camera_setting_tool::V4lParameters::ConstPtr &msg);

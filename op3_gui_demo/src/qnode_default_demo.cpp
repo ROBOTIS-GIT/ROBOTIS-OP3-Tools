@@ -46,7 +46,8 @@ void QNodeOP3::init_default_demo(ros::NodeHandle &ros_node)
   demo_command_pub_ = ros_node.advertise<std_msgs::String>("/robotis/demo_command", 0);
 
   std::string default_motion_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/gui_motion.yaml";
-  parseMotionMapFromYaml(default_motion_path);
+  std::string motion_path = ros_node.param<std::string>("gui_motion", default_motion_path);
+  parseMotionMapFromYaml(motion_path);
 
   ROS_INFO("Initialized node handle for default demo");
 }

@@ -14,7 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
-/* Author: JaySong */
+/* Author: Jay Song */
 
 #ifndef OP3_ACTION_EDITOR_H_
 #define OP3_ACTION_EDITOR_H_
@@ -30,9 +30,10 @@
 #include <pthread.h>
 #include <sys/wait.h>
 #include <ros/ros.h>
-
+#include <std_msgs/String.h>
+#include <yaml-cpp/yaml.h>
+#include "dynamixel_sdk/dynamixel_sdk.h"
 #include "robotis_controller/robotis_controller.h"
-
 #include "op3_action_module/action_module.h"
 
 #define ROBOT_NAME "OP3"

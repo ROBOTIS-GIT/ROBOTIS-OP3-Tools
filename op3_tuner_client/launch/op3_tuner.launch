@@ -2,13 +2,6 @@
 
 <launch>    		
     <include file="$(find op3_manager)/launch/op3_manager.launch" />
-
-    <!-- OP3 Localization -->
-    <node pkg="op3_localization" type="op3_localization" name="op3_localization" output="screen"/>
 	
-    <node name="tuner_client" pkg="op3_tuner_client" type="op3_tuner_client" output="screen"/>    
-    
-    <node name="joint_plot" pkg="rqt_gui" type="rqt_gui" respawn="false"
-	  output="screen" args="--perspective-file $(find op3_tuner_client)/config/r_ank_pitch.perspective"/>
-    
+    <include file="$(find op3_tuner_client)/launch/op3_tuner_client.launch" />    
 </launch>
