@@ -102,7 +102,7 @@ endif()
 include_directories(
   ${op3_tuner_client_INCLUDE_DIRECTORIES}
   ${catkin_INCLUDE_DIRS}
-  ${YAML_CPP_LIBRARIES}
+  ${YAML_CPP_INCLUDE_DIRS}
 )
 add_executable(${PROJECT_NAME} ${op3_tuner_client_SRCS} ${op3_tuner_client_MOCS} ${op3_tuner_client_UIS_H} ${op3_tuner_client_RCC})
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
