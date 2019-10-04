@@ -20,6 +20,7 @@
   <depend>robotis_controller</depend>
   <depend>robotis_device</depend>
   <depend>op3_action_module</depend>
+  <depend>op3_base_module</depend>
   <depend>libncurses-dev</depend>
   <depend>yaml-cpp</depend>
   <exec_depend>op3_manager</exec_depend>

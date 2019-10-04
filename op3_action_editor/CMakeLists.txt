@@ -3,6 +3,8 @@
 ################################################################################
 cmake_minimum_required(VERSION 2.8.3)
 project(op3_action_editor)
+## Compile as C++11, supported in ROS Kinetic and newer
+add_compile_options(-std=c++11)
 
 ################################################################################
 # Find catkin packages and libraries for catkin and system dependencies
@@ -14,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   robotis_controller
   robotis_device
   op3_action_module
+  op3_base_module
 )
 
 find_package(Curses REQUIRED)
@@ -61,6 +64,7 @@ catkin_package(
     robotis_controller
     robotis_device
     op3_action_module
+    op3_base_module
   DEPENDS CURSES
 )
 

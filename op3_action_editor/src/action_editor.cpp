@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2017 ROBOTIS CO., LTD.
+* Copyright 2019 ROBOTIS CO., LTD.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
-/* Author: Jay Song */
+/* Author: Jay Song, Kayman Jung */
 
 #include "op3_action_editor/action_editor.h"
 
@@ -329,8 +329,8 @@ bool ActionEditor::initializeActionEditor(std::string robot_file_path, std::stri
         8);
   }
 
-  default_editor_script_path_ = ros::package::getPath("op3_action_editor") + "/config/editor_script.yaml";
-  mirror_joint_file_path_ = ros::package::getPath("op3_action_editor") + "/config/config_mirror_joint.yaml";
+  default_editor_script_path_ = ros::package::getPath(ROS_PACKAGE_NAME) + "/script/editor_script.yaml";
+  mirror_joint_file_path_ = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/config_mirror_joint.yaml";
 
   // for mirroring
   upper_body_mirror_joints_rl_.clear();
@@ -349,10 +349,22 @@ int ActionEditor::convert4095ToPositionValue(int id, int w4095)
   return robot_->dxls_[joint_id_to_name_[id]]->convertRadian2Value(rad);
 }
 
+double ActionEditor::convert4095ToRadPosition(int id, int w4095)
+{
+  double rad = (w4095 - 2048)*M_PI/2048.0;
+  return rad;
+}
+
 int ActionEditor::convertPositionValueTo4095(int id, int PositionValue)
 {
   double rad = robot_->dxls_[joint_id_to_name_[id]]->convertValue2Radian(PositionValue);
-  return (int) ((rad + M_PI) * 2048.0 / M_PI);
+  return (int)((rad + M_PI)*2048.0/M_PI);
+}
+
+double ActionEditor::convertPositionValueToRad(int id, int PositionValue)
+{
+  double rad = robot_->dxls_[joint_id_to_name_[id]]->convertValue2Radian(PositionValue);
+  return rad;
 }
 
 int ActionEditor::convert4095ToMirror(int id, int w4095)
@@ -856,6 +868,9 @@ void ActionEditor::setValue(int value)
             printf("%.4d", value);
             edited_ = true;
           }
+
+          double rad_position = convert4095ToRadPosition(id, value);
+          ctrl_->robot_->dxls_[joint_id_to_name_[id]]->dxl_state_->goal_position_ = rad_position;
         }
       }
     }
@@ -1090,8 +1105,12 @@ void ActionEditor::toggleTorque()
         - robot_->dxls_[joint_name]->value_of_0_radian_position_;
     value = value - offset;
 
-    step_.position[id] = convertPositionValueTo4095(id, value);
-    printf("%.4d", value);
+    int w4096_value = convertPositionValueTo4095(id, value);
+    step_.position[id] = w4096_value;
+    printf("%.4d", w4096_value);
+
+    // set goal position
+    robot_->dxls_[joint_name]->dxl_state_->goal_position_ = robot_->dxls_[joint_name]->convertValue2Radian(value);
   }
   else
   {
@@ -1262,14 +1281,14 @@ void ActionEditor::playCmd(int mp3_index)
   ctrl_->startTimer();
   ros::Duration(0.03).sleep();  // waiting for timer start
 
-  std_msgs::String msg;
-  msg.data = "action_module";
-  enable_ctrl_module_pub_.publish(msg);
-  ros::Duration(0.03).sleep();  // waiting for enable
+  std::string module_name = "action_module";
+  ctrl_->setCtrlModule(module_name);
+  ros::Duration(0.03).sleep(); // waiting for enable
 
   if (ActionModule::getInstance()->start(page_idx_, &page_) == false)
   {
     printCmd("Failed to play this page!");
+    ctrl_->setCtrlModule("none");
     ctrl_->stopTimer();
     return;
   }
@@ -1317,6 +1336,7 @@ void ActionEditor::playCmd(int mp3_index)
   }
   resetSTDin();
 
+  ctrl_->setCtrlModule("none");
   ctrl_->stopTimer();
 
   goToCursor(cmd_col_, cmd_row_);
@@ -1798,6 +1818,9 @@ void ActionEditor::goCmd(int index)
     {
       it->second->addParam(id, param);
     }
+
+    // set goal position
+    robot_->dxls_[joint_name]->dxl_state_->goal_position_ = convert4095ToRadPosition(id, page_.step[index].position[id]);
   }
 
   for (std::map<std::string, dynamixel::GroupSyncWrite *>::iterator it = port_to_sync_write_go_cmd_.begin();
@@ -1821,7 +1844,7 @@ void ActionEditor::goCmd(int index)
 
     distance = 0;
 
-    goal_position = page_.step[index].position[id];
+    goal_position = convert4095ToPositionValue(id, page_.step[index].position[id]);
 
     int offset = robot_->dxls_[joint_name]->convertRadian2Value(robot_->dxls_[joint_name]->dxl_state_->position_offset_)
         - robot_->dxls_[joint_name]->value_of_0_radian_position_;
@@ -1842,7 +1865,11 @@ void ActionEditor::goCmd(int index)
         it != port_to_sync_write_go_cmd_.end(); it++)
     {
       it->second->addParam(id, param);
-    }
+    }   
+	
+	// set goal position
+    robot_->dxls_[joint_name]->dxl_state_->goal_position_ = convert4095ToRadPosition(id, page_.step[index].position[id]);
+
   }
 
   for (std::map<std::string, dynamixel::GroupSyncWrite *>::iterator it = port_to_sync_write_go_cmd_.begin();
@@ -1850,6 +1877,68 @@ void ActionEditor::goCmd(int index)
   {
     it->second->txPacket();
   }
+
+  step_ = page_.step[index];
+  drawStep(7);
+  goToCursor(cmd_col_, cmd_row_);
+  printf("Go Command Completed");
+}
+
+void ActionEditor::goCmd_2(int index)
+{
+  if (index < 0 || index >= action_file_define::MAXNUM_STEP)
+  {
+    printCmd("Invalid step index");
+    return;
+  }
+
+  if (index >= page_.header.stepnum)
+  {
+    printCmd("Are you sure? (y/n)");
+    if (_getch() != 'y')
+    {
+      clearCmd();
+      return;
+    }
+  }
+
+  ctrl_->startTimer();
+  ros::Duration(0.03).sleep(); // waiting for timer start
+
+  BaseModule *base_module = BaseModule::getInstance();
+
+  //make map, key : joint_name, value : joint_init_pos_rad;
+  std::map<std::string, double> go_pose;
+
+  for (std::map<int, int>::iterator it = joint_id_to_row_index_.begin();
+       it != joint_id_to_row_index_.end();
+       it++)
+  {
+    int id = it->first;
+    std::string joint_name = joint_id_to_name_[id];
+    if (page_.step[index].position[id] & action_file_define::INVALID_BIT_MASK)
+    {
+      printCmd("Exist invalid joint value");
+      return;
+    }
+
+    double goal_position = convert4095ToRadPosition(id, page_.step[index].position[id]);
+    go_pose[joint_name] = goal_position;
+  }
+
+  // move time : 5.0 sec
+  base_module->poseGenerateProc(go_pose);
+
+  ros::Duration(0.01).sleep();
+
+  while (base_module->isRunning())
+    ros::Duration(0.01).sleep();
+
+  ctrl_->stopTimer();
+  while (ctrl_->isTimerRunning())
+    ros::Duration(0.01).sleep();
+
+  ctrl_->setCtrlModule("none");
 
   step_ = page_.step[index];
   drawStep(7);
