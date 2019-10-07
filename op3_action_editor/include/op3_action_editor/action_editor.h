@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2017 ROBOTIS CO., LTD.
+* Copyright 2019 ROBOTIS CO., LTD.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
-/* Author: Jay Song */
+/* Author: Jay Song, Kayman Jung */
 
 #ifndef OP3_ACTION_EDITOR_H_
 #define OP3_ACTION_EDITOR_H_
@@ -35,6 +35,7 @@
 #include "dynamixel_sdk/dynamixel_sdk.h"
 #include "robotis_controller/robotis_controller.h"
 #include "op3_action_module/action_module.h"
+#include "op3_base_module/base_module.h"
 
 #define ROBOT_NAME "OP3"
 
@@ -117,6 +118,7 @@ public:
   void copyCmd(int index);
   void newCmd();
   void goCmd(int index);
+  void goCmd_2(int index);
   void saveCmd();
   void nameCmd();
 
@@ -128,7 +130,9 @@ private:
   void resetSTDin();
 
   int convert4095ToPositionValue(int id, int w4095);
+  double convert4095ToRadPosition(int id, int w4095);
   int convertPositionValueTo4095(int id, int PositionValue);
+  double convertPositionValueToRad(int id, int PositionValue);
   int convert4095ToMirror(int id, int w4095);
 
   bool loadMp3Path(int mp3_index, std::string &path);
