@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="web_video_server" exec="web_video_server" name="web_video_server" output="screen"/>
+  <include file="$(find-pkg-share rosbridge_server)/launch/rosbridge_websocket_launch.xml" />
+</launch>
