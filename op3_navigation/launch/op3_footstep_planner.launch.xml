@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find-pkg-share op3_navigation)/launch/map_server_empty.launch.py" />
+  <node pkg="footstep_planner" exec="footstep_planner_node" name="footstep_planner" output="screen">
+    <rosparam file="$(find-pkg-share op3_navigation)/config/planning_params.yaml" command="load" />
+    <rosparam file="$(find-pkg-share op3_navigation)/config/planning_params_robotis_op3.yaml" command="load" />
+    <rosparam file="$(find-pkg-share op3_navigation)/config/footsteps_robotis_op3.yaml" command="load" />
+    <remap from="map" to="projected_map" />
+  </node>
+</launch>

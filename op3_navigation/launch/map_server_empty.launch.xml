@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="nav2_map_server" exec="map_server" name="map_server" output="screen">
+    <param name="yaml_filename" value="$(find-footstep_planner)/maps/empty.yaml" />
+    <param name="frame_id" value="world" />
+    <remap from="map" to="projected_map" />
+  </node>
+</launch>
