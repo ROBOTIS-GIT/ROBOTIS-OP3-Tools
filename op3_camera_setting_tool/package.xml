@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>op3_camera_setting_tool</name>
   <version>0.2.2</version>
   <description>
-    The op3_camera_setting_tool package</description>
+    The op3_camera_setting_tool package
+  </description>
   <license>Apache 2.0</license>
   <author email="kmjung@robotis.com">Kayman</author>
   <maintainer email="pyo@robotis.com">Pyo</maintainer>
@@ -11,14 +12,16 @@
   <url type="emanual">http://emanual.robotis.com/docs/en/platform/op3/introduction/</url>
   <url type="repository">https://github.com/ROBOTIS-GIT/ROBOTIS-OP3-Tools</url>
   <url type="bugtracker">https://github.com/ROBOTIS-GIT/ROBOTIS-OP3-Tools/issues</url>
-  <buildtool_depend>catkin</buildtool_depend>
-  <depend>roscpp</depend>
-  <depend>roslib</depend>
-  <depend>std_msgs</depend>  
-  <depend>dynamic_reconfigure</depend>
-  <depend>boost</depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>ament_index_cpp</depend>
+  <depend>op3_camera_setting_tool_msgs</depend>
+  <!-- <depend>dynamic_reconfigure</depend> -->
   <depend>yaml-cpp</depend>
-  <build_depend>message_generation</build_depend>
-  <build_export_depend>message_runtime</build_export_depend>
-  <exec_depend>message_runtime</exec_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>

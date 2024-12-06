@@ -19,44 +19,43 @@
 #ifndef OP3_CAMERA_SETTING_TOOL_H_
 #define OP3_CAMERA_SETTING_TOOL_H_
 
+#include <thread>
 #include <fstream>
-#include <ros/ros.h>
-#include <ros/package.h>
-#include <std_msgs/String.h>
-#include <dynamic_reconfigure/server.h>
-#include <boost/thread.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <yaml-cpp/yaml.h>
 
-#include "op3_camera_setting_tool/V4lParameter.h"
-#include "op3_camera_setting_tool/V4lParameters.h"
-#include "op3_camera_setting_tool/CameraParamsConfig.h"
+#include "op3_camera_setting_tool/camera_params_config.h"
 
-#include "op3_camera_setting_tool/GetParameters.h"
-#include "op3_camera_setting_tool/SetParameters.h"
+#include "op3_camera_setting_tool_msgs/msg/v4l_parameter.hpp"
+#include "op3_camera_setting_tool_msgs/msg/v4l_parameters.hpp"
+
+#include "op3_camera_setting_tool_msgs/srv/get_parameters.hpp"
+#include "op3_camera_setting_tool_msgs/srv/set_parameters.hpp"
 
 std::string g_device_name;
 std::string g_camera_node_name;
 std::map<std::string, std::string> g_param_list;
 
-boost::shared_ptr<dynamic_reconfigure::Server< op3_camera_setting_tool::CameraParamsConfig> > g_param_server;
-op3_camera_setting_tool::CameraParamsConfig g_dyn_config;
+robotis_op::CameraParamsConfig g_dyn_config;
 
 // web setting
 std::string g_default_setting_path;
-ros::Publisher g_param_pub;
-ros::Subscriber g_param_command_sub;
-ros::ServiceServer g_get_param_client;
-ros::ServiceServer g_set_param_client;
+rclcpp::Publisher<op3_camera_setting_tool_msgs::msg::CameraParams>::SharedPtr g_param_pub;
+rclcpp::Subscription<std_msgs::msg::String>::SharedPtr g_param_command_sub;
+rclcpp::Service<op3_camera_setting_tool_msgs::srv::GetParameters>::SharedPtr g_get_param_service;
+rclcpp::Service<op3_camera_setting_tool_msgs::srv::SetParameters>::SharedPtr g_set_param_service;
 
 bool g_has_path;
 std::string g_param_path;
 
-void dynParamCallback(op3_camera_setting_tool::CameraParamsConfig &config, uint32_t level);
+void dynParamCallback(robotis_op::CameraParamsConfig &config, uint32_t level);
 void changeDynParam(const std::string& param, const int& value);
-void updateDynParam(op3_camera_setting_tool::CameraParamsConfig &config);
+void updateDynParam(robotis_op::CameraParamsConfig &config);
 
-void setCameraParameterCallback(const op3_camera_setting_tool::V4lParameter::ConstPtr &msg);
-void setCameraParametersCallback(const op3_camera_setting_tool::V4lParameters::ConstPtr &msg);
+void setCameraParameterCallback(const op3_camera_setting_tool_msgs::msg::V4lParameter::SharedPtr msg);
+void setCameraParametersCallback(const op3_camera_setting_tool_msgs::msg::V4lParameters::SharedPtr msg);
 
 void setV4lParameter(const std::string& param, const std::string& value);
 void setV4lParameter(const std::string& param, const int& value);
@@ -65,9 +64,9 @@ void setV4lParameter(const std::string& cmd);
 void getROSParam();
 void setROSParam(const std::string& param, const int& value);
 
-void paramCommandCallback(const std_msgs::String::ConstPtr &msg);
-bool setParamCallback(op3_camera_setting_tool::SetParameters::Request &req, op3_camera_setting_tool::SetParameters::Response &res);
-bool getParamCallback(op3_camera_setting_tool::GetParameters::Request &req, op3_camera_setting_tool::GetParameters::Response &res);
+void paramCommandCallback(const std_msgs::msg::String::SharedPtr msg);
+bool setParamCallback(const std::shared_ptr<op3_camera_setting_tool_msgs::srv::SetParameters::Request> req, std::shared_ptr<op3_camera_setting_tool_msgs::srv::SetParameters::Response> res);
+bool getParamCallback(const std::shared_ptr<op3_camera_setting_tool_msgs::srv::GetParameters::Request> req, std::shared_ptr<op3_camera_setting_tool_msgs::srv::GetParameters::Response> res);
 void resetParameter();
 void saveParameter();
 void publishParam();
