@@ -25,11 +25,13 @@ namespace robotis_op
 {
 
 OffsetTunerServer::OffsetTunerServer()
+  : Node("offset_tuner_server"),
+    offset_file_(""),
+    robot_file_(""),
+    init_file_(""),
+    controller_(0)
 {
-  offset_file_ = "";
-  robot_file_ = "";
-  init_file_ = "";
-  controller_ = 0;
+  set_ctrl_module_pub_ = this->create_publisher<std_msgs::msg::String>("/robotis/enable_ctrl_module", 1);
 }
 
 OffsetTunerServer::~OffsetTunerServer()
@@ -39,13 +41,10 @@ OffsetTunerServer::~OffsetTunerServer()
 
 void OffsetTunerServer::setCtrlModule(std::string module)
 {
-  ros::NodeHandle ros_node;
-  ros::Publisher set_ctrl_module_pub = ros_node.advertise<std_msgs::String>("/robotis/enable_ctrl_module", 1);
-
-  std_msgs::String control_msg;
+  std_msgs::msg::String control_msg;
 
   control_msg.data = module;
-  set_ctrl_module_pub.publish(control_msg);
+  set_ctrl_module_pub_->publish(control_msg);
 }
 
 bool OffsetTunerServer::initialize()
@@ -57,35 +56,36 @@ bool OffsetTunerServer::initialize()
         SUB_CONTROLLER_DEVICE);
   bool set_port = port_handler->setBaudRate(BAUD_RATE);
   if (set_port == false)
-    ROS_ERROR("Error Set port");
+    RCLCPP_ERROR(this->get_logger(), "Error Set port");
   dynamixel::PacketHandler *packet_handler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
 
   int return_data = packet_handler->write1ByteTxRx(port_handler, SUB_CONTROLLER_ID, POWER_CTRL_TABLE, 1);
 
   if(return_data != 0)
-    ROS_ERROR("Torque on DXLs! [%s]", packet_handler->getRxPacketError(return_data));
+    RCLCPP_ERROR(this->get_logger(), "Torque on DXLs! [%s]", packet_handler->getRxPacketError(return_data));
   else
-    ROS_INFO("Torque on DXLs!");
+    RCLCPP_INFO(this->get_logger(), "Torque on DXLs!");
 
   port_handler->closePort();
 
-  ros::NodeHandle ros_node;
-
   //Get File Path
-  ros_node.param<std::string>("offset_path", offset_file_, "");
-  ros_node.param<std::string>("robot_file_path", robot_file_, "");
-  ros_node.param<std::string>("init_file_path", init_file_, "");
+  this->declare_parameter<std::string>("offset_path", "");
+  this->declare_parameter<std::string>("robot_file_path", "");
+  this->declare_parameter<std::string>("init_file_path", "");
+  this->get_parameter("offset_path", offset_file_);
+  this->get_parameter("robot_file_path", robot_file_);
+  this->get_parameter("init_file_path", init_file_);
 
   if ((offset_file_ == "") || (robot_file_ == ""))
   {
-    ROS_ERROR("Failed to get file path");
+    RCLCPP_ERROR(this->get_logger(), "Failed to get file path");
     return -1;
   }
 
   //Controller Initialize with robot file info
   if (controller_->initialize(robot_file_, init_file_) == false)
   {
-    ROS_ERROR("ROBOTIS Controller Initialize Fail!");
+    RCLCPP_ERROR(this->get_logger(), "ROBOTIS Controller Initialize Fail!");
     return -1;
   }
   //controller_->LoadOffset(offset_file_);
@@ -103,30 +103,30 @@ bool OffsetTunerServer::initialize()
   //Load Offset.yaml
   getInitPose(offset_file_);
 
-  ROS_INFO(" ");
-  ROS_INFO(" ");
+  RCLCPP_INFO(this->get_logger(), " ");
+  RCLCPP_INFO(this->get_logger(), " ");
   //For Data Check, Print All Available Data
   int i = 0;
-  ROS_INFO_STREAM("num" <<" | "<<"joint_name" << " | " << "InitPose" << ", " << "OffsetAngleRad");
+  RCLCPP_INFO_STREAM(this->get_logger(), "num" <<" | "<<"joint_name" << " | " << "InitPose" << ", " << "OffsetAngleRad");
   for (std::map<std::string, JointOffsetData*>::iterator map_it = robot_offset_data_.begin();
        map_it != robot_offset_data_.end(); map_it++)
   {
     std::string joint_name = map_it->first;
     JointOffsetData* joint_data = map_it->second;
 
-    ROS_INFO_STREAM(
+    RCLCPP_INFO_STREAM(this->get_logger(),
           i <<" | "<<joint_name << " : " << joint_data->joint_init_pos_rad_ << ", " << joint_data->joint_offset_rad_);
     i++;
   }
 
-  send_tra_sub_ = ros_node.subscribe("/robotis/base/send_tra", 10, &OffsetTunerServer::stringMsgsCallBack, this);
-  joint_offset_data_sub_ = ros_node.subscribe("/robotis/offset_tuner/joint_offset_data", 10,
-                                              &OffsetTunerServer::jointOffsetDataCallback, this);
-  joint_torque_enable_sub_ = ros_node.subscribe("/robotis/offset_tuner/torque_enable", 10,
-                                                &OffsetTunerServer::jointTorqueOnOffCallback, this);
-  command_sub_ = ros_node.subscribe("/robotis/offset_tuner/command", 5, &OffsetTunerServer::commandCallback, this);
-  offset_data_server_ = ros_node.advertiseService("robotis/offset_tuner/get_present_joint_offset_data",
-                                                  &OffsetTunerServer::getPresentJointOffsetDataServiceCallback, this);
+  send_tra_sub_ = this->create_subscription<std_msgs::msg::String>("/robotis/base/send_tra", 10, std::bind(&OffsetTunerServer::stringMsgsCallBack, this, std::placeholders::_1));
+  joint_offset_data_sub_ = this->create_subscription<op3_offset_tuner_msgs::msg::JointOffsetData>("/robotis/offset_tuner/joint_offset_data", 10,
+                                              std::bind(&OffsetTunerServer::jointOffsetDataCallback, this, std::placeholders::_1));
+  joint_torque_enable_sub_ = this->create_subscription<op3_offset_tuner_msgs::msg::JointTorqueOnOffArray>("/robotis/offset_tuner/torque_enable", 10,
+                                                std::bind(&OffsetTunerServer::jointTorqueOnOffCallback, this, std::placeholders::_1));
+  command_sub_ = this->create_subscription<std_msgs::msg::String>("/robotis/offset_tuner/command", 5, std::bind(&OffsetTunerServer::commandCallback, this, std::placeholders::_1));
+  offset_data_server_ = this->create_service<op3_offset_tuner_msgs::srv::GetPresentJointOffsetData>("robotis/offset_tuner/get_present_joint_offset_data",
+                                                  std::bind(&OffsetTunerServer::getPresentJointOffsetDataServiceCallback, this, std::placeholders::_1, std::placeholders::_2));
 
   return true;
 }
@@ -169,18 +169,18 @@ void OffsetTunerServer::moveToInitPose()
 
   if (controller_->isTimerRunning())
   {
-    ROS_INFO("Timer Running");
+    RCLCPP_INFO(this->get_logger(), "Timer Running");
   }
 
   setCtrlModule("none");
 }
 
-void OffsetTunerServer::stringMsgsCallBack(const std_msgs::String::ConstPtr& msg)
+void OffsetTunerServer::stringMsgsCallBack(const std_msgs::msg::String::SharedPtr msg)
 {
-  ROS_INFO_STREAM(msg->data);
+  RCLCPP_INFO_STREAM(this->get_logger(), msg->data);
 }
 
-void OffsetTunerServer::commandCallback(const std_msgs::String::ConstPtr& msg)
+void OffsetTunerServer::commandCallback(const std_msgs::msg::String::SharedPtr msg)
 {
   if (msg->data == "save")
   {
@@ -211,33 +211,33 @@ void OffsetTunerServer::commandCallback(const std_msgs::String::ConstPtr& msg)
   }
   else
   {
-    ROS_INFO_STREAM("Invalid Command : " << msg->data);
+    RCLCPP_INFO_STREAM(this->get_logger(), "Invalid Command : " << msg->data);
   }
 }
 
-void OffsetTunerServer::jointOffsetDataCallback(const op3_offset_tuner_msgs::JointOffsetData::ConstPtr &msg)
+void OffsetTunerServer::jointOffsetDataCallback(const op3_offset_tuner_msgs::msg::JointOffsetData::SharedPtr msg)
 {
   if (controller_->isTimerRunning())
   {
-    ROS_ERROR("Timer is running now");
+    RCLCPP_ERROR(this->get_logger(), "Timer is running now");
     return;
   }
 
   //goal position
-  ROS_INFO_STREAM(
+  RCLCPP_INFO_STREAM(this->get_logger(),
         msg->joint_name << " " << msg->goal_value << " " << msg->offset_value << " " << msg->p_gain <<" " << msg->i_gain <<" " << msg->d_gain);
 
   std::map<std::string, JointOffsetData*>::iterator map_it;
   map_it = robot_offset_data_.find(msg->joint_name);
   if (map_it == robot_offset_data_.end())
   {
-    ROS_ERROR("Invalid Joint Name");
+    RCLCPP_ERROR(this->get_logger(), "Invalid Joint Name");
     return;
   }
 
   if (robot_torque_enable_data_[msg->joint_name] == false)
   {
-    ROS_ERROR_STREAM(msg->joint_name << "is turned off the torque");
+    RCLCPP_ERROR_STREAM(this->get_logger(), msg->joint_name << "is turned off the torque");
     return;
   }
 
@@ -250,7 +250,7 @@ void OffsetTunerServer::jointOffsetDataCallback(const op3_offset_tuner_msgs::Joi
       goal_pose_value, &dxl_error);
   if (comm_result != COMM_SUCCESS)
   {
-    ROS_ERROR("Failed to write goal position");
+    RCLCPP_ERROR(this->get_logger(), "Failed to write goal position");
     return;
   }
   else
@@ -261,7 +261,7 @@ void OffsetTunerServer::jointOffsetDataCallback(const op3_offset_tuner_msgs::Joi
 
   if (dxl_error != 0)
   {
-    ROS_ERROR_STREAM("goal_pos_set : " << msg->joint_name << "  has error "<< (int)dxl_error);
+    RCLCPP_ERROR_STREAM(this->get_logger(), "goal_pos_set : " << msg->joint_name << "  has error "<< (int)dxl_error);
   }
 
   robot_offset_data_[msg->joint_name]->p_gain_ = msg->p_gain;
@@ -270,19 +270,19 @@ void OffsetTunerServer::jointOffsetDataCallback(const op3_offset_tuner_msgs::Joi
 
 }
 
-void OffsetTunerServer::jointTorqueOnOffCallback(const op3_offset_tuner_msgs::JointTorqueOnOffArray::ConstPtr& msg)
+void OffsetTunerServer::jointTorqueOnOffCallback(const op3_offset_tuner_msgs::msg::JointTorqueOnOffArray::SharedPtr msg)
 {
   for (unsigned int i = 0; i < msg->torque_enable_data.size(); i++)
   {
     std::string joint_name = msg->torque_enable_data[i].joint_name;
     bool torque_enable = msg->torque_enable_data[i].torque_enable;
-    ROS_INFO_STREAM(i <<" " << joint_name << torque_enable);
+    RCLCPP_INFO_STREAM(this->get_logger(), i <<" " << joint_name << torque_enable);
 
     std::map<std::string, JointOffsetData*>::iterator map_it;
     map_it = robot_offset_data_.find(joint_name);
     if (map_it == robot_offset_data_.end())
     {
-      ROS_ERROR("Invalid Joint Name");
+      RCLCPP_ERROR(this->get_logger(), "Invalid Joint Name");
       continue;
     }
     else
@@ -301,7 +301,7 @@ void OffsetTunerServer::jointTorqueOnOffCallback(const op3_offset_tuner_msgs::Jo
                                                torque_enable_value, &dxl_error);
       if (comm_result != COMM_SUCCESS)
       {
-        ROS_ERROR("Failed to write goal position");
+        RCLCPP_ERROR(this->get_logger(), "Failed to write goal position");
       }
       else
       {
@@ -310,7 +310,7 @@ void OffsetTunerServer::jointTorqueOnOffCallback(const op3_offset_tuner_msgs::Jo
 
       if (dxl_error != 0)
       {
-        ROS_ERROR_STREAM("goal_pos_set : " << joint_name << "  has error "<< (int)dxl_error);
+        RCLCPP_ERROR_STREAM(this->get_logger(), "goal_pos_set : " << joint_name << "  has error "<< (int)dxl_error);
       }
     }
   }
@@ -318,11 +318,11 @@ void OffsetTunerServer::jointTorqueOnOffCallback(const op3_offset_tuner_msgs::Jo
 }
 
 bool OffsetTunerServer::getPresentJointOffsetDataServiceCallback(
-    op3_offset_tuner_msgs::GetPresentJointOffsetData::Request &req,
-    op3_offset_tuner_msgs::GetPresentJointOffsetData::Response &res)
+    const std::shared_ptr<op3_offset_tuner_msgs::srv::GetPresentJointOffsetData::Request> req,
+    std::shared_ptr<op3_offset_tuner_msgs::srv::GetPresentJointOffsetData::Response> res)
 {
 
-  ROS_INFO("GetPresentJointOffsetDataService Called");
+  RCLCPP_INFO(this->get_logger(), "GetPresentJointOffsetDataService Called");
 
   for (std::map<std::string, JointOffsetData*>::iterator map_it = robot_offset_data_.begin();
        map_it != robot_offset_data_.end(); map_it++)
@@ -330,7 +330,7 @@ bool OffsetTunerServer::getPresentJointOffsetDataServiceCallback(
     std::string joint_name = map_it->first;
     JointOffsetData* joint_data = map_it->second;
 
-    op3_offset_tuner_msgs::JointOffsetPositionData joint_offset_pos;
+    op3_offset_tuner_msgs::msg::JointOffsetPositionData joint_offset_pos;
 
     int32_t present_pos_value = 0;
     uint8_t dxl_error = 0;
@@ -344,14 +344,14 @@ bool OffsetTunerServer::getPresentJointOffsetDataServiceCallback(
                                             (uint32_t*) &present_pos_value, &dxl_error);
     if (comm_result != COMM_SUCCESS)
     {
-      ROS_ERROR("Failed to read present pos");
+      RCLCPP_ERROR(this->get_logger(), "Failed to read present pos");
       return false;
     }
     else
     {
       if (dxl_error != 0)
       {
-        ROS_ERROR_STREAM(joint_name << "  has error "<< (int)dxl_error);
+        RCLCPP_ERROR_STREAM(this->get_logger(), joint_name << "  has error "<< (int)dxl_error);
       }
 
       joint_offset_pos.joint_name = joint_name;
@@ -362,7 +362,7 @@ bool OffsetTunerServer::getPresentJointOffsetDataServiceCallback(
       joint_offset_pos.i_gain = joint_data->i_gain_;
       joint_offset_pos.d_gain = joint_data->d_gain_;
 
-      res.present_data_array.push_back(joint_offset_pos);
+      res->present_data_array.push_back(joint_offset_pos);
     }
   }
   return true;
@@ -380,7 +380,7 @@ void OffsetTunerServer::getInitPose(const std::string &path)
     has_offset_file = true;
   } catch (const std::exception& e)
   {
-    ROS_ERROR("Fail to load offset yaml file.");
+    RCLCPP_ERROR(this->get_logger(), "Fail to load offset yaml file.");
     has_offset_file = false;
   }
 

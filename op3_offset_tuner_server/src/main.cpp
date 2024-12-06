@@ -16,21 +16,22 @@
 
 /* Author: Jay Song*/
 
-#include <ros/ros.h>
-
+#include <rclcpp/rclcpp.hpp>
 #include "op3_offset_tuner_server/op3_offset_tuner_server.h"
 
 using namespace robotis_op;
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "offset_tuner_server_node");
+  rclcpp::init(argc, argv);
 
-  OffsetTunerServer* server = OffsetTunerServer::getInstance();
-
+  // TODO: singletone 을 변경해야 하나?
+  auto server = std::make_shared<OffsetTunerServer>();
   server->initialize();
 
-  ros::spin();
+  rclcpp::spin(server);
+
+  rclcpp::shutdown();
 
   return 0;
 }

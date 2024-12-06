@@ -21,15 +21,15 @@
 
 #include <map>
 #include <fstream>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include "dynamixel_sdk/dynamixel_sdk.h"
 #include "robotis_controller/robotis_controller.h"
 #include "op3_base_module/base_module.h"
-#include "op3_offset_tuner_msgs/JointOffsetData.h"
-#include "op3_offset_tuner_msgs/JointTorqueOnOffArray.h"
-#include "op3_offset_tuner_msgs/GetPresentJointOffsetData.h"
+#include "op3_offset_tuner_msgs/msg/joint_offset_data.hpp"
+#include "op3_offset_tuner_msgs/msg/joint_torque_on_off_array.hpp"
+#include "op3_offset_tuner_msgs/srv/get_present_joint_offset_data.hpp"
 
 namespace robotis_op
 {
@@ -66,7 +66,7 @@ class JointOffsetData
   }
 };
 
-class OffsetTunerServer : public robotis_framework::Singleton<OffsetTunerServer>
+class OffsetTunerServer : public robotis_framework::Singleton<OffsetTunerServer>, public rclcpp::Node
 {
 
  public:
@@ -75,12 +75,12 @@ class OffsetTunerServer : public robotis_framework::Singleton<OffsetTunerServer>
 
   bool initialize();
   void moveToInitPose();
-  void stringMsgsCallBack(const std_msgs::String::ConstPtr& msg);
-  void commandCallback(const std_msgs::String::ConstPtr& msg);
-  void jointOffsetDataCallback(const op3_offset_tuner_msgs::JointOffsetData::ConstPtr &msg);
-  void jointTorqueOnOffCallback(const op3_offset_tuner_msgs::JointTorqueOnOffArray::ConstPtr& msg);
-  bool getPresentJointOffsetDataServiceCallback(op3_offset_tuner_msgs::GetPresentJointOffsetData::Request &req,
-                                                op3_offset_tuner_msgs::GetPresentJointOffsetData::Response &res);
+  void stringMsgsCallBack(const std_msgs::msg::String::SharedPtr msg);
+  void commandCallback(const std_msgs::msg::String::SharedPtr msg);
+  void jointOffsetDataCallback(const op3_offset_tuner_msgs::msg::JointOffsetData::SharedPtr msg);
+  void jointTorqueOnOffCallback(const op3_offset_tuner_msgs::msg::JointTorqueOnOffArray::SharedPtr msg);
+  bool getPresentJointOffsetDataServiceCallback(const std::shared_ptr<op3_offset_tuner_msgs::srv::GetPresentJointOffsetData::Request> req,
+                                                std::shared_ptr<op3_offset_tuner_msgs::srv::GetPresentJointOffsetData::Response> res);
 
  private:
   const int BAUD_RATE = 2000000;
@@ -100,11 +100,12 @@ class OffsetTunerServer : public robotis_framework::Singleton<OffsetTunerServer>
   std::map<std::string, JointOffsetData*> robot_offset_data_;
   std::map<std::string, bool> robot_torque_enable_data_;
 
-  ros::Subscriber send_tra_sub_;
-  ros::Subscriber joint_offset_data_sub_;
-  ros::Subscriber joint_torque_enable_sub_;
-  ros::Subscriber command_sub_;
-  ros::ServiceServer offset_data_server_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr set_ctrl_module_pub_;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr send_tra_sub_;
+  rclcpp::Subscription<op3_offset_tuner_msgs::msg::JointOffsetData>::SharedPtr joint_offset_data_sub_;
+  rclcpp::Subscription<op3_offset_tuner_msgs::msg::JointTorqueOnOffArray>::SharedPtr joint_torque_enable_sub_;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr command_sub_;
+  rclcpp::Service<op3_offset_tuner_msgs::srv::GetPresentJointOffsetData>::SharedPtr offset_data_server_;
 };
 
 }

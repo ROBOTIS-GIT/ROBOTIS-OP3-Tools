@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>op3_offset_tuner_server</name>
   <version>0.2.2</version>
   <description>
@@ -13,12 +13,14 @@
   <url type="emanual">http://emanual.robotis.com/docs/en/platform/op3/introduction/</url>
   <url type="repository">https://github.com/ROBOTIS-GIT/ROBOTIS-OP3-Tools</url>
   <url type="bugtracker">https://github.com/ROBOTIS-GIT/ROBOTIS-OP3-Tools/issues</url>
-  <buildtool_depend>catkin</buildtool_depend>  
-  <depend>roscpp</depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>  
+  <depend>rclcpp</depend>
+  <depend>ament_index_cpp</depend>
   <depend>std_msgs</depend>  
   <depend>op3_offset_tuner_msgs</depend>
   <depend>dynamixel_sdk</depend>
   <depend>robotis_controller</depend>
+  <depend>robotis_math</depend>  
   <depend>op3_base_module</depend>  
   <depend>yaml-cpp</depend>
 </package>
