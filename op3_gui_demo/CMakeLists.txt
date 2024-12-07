@@ -26,6 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
   op3_walking_module_msgs
   op3_online_walking_module_msgs
   humanoid_nav_msgs
+  tf
 )
 
 find_package(Eigen REQUIRED)
