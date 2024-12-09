@@ -35,14 +35,14 @@ void sighandler(int sig)
   exit(0);
 }
 
-bool turnOnDynamixelPower(const std::string &device_name, const int &baud_rate)
+bool turnOnDynamixelPower(rclcpp::Node::SharedPtr node, const std::string &device_name, const int &baud_rate)
 {
   // power on
   dynamixel::PortHandler *_port_h = (dynamixel::PortHandler *) dynamixel::PortHandler::getPortHandler(device_name.c_str());
   bool _set_port = _port_h->setBaudRate(baud_rate);
   if (_set_port == false)
   {
-    ROS_ERROR("Error Set port");
+    RCLCPP_ERROR(node->get_logger(), "Error Set port");
     return false;
   }
   dynamixel::PacketHandler *_packet_h = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
@@ -51,30 +51,41 @@ bool turnOnDynamixelPower(const std::string &device_name, const int &baud_rate)
 
   if(_return != COMM_SUCCESS)
   {
-    ROS_ERROR("Failed to turn on the Power of DXLs!");
+    RCLCPP_ERROR(node->get_logger(), "Failed to turn on the Power of DXLs!");
     return false;
   }
   else
   {
-    ROS_INFO("Power on DXLs!");
+    RCLCPP_INFO(node->get_logger(), "Power on DXLs!");
   }
 
-
-  usleep(100 * 1000);
+  rclcpp::sleep_for(std::chrono::milliseconds(100));
 
   return true;
 }
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "THORMANG3 Action Editor");
-  ros::NodeHandle nh;
+  rclcpp::init(argc, argv);
+  auto editor = std::make_shared<robotis_op::ActionEditor>();
 
-  std::string offset_file   = nh.param<std::string>("offset_table", "");
-  std::string robot_file    = nh.param<std::string>("robot_file_path", "");
-  std::string dxl_init_file = nh.param<std::string>("init_file_path", "");
-  std::string _device_name = nh.param<std::string>("device_name", SUB_CONTROLLER_DEVICE);
-  int _baud_rate = nh.param<int>("baudrate", BAUD_RATE);
+  std::string offset_file;
+  std::string robot_file;
+  std::string dxl_init_file;
+  std::string _device_name;
+  int _baud_rate;
+
+  editor->declare_parameter<std::string>("offset_table", "");
+  editor->declare_parameter<std::string>("robot_file_path", "");
+  editor->declare_parameter<std::string>("init_file_path", "");
+  editor->declare_parameter<std::string>("device_name", SUB_CONTROLLER_DEVICE);
+  editor->declare_parameter<int>("baudrate", BAUD_RATE);
+
+  editor->get_parameter("offset_file_path", offset_file);
+  editor->get_parameter("robot_file_path", robot_file);
+  editor->get_parameter("init_file_path", dxl_init_file);
+  editor->get_parameter("device_name", _device_name);
+  editor->get_parameter("baud_rate", _baud_rate);
 
   signal(SIGABRT, &sighandler);
   signal(SIGTERM, &sighandler);
@@ -83,286 +94,285 @@ int main(int argc, char **argv)
 
   int ch;
 
-  if(turnOnDynamixelPower(_device_name, _baud_rate) == false)
+  if(turnOnDynamixelPower(editor, _device_name, _baud_rate) == false)
     return 0;
 
-  robotis_op::ActionEditor editor;
-  if (editor.initializeActionEditor(robot_file, dxl_init_file, offset_file) == false)
+  if (editor->initializeActionEditor(robot_file, dxl_init_file, offset_file) == false)
   {
-    ROS_ERROR("Failed to Initialize");
+    RCLCPP_ERROR(editor->get_logger(), "Failed to Initialize");
     return 0;
   }
 
   // disable ros log
-  ros::console::shutdown();
+  editor->get_logger().set_level(rclcpp::Logger::Level::Unset);
 
-  editor.drawIntro();
+  editor->drawIntro();
 
   while (1)
-   {
-     ch = editor._getch();
+  {
+    ch = editor->_getch();
 
-     if (ch == 0x1b)
-     {
-       ch = editor._getch();
-       if (ch == 0x5b)
-       {
-         ch = editor._getch();
-         if (ch == 0x41)      // Up arrow key
-           editor.moveUpCursor();
-         else if (ch == 0x42)  // Down arrow key
-           editor.moveDownCursor();
-         else if (ch == 0x44)  // Left arrow key
-           editor.moveLeftCursor();
-         else if (ch == 0x43)  // Right arrow key
-           editor.moveRightCursor();
-       }
-     }
-     else if (ch == '[')
-       editor.setValueUpDown(-1);
-     else if (ch == ']')
-       editor.setValueUpDown(1);
-     else if (ch == '{')
-       editor.setValueUpDown(-10);
-     else if (ch == '}')
-       editor.setValueUpDown(10);
-     else if (ch == ' ')
-       editor.toggleTorque();
-     else if (ch == ',')
-       editor.storeValueToCache();
-     else if (ch == '.')
-       editor.setValueFromCache();
-     else if (ch == '/')
-       editor.clearCache();
-     else if (ch >= 'A' && ch <= 'z')
-     {
-       char input[128] = { 0, };
-       char *token;
-       int input_len;
-       char cmd[80];
-       int num_param;
-       int iparam[30];
+    if (ch == 0x1b)
+    {
+      ch = editor->_getch();
+      if (ch == 0x5b)
+      {
+        ch = editor->_getch();
+        if (ch == 0x41) // Up arrow key
+          editor->moveUpCursor();
+        else if (ch == 0x42) // Down arrow key
+          editor->moveDownCursor();
+        else if (ch == 0x44) // Left arrow key
+          editor->moveLeftCursor();
+        else if (ch == 0x43) // Right arrow key
+          editor->moveRightCursor();
+      }
+    }
+    else if (ch == '[')
+      editor->setValueUpDown(-1);
+    else if (ch == ']')
+      editor->setValueUpDown(1);
+    else if (ch == '{')
+      editor->setValueUpDown(-10);
+    else if (ch == '}')
+      editor->setValueUpDown(10);
+    else if (ch == ' ')
+      editor->toggleTorque();
+    else if (ch == ',')
+      editor->storeValueToCache();
+    else if (ch == '.')
+      editor->setValueFromCache();
+    else if (ch == '/')
+      editor->clearCache();
+    else if (ch >= 'A' && ch <= 'z')
+    {
+      char input[128] = {0,};
+      char *token;
+      int input_len;
+      char cmd[80];
+      int num_param;
+      int iparam[30];
 
-       int idx = 0;
+      int idx = 0;
 
-       editor.beginCommandMode();
+      editor->beginCommandMode();
 
-       printf("%c", ch);
-       input[idx++] = (char) ch;
+      printf("%c", ch);
+      input[idx++] = (char)ch;
 
-       while (1)
-       {
-         ch = editor._getch();
-         if (ch == 0x0A)
-           break;
-         else if (ch == 0x7F)
-         {
-           if (idx > 0)
-           {
-             ch = 0x08;
-             printf("%c", ch);
-             ch = ' ';
-             printf("%c", ch);
-             ch = 0x08;
-             printf("%c", ch);
-             input[--idx] = 0;
-           }
-         }
-         else if ((ch >= 'A' && ch <= 'z') || ch == ' ' || (ch >= '0' && ch <= '9'))
-         {
-           if (idx < 127)
-           {
-             printf("%c", ch);
-             input[idx++] = (char) ch;
-           }
-         }
-       }
+      while (1)
+      {
+        ch = editor->_getch();
+        if (ch == 0x0A)
+          break;
+        else if (ch == 0x7F)
+        {
+          if (idx > 0)
+          {
+            ch = 0x08;
+            printf("%c", ch);
+            ch = ' ';
+            printf("%c", ch);
+            ch = 0x08;
+            printf("%c", ch);
+            input[--idx] = 0;
+          }
+        }
+        else if ((ch >= 'A' && ch <= 'z') || ch == ' ' || (ch >= '0' && ch <= '9'))
+        {
+          if (idx < 127)
+          {
+            printf("%c", ch);
+            input[idx++] = (char)ch;
+          }
+        }
+      }
 
-       fflush(stdin);
-       input_len = strlen(input);
-       if (input_len > 0)
-       {
-         token = strtok(input, " ");
-         if (token != 0)
-         {
-           strcpy(cmd, token);
-           token = strtok(0, " ");
-           num_param = 0;
-           while (token != 0)
-           {
-             iparam[num_param++] = atoi(token);
-             token = strtok(0, " ");
-           }
+      fflush(stdin);
+      input_len = strlen(input);
+      if (input_len > 0)
+      {
+        token = strtok(input, " ");
+        if (token != 0)
+        {
+          strcpy(cmd, token);
+          token = strtok(0, " ");
+          num_param = 0;
+          while (token != 0)
+          {
+            iparam[num_param++] = atoi(token);
+            token = strtok(0, " ");
+          }
 
-           if (strcmp(cmd, "exit") == 0)
-           {
-             if (editor.askSave() == false)
-               break;
-           }
-           else if (strcmp(cmd, "re") == 0)
-             editor.drawPage();
-           else if (strcmp(cmd, "help") == 0)
-             editor.helpCmd();
-           else if (strcmp(cmd, "n") == 0)
-             editor.nextCmd();
-           else if (strcmp(cmd, "b") == 0)
-             editor.prevCmd();
-           else if (strcmp(cmd, "time") == 0)
-             editor.timeCmd();
-           else if (strcmp(cmd, "speed") == 0)
-             editor.speedCmd();
-           else if (strcmp(cmd, "page") == 0)
-           {
-             if (num_param > 0)
-               editor.pageCmd(iparam[0]);
-             else
-               editor.printCmd("Need parameter");
-           }
-           else if (strcmp(cmd, "play") == 0)
-           {
-             editor.playCmd();
-           }
-           else if (strcmp(cmd, "playboth") == 0)
-           {
-             if (num_param > 0)
-               editor.playCmd(iparam[0]);
-             else
-               editor.printCmd("Need parameter");
-           }
-           else if (strcmp(cmd, "set") == 0)
-           {
-             if (num_param > 0)
-               editor.setValue(iparam[0]);
-             else
-               editor.printCmd("Need parameter");
-           }
-           else if (strcmp(cmd, "list") == 0)
-             editor.listCmd();
-           else if (strcmp(cmd, "on") == 0)
-             editor.turnOnOffCmd(true, num_param, iparam);
-           else if (strcmp(cmd, "off") == 0)
-             editor.turnOnOffCmd(false, num_param, iparam);
-           else if (strcmp(cmd, "mrl") == 0)
-           {
-             if (num_param > 0)
-               editor.mirrorStepCmd(iparam[0], robotis_op::ActionEditor::RightToLeft,
-                                    robotis_op::ActionEditor::AllBody);
-             else
-               editor.printCmd("Need parameter");
-           }
-           else if (strcmp(cmd, "murl") == 0)
-           {
-             if (num_param > 0)
-               editor.mirrorStepCmd(iparam[0], robotis_op::ActionEditor::RightToLeft,
-                                    robotis_op::ActionEditor::UpperBody);
-             else
-               editor.printCmd("Need parameter");
-           }
-           else if (strcmp(cmd, "mlrl") == 0)
-           {
-             if (num_param > 0)
-               editor.mirrorStepCmd(iparam[0], robotis_op::ActionEditor::RightToLeft,
-                                    robotis_op::ActionEditor::LowerBody);
-             else
-               editor.printCmd("Need parameter");
-           }
-           else if (strcmp(cmd, "mlr") == 0)
-           {
-             if (num_param > 0)
-               editor.mirrorStepCmd(iparam[0], robotis_op::ActionEditor::LeftToRight,
-                                    robotis_op::ActionEditor::AllBody);
-             else
-               editor.printCmd("Need parameter");
-           }
-           else if (strcmp(cmd, "mulr") == 0)
-           {
-             if (num_param > 0)
-               editor.mirrorStepCmd(iparam[0], robotis_op::ActionEditor::LeftToRight,
-                                    robotis_op::ActionEditor::UpperBody);
-             else
-               editor.printCmd("Need parameter");
-           }
-           else if (strcmp(cmd, "mllr") == 0)
-           {
-             if (num_param > 0)
-               editor.mirrorStepCmd(iparam[0], robotis_op::ActionEditor::LeftToRight,
-                                    robotis_op::ActionEditor::LowerBody);
-             else
-               editor.printCmd("Need parameter");
-           }
-           else if (strcmp(cmd, "ms") == 0)
-           {
-             if (num_param > 0)
-               editor.mirrorStepCmd(iparam[0], robotis_op::ActionEditor::SwitchEach,
-                                    robotis_op::ActionEditor::AllBody);
-             else
-               editor.printCmd("Need parameter");
-           }
-           else if (strcmp(cmd, "w") == 0)
-           {
-             if (num_param > 0)
-               editor.writeStepCmd(iparam[0]);
-             else
-               editor.printCmd("Need parameter");
-           }
-           else if (strcmp(cmd, "d") == 0)
-           {
-             if (num_param > 0)
-               editor.deleteStepCmd(iparam[0]);
-             else
-               editor.printCmd("Need parameter");
-           }
-           else if (strcmp(cmd, "m") == 0)
-           {
-             if (num_param > 1)
-               editor.moveStepCmd(iparam[0], iparam[1]);
-             else
-               editor.printCmd("Need parameter");
-           }
-           else if (strcmp(cmd, "i") == 0)
-           {
-             if (num_param == 0)
-               editor.insertStepCmd(0);
-             else
-               editor.insertStepCmd(iparam[0]);
-           }
-           else if (strcmp(cmd, "int") == 0)
-           {
-             if (num_param == 2)
-               editor.insertInterpolationStepCmd(iparam[0], iparam[1]);
-             else
-               editor.printCmd("Need 2 parameters");
-           }
-           else if (strcmp(cmd, "copy") == 0)
-           {
-             if (num_param > 0)
-               editor.copyCmd(iparam[0]);
-             else
-               editor.printCmd("Need parameter");
-           }
-           else if (strcmp(cmd, "new") == 0)
-             editor.newCmd();
-           else if (strcmp(cmd, "g") == 0)
-           {
-             if (num_param > 0)
-               editor.goCmd_2(iparam[0]);
-             else
-               editor.printCmd("Need parameter");
-           }
-           else if (strcmp(cmd, "save") == 0)
-             editor.saveCmd();
-           else if (strcmp(cmd, "name") == 0)
-             editor.nameCmd();
-           else
-             editor.printCmd("Bad command! please input 'help'");
-         }
-       }
+          if (strcmp(cmd, "exit") == 0)
+          {
+            if (editor->askSave() == false)
+              break;
+          }
+          else if (strcmp(cmd, "re") == 0)
+            editor->drawPage();
+          else if (strcmp(cmd, "help") == 0)
+            editor->helpCmd();
+          else if (strcmp(cmd, "n") == 0)
+            editor->nextCmd();
+          else if (strcmp(cmd, "b") == 0)
+            editor->prevCmd();
+          else if (strcmp(cmd, "time") == 0)
+            editor->timeCmd();
+          else if (strcmp(cmd, "speed") == 0)
+            editor->speedCmd();
+          else if (strcmp(cmd, "page") == 0)
+          {
+            if (num_param > 0)
+              editor->pageCmd(iparam[0]);
+            else
+              editor->printCmd("Need parameter");
+          }
+          else if (strcmp(cmd, "play") == 0)
+          {
+            editor->playCmd();
+          }
+          else if (strcmp(cmd, "playboth") == 0)
+          {
+            if (num_param > 0)
+              editor->playCmd(iparam[0]);
+            else
+              editor->printCmd("Need parameter");
+          }
+          else if (strcmp(cmd, "set") == 0)
+          {
+            if (num_param > 0)
+              editor->setValue(iparam[0]);
+            else
+              editor->printCmd("Need parameter");
+          }
+          else if (strcmp(cmd, "list") == 0)
+            editor->listCmd();
+          else if (strcmp(cmd, "on") == 0)
+            editor->turnOnOffCmd(true, num_param, iparam);
+          else if (strcmp(cmd, "off") == 0)
+            editor->turnOnOffCmd(false, num_param, iparam);
+          else if (strcmp(cmd, "mrl") == 0)
+          {
+            if (num_param > 0)
+              editor->mirrorStepCmd(iparam[0], robotis_op::ActionEditor::RightToLeft,
+                                   robotis_op::ActionEditor::AllBody);
+            else
+              editor->printCmd("Need parameter");
+          }
+          else if (strcmp(cmd, "murl") == 0)
+          {
+            if (num_param > 0)
+              editor->mirrorStepCmd(iparam[0], robotis_op::ActionEditor::RightToLeft,
+                                   robotis_op::ActionEditor::UpperBody);
+            else
+              editor->printCmd("Need parameter");
+          }
+          else if (strcmp(cmd, "mlrl") == 0)
+          {
+            if (num_param > 0)
+              editor->mirrorStepCmd(iparam[0], robotis_op::ActionEditor::RightToLeft,
+                                   robotis_op::ActionEditor::LowerBody);
+            else
+              editor->printCmd("Need parameter");
+          }
+          else if (strcmp(cmd, "mlr") == 0)
+          {
+            if (num_param > 0)
+              editor->mirrorStepCmd(iparam[0], robotis_op::ActionEditor::LeftToRight,
+                                   robotis_op::ActionEditor::AllBody);
+            else
+              editor->printCmd("Need parameter");
+          }
+          else if (strcmp(cmd, "mulr") == 0)
+          {
+            if (num_param > 0)
+              editor->mirrorStepCmd(iparam[0], robotis_op::ActionEditor::LeftToRight,
+                                   robotis_op::ActionEditor::UpperBody);
+            else
+              editor->printCmd("Need parameter");
+          }
+          else if (strcmp(cmd, "mllr") == 0)
+          {
+            if (num_param > 0)
+              editor->mirrorStepCmd(iparam[0], robotis_op::ActionEditor::LeftToRight,
+                                   robotis_op::ActionEditor::LowerBody);
+            else
+              editor->printCmd("Need parameter");
+          }
+          else if (strcmp(cmd, "ms") == 0)
+          {
+            if (num_param > 0)
+              editor->mirrorStepCmd(iparam[0], robotis_op::ActionEditor::SwitchEach,
+                                   robotis_op::ActionEditor::AllBody);
+            else
+              editor->printCmd("Need parameter");
+          }
+          else if (strcmp(cmd, "w") == 0)
+          {
+            if (num_param > 0)
+              editor->writeStepCmd(iparam[0]);
+            else
+              editor->printCmd("Need parameter");
+          }
+          else if (strcmp(cmd, "d") == 0)
+          {
+            if (num_param > 0)
+              editor->deleteStepCmd(iparam[0]);
+            else
+              editor->printCmd("Need parameter");
+          }
+          else if (strcmp(cmd, "m") == 0)
+          {
+            if (num_param > 1)
+              editor->moveStepCmd(iparam[0], iparam[1]);
+            else
+              editor->printCmd("Need parameter");
+          }
+          else if (strcmp(cmd, "i") == 0)
+          {
+            if (num_param == 0)
+              editor->insertStepCmd(0);
+            else
+              editor->insertStepCmd(iparam[0]);
+          }
+          else if (strcmp(cmd, "int") == 0)
+          {
+            if (num_param == 2)
+              editor->insertInterpolationStepCmd(iparam[0], iparam[1]);
+            else
+              editor->printCmd("Need 2 parameters");
+          }
+          else if (strcmp(cmd, "copy") == 0)
+          {
+            if (num_param > 0)
+              editor->copyCmd(iparam[0]);
+            else
+              editor->printCmd("Need parameter");
+          }
+          else if (strcmp(cmd, "new") == 0)
+            editor->newCmd();
+          else if (strcmp(cmd, "g") == 0)
+          {
+            if (num_param > 0)
+              editor->goCmd_2(iparam[0]);
+            else
+              editor->printCmd("Need parameter");
+          }
+          else if (strcmp(cmd, "save") == 0)
+            editor->saveCmd();
+          else if (strcmp(cmd, "name") == 0)
+            editor->nameCmd();
+          else
+            editor->printCmd("Bad command! please input 'help'");
+        }
+      }
 
-       editor.endCommandMode();
-     }
-   }
+      editor->endCommandMode();
+    }
+  }
 
-   editor.drawEnding();
+  editor->drawEnding();
 
-   return 0;
- }
+  return 0;
+}
