@@ -19,9 +19,10 @@
 #ifndef OP3_ACTION_EDITOR_H_
 #define OP3_ACTION_EDITOR_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <string>
+#include <rclcpp/rclcpp.hpp>
 #include <unistd.h>
 #include <termios.h>
 #include <term.h>
@@ -29,8 +30,8 @@
 #include <ncurses.h>
 #include <pthread.h>
 #include <sys/wait.h>
-#include <ros/ros.h>
-#include <std_msgs/String.h>
+
+#include "std_msgs/msg/string.hpp"
 #include <yaml-cpp/yaml.h>
 #include "dynamixel_sdk/dynamixel_sdk.h"
 #include "robotis_controller/robotis_controller.h"
@@ -42,7 +43,7 @@
 namespace robotis_op
 {
 
-class ActionEditor
+class ActionEditor : public rclcpp::Node
 {
 public:
   enum MirrorCommandType
@@ -139,8 +140,8 @@ private:
   bool loadMirrorJoint();
 
   struct termios oldterm, new_term;
-  ros::Publisher enable_ctrl_module_pub_;
-  ros::Publisher play_sound_pub_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr enable_ctrl_module_pub_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr play_sound_pub_;
 
   action_file_define::Page page_;
   action_file_define::Step step_;

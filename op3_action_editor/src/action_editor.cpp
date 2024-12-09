@@ -21,6 +21,7 @@
 using namespace robotis_op;
 
 ActionEditor::ActionEditor()
+ :  Node("op3_action_module_editor")
 {
   ctrl_ = 0;
   robot_ = 0;
@@ -262,7 +263,7 @@ bool ActionEditor::initializeActionEditor(std::string robot_file_path, std::stri
   //Controller Initialize with robot file info
   if (ctrl_->initialize(robot_file_path, init_file_path) == false)
   {
-    ROS_ERROR("ROBOTIS Controller Initialize Fail!");
+    RCLCPP_ERROR(this->get_logger(), "ROBOTIS Controller Initialize Fail!");
     return false;
   }
 
@@ -273,9 +274,8 @@ bool ActionEditor::initializeActionEditor(std::string robot_file_path, std::stri
   robot_ = ctrl_->robot_;
 
   //Initialize Publisher
-  ros::NodeHandle nh;
-  enable_ctrl_module_pub_ = nh.advertise<std_msgs::String>("/robotis/enable_ctrl_module", 0);
-  play_sound_pub_ = nh.advertise<std_msgs::String>("/play_sound_file", 0);
+  enable_ctrl_module_pub_ = this->create_publisher<std_msgs::msg::String>("/robotis/enable_ctrl_module", 10);
+  play_sound_pub_ = this->create_publisher<std_msgs::msg::String>("/play_sound_file", 10);
 
   //Initialize Member variable
   for (std::map<std::string, robotis_framework::Dynamixel*>::iterator it = robot_->dxls_.begin();
@@ -329,8 +329,8 @@ bool ActionEditor::initializeActionEditor(std::string robot_file_path, std::stri
         8);
   }
 
-  default_editor_script_path_ = ros::package::getPath(ROS_PACKAGE_NAME) + "/script/editor_script.yaml";
-  mirror_joint_file_path_ = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/config_mirror_joint.yaml";
+  default_editor_script_path_ = ament_index_cpp::get_package_share_directory("op3_action_editor") + "/script/editor_script.yaml";
+  mirror_joint_file_path_ = ament_index_cpp::get_package_share_directory("op3_action_editor") + "/config/config_mirror_joint.yaml";
 
   // for mirroring
   upper_body_mirror_joints_rl_.clear();
@@ -1279,11 +1279,11 @@ void ActionEditor::playCmd(int mp3_index)
   printCmd("Playing... ('s' to stop, 'b' to brake)");
 
   ctrl_->startTimer();
-  ros::Duration(0.03).sleep();  // waiting for timer start
+  rclcpp::sleep_for(std::chrono::milliseconds(300));  // waiting for timer start
 
   std::string module_name = "action_module";
   ctrl_->setCtrlModule(module_name);
-  ros::Duration(0.03).sleep(); // waiting for enable
+  rclcpp::sleep_for(std::chrono::milliseconds(300)); // waiting for enable
 
   if (ActionModule::getInstance()->start(page_idx_, &page_) == false)
   {
@@ -1301,10 +1301,10 @@ void ActionEditor::playCmd(int mp3_index)
 
     if (get_path_result == true)
     {
-      std_msgs::String sound_msg;
+      std_msgs::msg::String sound_msg;
       sound_msg.data = mp3_path;
 
-      play_sound_pub_.publish(sound_msg);
+      play_sound_pub_->publish(sound_msg);
     }
   }
 
@@ -1903,7 +1903,7 @@ void ActionEditor::goCmd_2(int index)
   }
 
   ctrl_->startTimer();
-  ros::Duration(0.03).sleep(); // waiting for timer start
+  rclcpp::sleep_for(std::chrono::milliseconds(300)); // waiting for timer start
 
   BaseModule *base_module = BaseModule::getInstance();
 
@@ -1929,14 +1929,14 @@ void ActionEditor::goCmd_2(int index)
   // move time : 5.0 sec
   base_module->poseGenerateProc(go_pose);
 
-  ros::Duration(0.01).sleep();
+  rclcpp::sleep_for(std::chrono::milliseconds(10));
 
   while (base_module->isRunning())
-    ros::Duration(0.01).sleep();
+    rclcpp::sleep_for(std::chrono::milliseconds(10));
 
   ctrl_->stopTimer();
   while (ctrl_->isTimerRunning())
-    ros::Duration(0.01).sleep();
+    rclcpp::sleep_for(std::chrono::milliseconds(10));
 
   ctrl_->setCtrlModule("none");
 
