@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindowDesign</class>
- <widget class="QMainWindow" name="MainWindowDesign">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -878,7 +878,7 @@
   <connection>
    <sender>action_Quit</sender>
    <signal>triggered()</signal>
-   <receiver>MainWindowDesign</receiver>
+   <receiver>MainWindow</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -894,7 +894,7 @@
   <connection>
    <sender>quit_button</sender>
    <signal>clicked()</signal>
-   <receiver>MainWindowDesign</receiver>
+   <receiver>MainWindow</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">

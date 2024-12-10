@@ -20,11 +20,28 @@
  ** Includes
  *****************************************************************************/
 
-#include <QtGui>
+#include <QMetaType>
 #include <QMessageBox>
 #include <QCheckBox>
+#include <QApplication>
+#include <QSignalMapper>
+#include <QButtonGroup>
+#include <QDoubleSpinBox>
+#include <QSpinBox>
+#include <QLabel>
+#include <QPushButton>
+#include <QGroupBox>
+#include <QGridLayout>
+#include <QCloseEvent>
 #include <iostream>
-#include "../include/op3_offset_tuner_client/main_window.hpp"
+#include <std_msgs/msg/string.hpp>
+
+#include "op3_offset_tuner_client/main_window.hpp"
+#include "../op3_offset_tuner_client/ui_main_window.h"
+
+#include <op3_offset_tuner_msgs/msg/joint_offset_position_data.hpp>
+#include <op3_offset_tuner_msgs/msg/joint_torque_on_off_array.hpp>
+#include <op3_offset_tuner_msgs/msg/joint_torque_on_off.hpp>
 
 /*****************************************************************************
  ** Namespaces
@@ -40,15 +57,17 @@ using namespace Qt;
  *****************************************************************************/
 
 MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
-  : QMainWindow(parent),
-    qnode_(argc, argv)
+  : QMainWindow(parent), 
+    ui_(new Ui::MainWindow),
+    qnode_(nullptr)    
 {
-  ui_.setupUi(this);  // Calling this incidentally connects all ui's triggers to on_...() callbacks in this class.
-  QObject::connect(ui_.actionAbout_Qt, SIGNAL(triggered(bool)), qApp, SLOT(aboutQt()));  // qApp is a global variable for the application
+  ui_->setupUi(this);  // Calling this incidentally connects all ui's triggers to on_...() callbacks in this class.
+  QObject::connect(ui_->actionAbout_Qt, &QAction::triggered, qApp, &QApplication::aboutQt);  // qApp is a global variable for the application
 
+  qnode_ = new QNode(argc, argv, this);
   setWindowIcon(QIcon(":/images/icon.png"));
-  ui_.tab_manager->setCurrentIndex(0);  // ensure the first tab is showing - qt-designer should have this already hardwired, but often loses it (settings?).
-  QObject::connect(&qnode_, SIGNAL(rosShutdown()), this, SLOT(close()));
+  ui_->tab_manager->setCurrentIndex(0);  // ensure the first tab is showing - qt-designer should have this already hardwired, but often loses it (settings?).
+  QObject::connect(qnode_, &QNode::rosShutdown, this, &MainWindow::close);
 
   all_torque_on_ = false;
 
@@ -64,15 +83,14 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
    ** Connect
    ****************************/
 
-  qRegisterMetaType<op3_offset_tuner_msgs::JointOffsetPositionData>("op3_offset_tuner_msgs::JointOffsetPositionData");
-  QObject::connect(&qnode_, SIGNAL(updatePresentJointOffsetData(op3_offset_tuner_msgs::JointOffsetPositionData)), this,
-                   SLOT(updateJointOffsetSpinbox(op3_offset_tuner_msgs::JointOffsetPositionData)));
+  qRegisterMetaType<op3_offset_tuner_msgs::msg::JointOffsetPositionData>("op3_offset_tuner_msgs::msg::JointOffsetPositionData");
+  QObject::connect(qnode_, &QNode::updatePresentJointOffsetData, this, &MainWindow::updateJointOffsetSpinbox);
 
   /*********************
    ** Logging
    **********************/
-  ui_.view_logging->setModel(qnode_.loggingModel());
-  QObject::connect(&qnode_, SIGNAL(loggingUpdated()), this, SLOT(updateLoggingView()));
+  ui_->view_logging->setModel(qnode_->loggingModel());
+  QObject::connect(qnode_, &QNode::loggingUpdated, this, &MainWindow::updateLoggingView);
 
   /****************************
    ** Connect
@@ -81,7 +99,6 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
   /*********************
    ** Auto Start
    **********************/
-  qnode_.init();
 
   // make ui
   makeUI();
@@ -89,6 +106,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+  delete ui_;
 }
 
 /*****************************************************************************
@@ -97,23 +115,23 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_save_button_clicked(bool check)
 {
-  std_msgs::String msg;
+  std_msgs::msg::String msg;
   msg.data = "save";
 
-  qnode_.sendCommandMsg(msg);
+  qnode_->sendCommandMsg(msg);
 }
 
 void MainWindow::on_inipose_button_clicked(bool checck)
 {
-  std_msgs::String msg;
+  std_msgs::msg::String msg;
   msg.data = "ini_pose";
 
-  qnode_.sendCommandMsg(msg);
+  qnode_->sendCommandMsg(msg);
 }
 
 void MainWindow::on_refresh_button_clicked(bool check)
 {
-  qnode_.getPresentJointOffsetData();
+  qnode_->getPresentJointOffsetData();
 }
 
 void MainWindow::clickedAllTorqueOnButton(QObject *button_group)
@@ -131,7 +149,7 @@ void MainWindow::clickedAllTorqueOnButton(QObject *button_group)
       torque_buttons[ix]->click();
   }
 
-  qnode_.getPresentJointOffsetData(true);
+  qnode_->getPresentJointOffsetData(true);
 
   all_torque_on_ = false;
 }
@@ -173,26 +191,26 @@ void MainWindow::clickedTorqueCheckbox(QWidget *widget)
 
 void MainWindow::publishTorqueMsgs(std::string &joint_name, bool torque_on)
 {
-  op3_offset_tuner_msgs::JointTorqueOnOffArray torque_array_msg;
-  op3_offset_tuner_msgs::JointTorqueOnOff torque_msg;
+  op3_offset_tuner_msgs::msg::JointTorqueOnOffArray torque_array_msg;
+  op3_offset_tuner_msgs::msg::JointTorqueOnOff torque_msg;
 
   torque_msg.joint_name = joint_name;
   torque_msg.torque_enable = torque_on;
 
   torque_array_msg.torque_enable_data.push_back(torque_msg);
 
-  qnode_.sendTorqueEnableMsg(torque_array_msg);
+  qnode_->sendTorqueEnableMsg(torque_array_msg);
 
   if (all_torque_on_ == false)
-    qnode_.getPresentJointOffsetData(true);
+    qnode_->getPresentJointOffsetData(true);
 }
 
 void MainWindow::changedSpinBoxValue(QString q_joint_name)
 {
-  if (qnode_.isRefresh() == true)
+  if (qnode_->isRefresh() == true)
     return;
 
-  op3_offset_tuner_msgs::JointOffsetData msg;
+  op3_offset_tuner_msgs::msg::JointOffsetData msg;
   std::string joint_name = q_joint_name.toStdString();
 
   QList<QAbstractSpinBox *> spinbox_list = joint_spinbox_map_[joint_name];
@@ -251,10 +269,10 @@ void MainWindow::changedSpinBoxValue(QString q_joint_name)
   if (mod_spinBox)  // this is just a safety check
     mod_spinBox->setValue((msg.goal_value + msg.offset_value) * 180.0 / M_PI);
 
-  qnode_.sendJointOffsetDataMsg(msg);
+  qnode_->sendJointOffsetDataMsg(msg);
 }
 
-void MainWindow::updateJointOffsetSpinbox(op3_offset_tuner_msgs::JointOffsetPositionData msg)
+void MainWindow::updateJointOffsetSpinbox(op3_offset_tuner_msgs::msg::JointOffsetPositionData msg)
 {
   std::string joint_name = msg.joint_name;
 
@@ -324,15 +342,15 @@ void MainWindow::updateJointOffsetSpinbox(op3_offset_tuner_msgs::JointOffsetPosi
  */
 void MainWindow::updateLoggingView()
 {
-  ui_.view_logging->scrollToBottom();
+  ui_->view_logging->scrollToBottom();
 }
 
 void MainWindow::makeUI()
 {
-  makeTabUI(ui_.right_arm_group, ui_.right_arm_torque, right_arm_button_group_, qnode_.right_arm_offset_group_);
-  makeTabUI(ui_.left_arm_group, ui_.left_arm_torque, left_arm_button_group_, qnode_.left_arm_offset_group_);
-  makeTabUI(ui_.leg_group, ui_.leg_torque, legs_button_group_, qnode_.legs_offset_group_);
-  makeTabUI(ui_.body_group, ui_.body_torque, body_button_group_, qnode_.body_offset_group_);
+  makeTabUI(ui_->right_arm_group, ui_->right_arm_torque, right_arm_button_group_, qnode_->right_arm_offset_group_);
+  makeTabUI(ui_->left_arm_group, ui_->left_arm_torque, left_arm_button_group_, qnode_->left_arm_offset_group_);
+  makeTabUI(ui_->leg_group, ui_->leg_torque, legs_button_group_, qnode_->legs_offset_group_);
+  makeTabUI(ui_->body_group, ui_->body_torque, body_button_group_, qnode_->body_offset_group_);
 }
 
 void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QButtonGroup *button_group,
@@ -383,7 +401,7 @@ void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QB
 
       default:
         spingox_signalMapper->setMapping(spin_box, q_joint_name);
-        QObject::connect(spin_box, SIGNAL(valueChanged(QString)), spingox_signalMapper, SLOT(map()));
+        QObject::connect(spin_box, QOverload<double>::of(&QDoubleSpinBox::valueChanged), spingox_signalMapper, QOverload<>::of(&QSignalMapper::map));
         break;
       }
 
@@ -421,7 +439,7 @@ void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QB
       }
 
       spingox_signalMapper->setMapping(spin_box, q_joint_name);
-      QObject::connect(spin_box, SIGNAL(valueChanged(QString)), spingox_signalMapper, SLOT(map()));
+      QObject::connect(spin_box, QOverload<int>::of(&QSpinBox::valueChanged), spingox_signalMapper, QOverload<>::of(&QSignalMapper::map));
 
       grid_layout->addWidget(spin_box, num_row, num_col++, 1, spinbox_size);
 
@@ -444,7 +462,7 @@ void MainWindow::makeTabUI(QGroupBox *joint_widget, QGroupBox *torque_widget, QB
     button_group->addButton(torque_check_box);
 
     torque_checkbox_signalMapper->setMapping(torque_check_box, torque_check_box);
-    QObject::connect(torque_check_box, SIGNAL(clicked()), torque_checkbox_signalMapper, SLOT(map()));
+    QObject::connect(torque_check_box, &QCheckBox::clicked, torque_checkbox_signalMapper, QOverload<>::of(&QSignalMapper::map));
 
     torque_checkbox_index += 1;
   }

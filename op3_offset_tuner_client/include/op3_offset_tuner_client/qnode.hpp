@@ -28,19 +28,19 @@
  *****************************************************************************/
 #ifndef Q_MOC_RUN
 
-#include <string>
 #include <QThread>
 #include <QStringListModel>
-#include <ros/ros.h>
-#include <ros/package.h>
-#include <std_msgs/String.h>
+#include <string>
+#include <thread>
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <yaml-cpp/yaml.h>
 
-#include "op3_offset_tuner_msgs/JointOffsetData.h"
-#include "op3_offset_tuner_msgs/JointOffsetPositionData.h"
-#include "op3_offset_tuner_msgs/JointTorqueOnOff.h"
-#include "op3_offset_tuner_msgs/JointTorqueOnOffArray.h"
-#include "op3_offset_tuner_msgs/GetPresentJointOffsetData.h"
+#include "op3_offset_tuner_msgs/msg/joint_offset_data.hpp"
+#include "op3_offset_tuner_msgs/msg/joint_offset_position_data.hpp"
+#include "op3_offset_tuner_msgs/msg/joint_torque_on_off.hpp"
+#include "op3_offset_tuner_msgs/msg/joint_torque_on_off_array.hpp"
+#include "op3_offset_tuner_msgs/srv/get_present_joint_offset_data.hpp"
 
 #endif
 /*****************************************************************************
@@ -54,9 +54,9 @@ namespace op3_offset_tuner_client
  ** Class
  *****************************************************************************/
 
-class QNode : public QThread
+class QNode : public QObject, public rclcpp::Node
 {
-Q_OBJECT
+  Q_OBJECT
  public:
   enum LogLevel
   {
@@ -67,12 +67,8 @@ Q_OBJECT
     Fatal
   };
 
-  QNode(int argc, char** argv);
+  explicit QNode(int argc, char** argv, QObject* parent = nullptr);
   virtual ~QNode();
-
-  bool init();
-  bool init(const std::string &master_url, const std::string &host_url);
-  void run();
 
   QStringListModel* loggingModel()
   {
@@ -80,9 +76,9 @@ Q_OBJECT
   }
   void log(const LogLevel &level, const std::string &msg);
 
-  void sendTorqueEnableMsg(op3_offset_tuner_msgs::JointTorqueOnOffArray msg);
-  void sendJointOffsetDataMsg(op3_offset_tuner_msgs::JointOffsetData msg);
-  void sendCommandMsg(std_msgs::String msg);
+  void sendTorqueEnableMsg(op3_offset_tuner_msgs::msg::JointTorqueOnOffArray msg);
+  void sendJointOffsetDataMsg(op3_offset_tuner_msgs::msg::JointOffsetData msg);
+  void sendCommandMsg(std_msgs::msg::String msg);
   bool isRefresh()
   {
     return is_refresh_;
@@ -93,13 +89,13 @@ Q_OBJECT
   std::map<int, std::string> legs_offset_group_;
   std::map<int, std::string> body_offset_group_;
 
- public Q_SLOTS:
+public Q_SLOTS:
   void getPresentJointOffsetData(bool recalculate_offset = false);
 
 Q_SIGNALS:
   void loggingUpdated();
   void rosShutdown();
-  void updatePresentJointOffsetData(op3_offset_tuner_msgs::JointOffsetPositionData msg);
+  void updatePresentJointOffsetData(op3_offset_tuner_msgs::msg::JointOffsetPositionData msg);
 
  private:
   void parseOffsetGroup(const std::string &path);
@@ -107,14 +103,14 @@ Q_SIGNALS:
   int init_argc_;
   char** init_argv_;
   bool is_refresh_;
-  ros::Publisher chatter_publisher_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr chatter_publisher_;
   QStringListModel logging_model_;
 
-  ros::Publisher joint_offset_data_pub_;
-  ros::Publisher torque_enable_pub_;
-  ros::Publisher command_pub_;
+  rclcpp::Publisher<op3_offset_tuner_msgs::msg::JointOffsetData>::SharedPtr joint_offset_data_pub_;
+  rclcpp::Publisher<op3_offset_tuner_msgs::msg::JointTorqueOnOffArray>::SharedPtr torque_enable_pub_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr command_pub_;
 
-  ros::ServiceClient get_present_joint_offset_data_client_;
+  rclcpp::Client<op3_offset_tuner_msgs::srv::GetPresentJointOffsetData>::SharedPtr get_present_joint_offset_data_client_;
 };
 
 }  // namespace op3_offset_tuner_client

@@ -21,24 +21,38 @@
 ** Includes
 *****************************************************************************/
 
-#include <QtGui>
 #include <QApplication>
 #include "../include/op3_offset_tuner_client/main_window.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 /*****************************************************************************
 ** Main
 *****************************************************************************/
 
 int main(int argc, char **argv) {
+    // Initialize ROS 2
+    rclcpp::init(argc, argv);
 
     /*********************
     ** Qt
     **********************/
     QApplication app(argc, argv);
-    op3_offset_tuner_client::MainWindow w(argc,argv);
+
+    op3_offset_tuner_client::MainWindow w(argc, argv);
     w.show();
     app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+
+    auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+    auto spin_thread = std::thread([executor]() {
+        executor->spin();
+    });
+
     int result = app.exec();
 
-	return result;
+    // Shutdown ROS 2
+    executor->cancel();
+    spin_thread.join();
+    rclcpp::shutdown();
+
+    return result;
 }

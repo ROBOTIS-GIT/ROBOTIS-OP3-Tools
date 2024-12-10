@@ -27,17 +27,23 @@
 #include <QtGui>
 #include <QList>
 #include <QSpinBox>
+#include <QGroupBox>
+#include <QButtonGroup>
 #include <QMainWindow>
 
-#include <math.h>
+#include <cmath>
 
-#include "ui_main_window.h"
+// #include "main_window.hpp"
 #include "qnode.hpp"
 
 #endif
 /*****************************************************************************
  ** Namespace
  *****************************************************************************/
+namespace Ui
+{
+class MainWindow;
+}
 
 namespace op3_offset_tuner_client
 {
@@ -53,7 +59,7 @@ class MainWindow : public QMainWindow
 Q_OBJECT
 
  public:
-  MainWindow(int argc, char** argv, QWidget *parent = 0);
+  explicit MainWindow(int argc, char ** argv, QWidget * parent = nullptr);
   ~MainWindow();
 
   void closeEvent(QCloseEvent *event);  // Overloaded function
@@ -66,14 +72,14 @@ Q_OBJECT
 
   void on_save_button_clicked(bool check);
   void on_refresh_button_clicked(bool check);
-  void on_inipose_button_clicked(bool checck);
+  void on_inipose_button_clicked(bool check);
 
   /******************************************
    ** Manual connections
    *******************************************/
   void updateLoggingView();  // no idea why this can't connect automatically
 
-  void updateJointOffsetSpinbox(op3_offset_tuner_msgs::JointOffsetPositionData msg);
+  void updateJointOffsetSpinbox(op3_offset_tuner_msgs::msg::JointOffsetPositionData msg);
 
   void changedSpinBoxValue(QString q_joint_name);
   void clickedTorqueCheckbox(QWidget *widget);
@@ -86,8 +92,8 @@ Q_OBJECT
                  std::map<int, std::string> &offset_group);
   void publishTorqueMsgs(std::string &joint_name, bool torque_on);
 
-  Ui::MainWindowDesign ui_;
-  QNode qnode_;
+  Ui::MainWindow * ui_;
+  QNode * qnode_;
 
   bool all_torque_on_;
 
