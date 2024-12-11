@@ -25,4 +25,7 @@
   <depend>yaml-cpp</depend>
   <exec_depend>op3_manager</exec_depend>
   <exec_depend>ros_mpg321_player</exec_depend>
+  <export>                               
+    <build_type>ament_cmake</build_type> 
+  </export> 
 </package>

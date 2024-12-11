@@ -16,4 +16,7 @@
   <depend>rosidl_default_runtime</depend>
   <depend>op3_offset_tuner_msgs</depend>
   <depend>yaml-cpp</depend>
+  <export>                               
+    <build_type>ament_cmake</build_type> 
+  </export> 
 </package>

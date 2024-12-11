@@ -23,4 +23,7 @@
   <depend>robotis_math</depend>  
   <depend>op3_base_module</depend>  
   <depend>yaml-cpp</depend>
+  <export>                               
+    <build_type>ament_cmake</build_type> 
+  </export> 
 </package>

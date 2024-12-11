@@ -20,4 +20,7 @@
   <depend>yaml-cpp</depend>
   <depend>std_msgs</depend>
   <depend>op3_tuning_module_msgs</depend>
+  <export>                               
+    <build_type>ament_cmake</build_type> 
+  </export> 
 </package>
