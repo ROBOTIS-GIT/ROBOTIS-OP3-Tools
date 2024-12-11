@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<launch>
+    <node pkg="op3_tuner_client" exec="op3_tuner_client" name="tuner_client" output="screen"/>
+    
+    <node pkg="rqt_gui" exec="rqt_gui" name="joint_plot" output="screen" respawn="false">
+        <arg name="--perspective-file" value="$(find-pkg-share op3_tuner_client)/config/r_ank_pitch.perspective"/>
+    </node>
+</launch>

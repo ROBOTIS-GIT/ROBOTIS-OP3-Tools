@@ -21,9 +21,9 @@
 ** Includes
 *****************************************************************************/
 
-#include <QtGui>
 #include <QApplication>
 #include "../include/op3_tuner_client/main_window.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 /*****************************************************************************
 ** Main
@@ -32,13 +32,19 @@
 int main(int argc, char **argv) {
 
     /*********************
+    ** ROS2
+    **********************/
+    rclcpp::init(argc, argv);
+
+    /*********************
     ** Qt
     **********************/
     QApplication app(argc, argv);
-    op3_tuner_client::MainWindow w(argc,argv);
+    op3_tuner_client::MainWindow w(argc, argv);
     w.show();
     app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
     int result = app.exec();
 
-	return result;
+    rclcpp::shutdown();
+    return result;
 }

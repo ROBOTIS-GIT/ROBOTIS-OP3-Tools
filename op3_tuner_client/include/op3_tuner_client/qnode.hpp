@@ -28,21 +28,21 @@
  *****************************************************************************/
 #ifndef Q_MOC_RUN
 
-#include <ros/ros.h>
-#include <ros/package.h>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <QThread>
 #include <QStringListModel>
 #include <yaml-cpp/yaml.h>
 
-#include <std_msgs/String.h>
+#include <std_msgs/msg/string.hpp>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
-#include "op3_tuning_module_msgs/JointOffsetData.h"
-#include "op3_tuning_module_msgs/JointOffsetPositionData.h"
-#include "op3_tuning_module_msgs/JointTorqueOnOff.h"
-#include "op3_tuning_module_msgs/JointTorqueOnOffArray.h"
+#include "op3_tuning_module_msgs/msg/joint_offset_data.hpp"
+#include "op3_tuning_module_msgs/msg/joint_offset_position_data.hpp"
+#include "op3_tuning_module_msgs/msg/joint_torque_on_off.hpp"
+#include "op3_tuning_module_msgs/msg/joint_torque_on_off_array.hpp"
 
-#include "op3_tuning_module_msgs/GetPresentJointOffsetData.h"
+#include "op3_tuning_module_msgs/srv/get_present_joint_offset_data.hpp"
 
 #endif
 /*****************************************************************************
@@ -56,7 +56,7 @@ namespace op3_tuner_client
  ** Class
  *****************************************************************************/
 
-class QNode : public QThread
+class QNode : public QThread, public rclcpp::Node
 {
 Q_OBJECT
  public:
@@ -83,11 +83,11 @@ Q_OBJECT
   void log(const LogLevel &level, const std::string &msg);
   void clearLog();
 
-  void sendTorqueEnableMsg(op3_tuning_module_msgs::JointTorqueOnOffArray msg);
-  void sendJointOffsetDataMsg(op3_tuning_module_msgs::JointOffsetData msg);
-  void sendJointGainDataMsg(op3_tuning_module_msgs::JointOffsetData msg);
-  void sendCommandMsg(std_msgs::String msg);
-  void sendTuningPoseMsg(std_msgs::String msg);
+  void sendTorqueEnableMsg(op3_tuning_module_msgs::msg::JointTorqueOnOffArray msg);
+  void sendJointOffsetDataMsg(op3_tuning_module_msgs::msg::JointOffsetData msg);
+  void sendJointGainDataMsg(op3_tuning_module_msgs::msg::JointOffsetData msg);
+  void sendCommandMsg(std_msgs::msg::String msg);
+  void sendTuningPoseMsg(std_msgs::msg::String msg);
   bool isRefresh()
   {
     return is_refresh_;
@@ -104,7 +104,7 @@ Q_OBJECT
 Q_SIGNALS:
   void loggingUpdated();
   void rosShutdown();
-  void updatePresentJointOffsetData(op3_tuning_module_msgs::JointOffsetPositionData msg);
+  void updatePresentJointOffsetData(op3_tuning_module_msgs::msg::JointOffsetPositionData msg);
 
  private:
   void parseOffsetGroup(const std::string &path);
@@ -112,16 +112,16 @@ Q_SIGNALS:
   int init_argc_;
   char** init_argv_;
   bool is_refresh_;
-  ros::Publisher chatter_publisher_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr chatter_publisher_;
   QStringListModel logging_model_;
 
-  ros::Publisher joint_offset_data_pub_;
-  ros::Publisher joint_gain_data_pub_;
-  ros::Publisher torque_enable_pub_;
-  ros::Publisher command_pub_;
-  ros::Publisher tuning_pose_pub_;
+  rclcpp::Publisher<op3_tuning_module_msgs::msg::JointOffsetData>::SharedPtr joint_offset_data_pub_;
+  rclcpp::Publisher<op3_tuning_module_msgs::msg::JointOffsetData>::SharedPtr joint_gain_data_pub_;
+  rclcpp::Publisher<op3_tuning_module_msgs::msg::JointTorqueOnOffArray>::SharedPtr torque_enable_pub_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr command_pub_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr tuning_pose_pub_;
 
-  ros::ServiceClient get_present_joint_offset_data_client_;
+  rclcpp::Client<op3_tuning_module_msgs::srv::GetPresentJointOffsetData>::SharedPtr get_present_joint_offset_data_client_;
 };
 
 }  // namespace op3_tuner_client

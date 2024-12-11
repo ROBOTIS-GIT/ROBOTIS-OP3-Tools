@@ -28,17 +28,22 @@
 #include <QList>
 #include <QSpinBox>
 #include <QCheckBox>
+#include <QGroupBox>
 #include <QMainWindow>
 
-#include <math.h>
+#include <cmath>
 
-#include "ui_main_window.h"
+// #include "ui_main_window.h"
 #include "qnode.hpp"
 
 #endif
 /*****************************************************************************
  ** Namespace
  *****************************************************************************/
+namespace Ui
+{
+class MainWindow;
+}
 
 namespace op3_tuner_client
 {
@@ -77,7 +82,7 @@ Q_OBJECT
    *******************************************/
   void updateLoggingView();  // no idea why this can't connect automatically
 
-  void updateJointOffsetSpinbox(op3_tuning_module_msgs::JointOffsetPositionData msg);
+  void updateJointOffsetSpinbox(op3_tuning_module_msgs::msg::JointOffsetPositionData msg);
 
   void changedOffsetSpinBoxValue(QString q_joint_name);
   void changedGainSpinBoxValue(QString q_joint_name);
@@ -91,7 +96,7 @@ Q_OBJECT
                  std::map<int, std::string> &offset_group);
   void publishTorqueMsgs(std::string &joint_name, bool torque_on);
 
-  Ui::MainWindowDesign ui_;
+  Ui::MainWindow * ui_;
   QNode qnode_;
 
   bool all_torque_on_;
