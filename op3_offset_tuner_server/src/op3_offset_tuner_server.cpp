@@ -76,17 +76,17 @@ bool OffsetTunerServer::initialize()
   this->get_parameter("robot_file_path", robot_file_);
   this->get_parameter("init_file_path", init_file_);
 
-  if ((offset_file_ == "") || (robot_file_ == ""))
+  if (offset_file_.empty() || robot_file_.empty())
   {
     RCLCPP_ERROR(this->get_logger(), "Failed to get file path");
-    return -1;
+    return false;
   }
 
   //Controller Initialize with robot file info
   if (controller_->initialize(robot_file_, init_file_) == false)
   {
     RCLCPP_ERROR(this->get_logger(), "ROBOTIS Controller Initialize Fail!");
-    return -1;
+    return false;
   }
   //controller_->LoadOffset(offset_file_);
   controller_->addMotionModule((robotis_framework::MotionModule*) BaseModule::getInstance());

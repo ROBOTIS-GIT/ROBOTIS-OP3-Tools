@@ -23,15 +23,14 @@ using namespace robotis_op;
 
 int main(int argc, char **argv)
 {
+  // Initialize ROS 2
   rclcpp::init(argc, argv);
 
   // TODO: singletone 을 변경해야 하나?
   auto server = std::make_shared<OffsetTunerServer>();
   server->initialize();
-
   rclcpp::spin(server);
 
   rclcpp::shutdown();
-
   return 0;
 }

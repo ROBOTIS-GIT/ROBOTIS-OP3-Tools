@@ -19,24 +19,24 @@
 #ifndef OP3_OFFSET_TUNER_SERVER_H_
 #define OP3_OFFSET_TUNER_SERVER_H_
 
-#include <map>
 #include <fstream>
+#include <map>
 #include <rclcpp/rclcpp.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include "dynamixel_sdk/dynamixel_sdk.h"
-#include "robotis_controller/robotis_controller.h"
 #include "op3_base_module/base_module.h"
 #include "op3_offset_tuner_msgs/msg/joint_offset_data.hpp"
 #include "op3_offset_tuner_msgs/msg/joint_torque_on_off_array.hpp"
 #include "op3_offset_tuner_msgs/srv/get_present_joint_offset_data.hpp"
+#include "robotis_controller/robotis_controller.h"
 
 namespace robotis_op
 {
 
 class JointOffsetData
 {
- public:
+public:
   double joint_offset_rad_;
   double joint_init_pos_rad_;
   int p_gain_;
@@ -44,32 +44,15 @@ class JointOffsetData
   int d_gain_;
 
   JointOffsetData()
-  {
-    joint_offset_rad_ = 0;
-    joint_init_pos_rad_ = 0;
-    p_gain_ = 800;
-    i_gain_ = 0;
-    d_gain_ = 0;
-  }
+    : joint_offset_rad_(0), joint_init_pos_rad_(0), p_gain_(800), i_gain_(0), d_gain_(0) { }
 
   JointOffsetData(double joint_offset_rad, double joint_init_pose_rad)
-  {
-    this->joint_offset_rad_ = joint_offset_rad;
-    this->joint_init_pos_rad_ = joint_init_pose_rad;
-    p_gain_ = 800;
-    i_gain_ = 0;
-    d_gain_ = 0;
-  }
-
-  ~JointOffsetData()
-  {
-  }
+    : joint_offset_rad_(joint_offset_rad), joint_init_pos_rad_(joint_init_pose_rad), p_gain_(800), i_gain_(0), d_gain_(0) { }
 };
 
-class OffsetTunerServer : public robotis_framework::Singleton<OffsetTunerServer>, public rclcpp::Node
+class OffsetTunerServer : public rclcpp::Node
 {
-
- public:
+public:
   OffsetTunerServer();
   ~OffsetTunerServer();
 
@@ -86,7 +69,7 @@ class OffsetTunerServer : public robotis_framework::Singleton<OffsetTunerServer>
   const int BAUD_RATE = 2000000;
   const double PROTOCOL_VERSION = 2.0;
   const int SUB_CONTROLLER_ID = 200;
-  const char *SUB_CONTROLLER_DEVICE = "/dev/ttyUSB0";
+  const char * SUB_CONTROLLER_DEVICE = "/dev/ttyUSB0";
   const int POWER_CTRL_TABLE = 24;
 
   void setCtrlModule(std::string module);
