@@ -40,8 +40,6 @@ int main(int argc, char **argv)
    **********************/
   QApplication app(argc, argv);
 
-  qRegisterMetaType<PreviewWalkingForm *>("PreviewWalkingForm");
-
   robotis_op::MainWindow w(argc, argv);
   w.show();
   app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
