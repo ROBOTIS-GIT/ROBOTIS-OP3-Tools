@@ -21,6 +21,10 @@
 
 #include <iostream>
 #include <QWidget>
+#include <geometry_msgs/msg/point.hpp>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/quaternion.hpp>
+#include <Eigen/Dense>
 
 #include "ui_preview_walking_form.h"
 #include "qnode.hpp"
@@ -76,8 +80,8 @@ public Q_SLOTS:
  void on_dSpinBox_marker_ori_y_valueChanged(double value);
 
  // Interactive marker
- void updatePointPanel(const geometry_msgs::Point point);
- void updatePosePanel(const geometry_msgs::Pose pose);
+ void updatePointPanel(const geometry_msgs::msg::Point point);
+ void updatePosePanel(const geometry_msgs::msg::Pose pose);
 
 private:
   Ui::PreviewWalkingForm *p_walking_ui;
@@ -92,10 +96,10 @@ private:
   void clearMarkerPanel();
 
   // update marker UI
-  void getPoseFromMarkerPanel(geometry_msgs::Pose &current);
-  void setPoseToMarkerPanel(const geometry_msgs::Pose &current);
-  void getPointFromMarkerPanel(geometry_msgs::Point &current);
-  void setPointToMarkerPanel(const geometry_msgs::Point &current);
+  void getPoseFromMarkerPanel(geometry_msgs::msg::Pose &current);
+  void setPoseToMarkerPanel(const geometry_msgs::msg::Pose &current);
+  void getPointFromMarkerPanel(geometry_msgs::msg::Point &current);
+  void setPointToMarkerPanel(const geometry_msgs::msg::Point &current);
 
   /******************************************
    ** Transformation
@@ -106,7 +110,7 @@ private:
   Eigen::Quaterniond rpy2quaternion(const double &roll, const double &pitch, const double &yaw);
   Eigen::Quaterniond rotation2quaternion(const Eigen::MatrixXd &rotation);
   Eigen::Vector3d quaternion2rpy(const Eigen::Quaterniond &quaternion);
-  Eigen::Vector3d quaternion2rpy(const geometry_msgs::Quaternion &quaternion);
+  Eigen::Vector3d quaternion2rpy(const geometry_msgs::msg::Quaternion &quaternion);
   Eigen::MatrixXd quaternion2rotation(const Eigen::Quaterniond &quaternion);
   Eigen::MatrixXd rotationX(const double &angle);
   Eigen::MatrixXd rotationY(const double &angle);

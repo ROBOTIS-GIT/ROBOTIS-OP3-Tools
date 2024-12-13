@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- <arg name="args" default=""/> -->
+
+  <node pkg="op3_gui_demo" exec="op3_gui_demo" name="op3_demo_opc" output="screen">
+    <param name="demo_config" value="$(find-pkg-share op3_gui_demo)/config/gui_config.yaml"/>
+    <remap from="/op3_demo/ik_target_pose" to="/pose_panel/pose" />
+  </node>
+</launch>

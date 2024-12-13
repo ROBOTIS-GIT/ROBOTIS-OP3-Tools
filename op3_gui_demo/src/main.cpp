@@ -19,10 +19,10 @@
 /*****************************************************************************
  ** Includes
  *****************************************************************************/
-
-#include <QtGui>
 #include <QApplication>
-#include "../include/op3_gui_demo/main_window.hpp"
+#include "op3_gui_demo/preview_walking_form.h"
+#include "op3_gui_demo/main_window.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 /*****************************************************************************
  ** Main
@@ -30,15 +30,32 @@
 
 int main(int argc, char **argv)
 {
+  /*********************
+   ** ROS2
+   **********************/
+  rclcpp::init(argc, argv);
 
   /*********************
    ** Qt
    **********************/
   QApplication app(argc, argv);
+
+  qRegisterMetaType<PreviewWalkingForm *>("PreviewWalkingForm");
+
   robotis_op::MainWindow w(argc, argv);
   w.show();
   app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+
+  auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+  auto spin_thread = std::thread([&executor]() {
+    executor->spin();
+  });
+
   int result = app.exec();
+
+  executor->cancel();
+  spin_thread.join();
+  rclcpp::shutdown();
 
   return result;
 }

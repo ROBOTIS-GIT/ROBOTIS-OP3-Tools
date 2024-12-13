@@ -1,42 +1,41 @@
-##############################################################################
-# CMake
-##############################################################################
-
-cmake_minimum_required(VERSION 2.8.0)
+cmake_minimum_required(VERSION 3.5)
 project(op3_gui_demo)
 
-##############################################################################
-# Catkin
-##############################################################################
+set(ROS_PACKAGE_NAME ${PROJECT_NAME})
 
-# qt_build provides the qt cmake glue, roscpp the comms for a default talker
-find_package(catkin REQUIRED COMPONENTS
-  rqt_gui
-  rqt_gui_cpp
-  roscpp
-  roslib
-  std_msgs
-  sensor_msgs
-  geometry_msgs
-  visualization_msgs
-  interactive_markers
-  cmake_modules
-  eigen_conversions
-  robotis_controller_msgs
-  op3_walking_module_msgs
-  op3_online_walking_module_msgs
-  humanoid_nav_msgs
-  tf
+find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(robotis_controller_msgs REQUIRED)
+find_package(op3_walking_module_msgs REQUIRED)
+find_package(op3_online_walking_module_msgs REQUIRED)
+find_package(interactive_markers REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
+find_path(YAML_CPP_INCLUDE_DIR
+  NAMES yaml_cpp.h
+  PATHS ${YAML_CPP_INCLUDE_DIRS}
 )
+find_library(YAML_CPP_LIBRARY
+  NAMES YAML_CPP
+  PATHS ${YAML_CPP_LIBRARY_DIRS}
+)
+link_directories(${YAML_CPP_LIBRARY_DIRS})
 
-find_package(Eigen REQUIRED)
+if(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
+add_definitions(-DHAVE_NEW_YAMLCPP)
+endif(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
 
-if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
-  find_package(Qt5Widgets REQUIRED)
-else()
-  find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
-  include(${QT_USE_FILE})
-endif()
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(op3_gui_demo_SRCS
   src/main.cpp
@@ -59,98 +58,53 @@ set(op3_gui_demo_UIS
 )
 
 set(op3_gui_demo_RESOURCES
-    resources/images.qrc
+  resources/images.qrc
 )
 
-set(op3_gui_demo_INCLUDE_DIRECTORIES
-  include
-  include/${PROJECT_NAME}
-  "${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/${PROJECT_NAME}"
-)
-if(NOT EXISTS "${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/${PROJECT_NAME}")
-  file(MAKE_DIRECTORY "${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/${PROJECT_NAME}")
-endif()
-
-catkin_package(
-  INCLUDE_DIRS ${op3_gui_demo_INCLUDE_DIRECTORIES}
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS rqt_gui  rqt_gui_cpp  roscpp  roslib  std_msgs  sensor_msgs  geometry_msgs  visualization_msgs  interactive_markers  cmake_modules  eigen_conversions  robotis_controller_msgs  op3_walking_module_msgs  op3_online_walking_module_msgs  humanoid_nav_msgs
-)
-#catkin_python_setup()
-
-if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
-  qt5_wrap_cpp(op3_gui_demo_MOCS ${op3_gui_demo_HDRS})
-else()
-  qt4_wrap_cpp(op3_gui_demo_MOCS ${op3_gui_demo_HDRS})
-endif()
-# ensure generated header files are being created in the devel space
-set(_cmake_current_binary_dir "${CMAKE_CURRENT_BINARY_DIR}")
-set(CMAKE_CURRENT_BINARY_DIR "${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/${PROJECT_NAME}")
-if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
-  qt5_wrap_ui(op3_gui_demo_UIS_H ${op3_gui_demo_UIS})
-else()
-  qt4_wrap_ui(op3_gui_demo_UIS_H ${op3_gui_demo_UIS})
-endif()
-set(CMAKE_CURRENT_BINARY_DIR "${_cmake_current_binary_dir}")
-
-if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
-  qt5_add_resources(op3_gui_demo_RCC ${op3_gui_demo_RESOURCES})
-else()
-  qt4_add_resources(op3_gui_demo_RCC ${op3_gui_demo_RESOURCES})
-endif()
-
+qt5_wrap_cpp(op3_gui_demo_MOCS ${op3_gui_demo_HDRS})
+qt5_wrap_ui(op3_gui_demo_UIS_H ${op3_gui_demo_UIS})
+qt5_add_resources(op3_gui_demo_RCC ${op3_gui_demo_RESOURCES})
 
 include_directories(
-  ${op3_gui_demo_INCLUDE_DIRECTORIES}
-  ${catkin_INCLUDE_DIRS}
-  ${Eigen_INCLUDE_DIRS}
+  include
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${rclcpp_INCLUDE_DIRS}
+  ${std_msgs_INCLUDE_DIRS}
+  ${sensor_msgs_INCLUDE_DIRS}
+  ${geometry_msgs_INCLUDE_DIRS}
+  ${visualization_msgs_INCLUDE_DIRS}
+  ${interactive_markers_INCLUDE_DIRS}
+  ${tf2_ros_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
+  ${YAML_CPP_INCLUDE_DIRS}
 )
+
 add_executable(${PROJECT_NAME} ${op3_gui_demo_SRCS} ${op3_gui_demo_MOCS} ${op3_gui_demo_UIS_H} ${op3_gui_demo_RCC})
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} yaml-cpp)
-if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
-  target_link_libraries(${PROJECT_NAME} Qt5::Widgets yaml-cpp)
-else()
-  target_link_libraries(${PROJECT_NAME} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} yaml-cpp)
-endif()
+ament_target_dependencies(${PROJECT_NAME}
+  ament_index_cpp 
+  rclcpp
+  std_msgs
+  sensor_msgs
+  geometry_msgs
+  visualization_msgs
+  robotis_controller_msgs
+  op3_walking_module_msgs
+  op3_online_walking_module_msgs
+  interactive_markers
+  tf2_geometry_msgs
+  tf2_ros
+  Eigen3
+  Qt5Widgets
+)
+target_link_libraries(${PROJECT_NAME} ${YAML_CPP_LIBRARIES})
+target_compile_definitions(${PROJECT_NAME} PUBLIC "ROS_PACKAGE_NAME=\"${ROS_PACKAGE_NAME}\"")
 
-find_package(class_loader)
-class_loader_hide_library_symbols(${PROJECT_NAME})
+install(TARGETS ${PROJECT_NAME}
+  DESTINATION lib/${PROJECT_NAME}
+)
 
-##############################################################################
-# Qt Environment
-##############################################################################
+install(DIRECTORY resources launch
+  DESTINATION share/${PROJECT_NAME}
+)
 
-# this comes from qt_build's qt-ros.cmake which is automatically 
-# included via the dependency call in package.xml
-#rosbuild_prepare_qt4(QtCore QtGui) # Add the appropriate components to the component list here
-
-##############################################################################
-# Sections
-##############################################################################
-
-#file(GLOB QT_FORMS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ui/*.ui)
-#file(GLOB QT_RESOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} resources/*.qrc)
-#file(GLOB_RECURSE QT_MOC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/op3_gui_demo/*.hpp include/op3_gui_demo/*.h)
-
-#QT4_ADD_RESOURCES(QT_RESOURCES_CPP ${QT_RESOURCES})
-#QT4_WRAP_UI(QT_FORMS_HPP ${QT_FORMS})
-#QT4_WRAP_CPP(QT_MOC_HPP ${QT_MOC})
-
-##############################################################################
-# Sources
-##############################################################################
-
-#file(GLOB_RECURSE QT_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS src/*.cpp)
-
-##############################################################################
-# Binaries
-##############################################################################
-
-#add_executable(op3_gui_demo ${QT_SOURCES} ${QT_RESOURCES_CPP} ${QT_FORMS_HPP} ${QT_MOC_HPP})
-#add_dependencies(op3_gui_demo ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-#target_link_libraries(op3_gui_demo
-#  ${QT_LIBRARIES}
-#  ${catkin_LIBRARIES}
-#  yaml-cpp)
-#install(TARGETS op3_gui_demo RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+ament_package()
