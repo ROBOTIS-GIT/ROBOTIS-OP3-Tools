@@ -21,7 +21,7 @@
 using namespace robotis_op;
 
 ActionEditor::ActionEditor()
- :  Node("op3_action_module_editor")
+ :  Node("op3_action_editor")
 {
   ctrl_ = 0;
   robot_ = 0;
@@ -256,9 +256,11 @@ void ActionEditor::moveRightCursor()
 }
 
 bool ActionEditor::initializeActionEditor(std::string robot_file_path, std::string init_file_path,
-                                          std::string offset_file_path)
+                                          std::string offset_file_path,
+                                          bool simulation_mode)
 {
   ctrl_ = robotis_framework::RobotisController::getInstance();
+  ctrl_->gazebo_mode_ = simulation_mode;
 
   //Controller Initialize with robot file info
   if (ctrl_->initialize(robot_file_path, init_file_path) == false)

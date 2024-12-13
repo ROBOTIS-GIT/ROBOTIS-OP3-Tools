@@ -19,15 +19,12 @@
 #ifndef OP3_ACTION_EDITOR_H_
 #define OP3_ACTION_EDITOR_H_
 
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <string>
-#include <rclcpp/rclcpp.hpp>
+#include "rclcpp/rclcpp.hpp"
 #include <unistd.h>
+#include <ncurses.h>
 #include <termios.h>
 #include <term.h>
 #include <fcntl.h>
-#include <ncurses.h>
 #include <pthread.h>
 #include <sys/wait.h>
 
@@ -72,7 +69,7 @@ public:
   void moveLeftCursor();
   void moveRightCursor();
 
-  bool initializeActionEditor(std::string robot_file_path, std::string init_file_path, std::string offset_file_path);
+  bool initializeActionEditor(std::string robot_file_path, std::string init_file_path, std::string offset_file_path, bool simulation_mode);
 
   // Disp & Drawing
   void drawIntro();
