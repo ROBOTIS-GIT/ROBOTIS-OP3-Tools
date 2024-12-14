@@ -61,6 +61,7 @@ public:
 
   int _getch();
   int kbhit();
+  void disableInfoLogger();
 
   // Move cursor
   void goToCursor(int col, int row);

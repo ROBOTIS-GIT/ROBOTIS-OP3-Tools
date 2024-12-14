@@ -114,7 +114,7 @@ int main(int argc, char **argv)
   }
 
   // disable ros log
-  editor->get_logger().set_level(rclcpp::Logger::Level::Unset);
+  editor->disableInfoLogger();
 
   editor->drawIntro();
 

@@ -6,7 +6,7 @@ def main():
     package = "op3_action_editor"
     executable = "op3_action_editor"
 
-    gazebo_default = True
+    gazebo_default = False
     gazebo_robot_name_default = 'robotis_op3'
 
     offset_file_path_default = get_package_share_directory('op3_manager') + '/config/offset.yaml'
