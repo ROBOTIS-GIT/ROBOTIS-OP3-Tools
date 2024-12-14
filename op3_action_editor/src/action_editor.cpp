@@ -21,7 +21,7 @@
 using namespace robotis_op;
 
 ActionEditor::ActionEditor()
- :  Node("op3_action_module_editor")
+ :  Node("op3_action_editor")
 {
   ctrl_ = 0;
   robot_ = 0;
@@ -141,6 +141,14 @@ void ActionEditor::resetSTDin()
   tcsetattr(0, TCSANOW, &oldterm);
 }
 
+void ActionEditor::disableInfoLogger()
+{
+  ActionModule::getInstance()->get_logger().set_level(rclcpp::Logger::Level::Error);
+  BaseModule::getInstance()->get_logger().set_level(rclcpp::Logger::Level::Error);
+  ctrl_->get_logger().set_level(rclcpp::Logger::Level::Error);
+  this->get_logger().set_level(rclcpp::Logger::Level::Error);
+}
+
 void ActionEditor::goToCursor(int col, int row)
 {
   char *cursor;
@@ -256,9 +264,11 @@ void ActionEditor::moveRightCursor()
 }
 
 bool ActionEditor::initializeActionEditor(std::string robot_file_path, std::string init_file_path,
-                                          std::string offset_file_path)
+                                          std::string offset_file_path,
+                                          bool simulation_mode)
 {
   ctrl_ = robotis_framework::RobotisController::getInstance();
+  ctrl_->gazebo_mode_ = simulation_mode;
 
   //Controller Initialize with robot file info
   if (ctrl_->initialize(robot_file_path, init_file_path) == false)
@@ -269,6 +279,7 @@ bool ActionEditor::initializeActionEditor(std::string robot_file_path, std::stri
 
   ctrl_->loadOffset(offset_file_path);
   ctrl_->addMotionModule((robotis_framework::MotionModule*) ActionModule::getInstance());
+  ctrl_->addMotionModule((robotis_framework::MotionModule*) BaseModule::getInstance());
   ActionModule::getInstance()->enableAllJoints();
 
   robot_ = ctrl_->robot_;
@@ -1281,7 +1292,7 @@ void ActionEditor::playCmd(int mp3_index)
   ctrl_->startTimer();
   rclcpp::sleep_for(std::chrono::milliseconds(300));  // waiting for timer start
 
-  std::string module_name = "action_module";
+  std::string module_name = "op3_action_module";
   ctrl_->setCtrlModule(module_name);
   rclcpp::sleep_for(std::chrono::milliseconds(300)); // waiting for enable
 

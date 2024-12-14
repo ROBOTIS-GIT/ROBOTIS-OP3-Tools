@@ -79,13 +79,16 @@ int main(int argc, char **argv)
   editor->declare_parameter<std::string>("robot_file_path", "");
   editor->declare_parameter<std::string>("init_file_path", "");
   editor->declare_parameter<std::string>("device_name", SUB_CONTROLLER_DEVICE);
-  editor->declare_parameter<int>("baudrate", BAUD_RATE);
+  editor->declare_parameter<int>("baud_rate", BAUD_RATE);
+  editor->declare_parameter<bool>("gazebo", false);
 
   editor->get_parameter("offset_file_path", offset_file);
   editor->get_parameter("robot_file_path", robot_file);
   editor->get_parameter("init_file_path", dxl_init_file);
   editor->get_parameter("device_name", _device_name);
   editor->get_parameter("baud_rate", _baud_rate);
+  bool simulation_mode = false;
+  editor->get_parameter("gazebo", simulation_mode);
 
   signal(SIGABRT, &sighandler);
   signal(SIGTERM, &sighandler);
@@ -94,21 +97,28 @@ int main(int argc, char **argv)
 
   int ch;
 
-  if(turnOnDynamixelPower(editor, _device_name, _baud_rate) == false)
-    return 0;
+  if(simulation_mode == false)
+  {
+    if (turnOnDynamixelPower(editor, _device_name, _baud_rate) == false)
+      return 0;
+  }
+  else
+  {
+    RCLCPP_WARN(editor->get_logger(), "SIMULATION_MODE");
+  }
 
-  if (editor->initializeActionEditor(robot_file, dxl_init_file, offset_file) == false)
+  if (editor->initializeActionEditor(robot_file, dxl_init_file, offset_file, simulation_mode) == false)
   {
     RCLCPP_ERROR(editor->get_logger(), "Failed to Initialize");
     return 0;
   }
 
   // disable ros log
-  editor->get_logger().set_level(rclcpp::Logger::Level::Unset);
+  editor->disableInfoLogger();
 
   editor->drawIntro();
 
-  while (1)
+  while (rclcpp::ok())
   {
     ch = editor->_getch();
 
