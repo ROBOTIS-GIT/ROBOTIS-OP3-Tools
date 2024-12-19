@@ -26,27 +26,27 @@
 namespace robotis_op
 {
 
-void QNodeOP3::init_preview_walking(rclcpp::Node::SharedPtr ros_node)
+void QNodeOP3::init_preview_walking()
 {
   // // preview walking
-  // foot_step_command_pub_ = ros_node->create_publisher<op3_online_walking_module_msgs::msg::FootStepCommand>("/robotis/online_walking/foot_step_command", 10);
-  // walking_param_pub_ = ros_node->create_publisher<op3_online_walking_module_msgs::msg::WalkingParam>("/robotis/online_walking/walking_param", 10);
-  // set_walking_footsteps_pub_ = ros_node->create_publisher<op3_online_walking_module_msgs::msg::Step2DArray>("/robotis/online_walking/footsteps_2d", 10);
+  // foot_step_command_pub_ = this->create_publisher<op3_online_walking_module_msgs::msg::FootStepCommand>("/robotis/online_walking/foot_step_command", 10);
+  // walking_param_pub_ = this->create_publisher<op3_online_walking_module_msgs::msg::WalkingParam>("/robotis/online_walking/walking_param", 10);
+  // set_walking_footsteps_pub_ = this->create_publisher<op3_online_walking_module_msgs::msg::Step2DArray>("/robotis/online_walking/footsteps_2d", 10);
 
-  // body_offset_pub_ = ros_node->create_publisher<geometry_msgs::msg::Pose>("/robotis/online_walking/body_offset", 10);
-  // foot_distance_pub_ = ros_node->create_publisher<std_msgs::msg::Float64>("/robotis/online_walking/foot_distance", 10);
-  // wholebody_balance_pub_ = ros_node->create_publisher<std_msgs::msg::String>("/robotis/online_walking/wholebody_balance_msg", 10);
-  // reset_body_msg_pub_ = ros_node->create_publisher<std_msgs::msg::Bool>("/robotis/online_walking/reset_body", 10);
-  // joint_pose_msg_pub_ = ros_node->create_publisher<op3_online_walking_module_msgs::msg::JointPose>("/robotis/online_walking/goal_joint_pose", 10);
+  // body_offset_pub_ = this->create_publisher<geometry_msgs::msg::Pose>("/robotis/online_walking/body_offset", 10);
+  // foot_distance_pub_ = this->create_publisher<std_msgs::msg::Float64>("/robotis/online_walking/foot_distance", 10);
+  // wholebody_balance_pub_ = this->create_publisher<std_msgs::msg::String>("/robotis/online_walking/wholebody_balance_msg", 10);
+  // reset_body_msg_pub_ = this->create_publisher<std_msgs::msg::Bool>("/robotis/online_walking/reset_body", 10);
+  // joint_pose_msg_pub_ = this->create_publisher<op3_online_walking_module_msgs::msg::JointPose>("/robotis/online_walking/goal_joint_pose", 10);
 
-  // // humanoid_footstep_client_ = ros_node->create_client<humanoid_nav_msgs::srv::PlanFootsteps>("plan_footsteps");
-  // marker_pub_ = ros_node->create_publisher<visualization_msgs::msg::MarkerArray>("/robotis/demo/foot_step_marker", 10);
+  // // humanoid_footstep_client_ = this->create_client<humanoid_nav_msgs::srv::PlanFootsteps>("plan_footsteps");
+  // marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/robotis/demo/foot_step_marker", 10);
 
   // // interactive marker
-  // rviz_clicked_point_sub_ = ros_node->create_subscription<geometry_msgs::msg::PointStamped>("clicked_point", 10, std::bind(&QNodeOP3::pointStampedCallback, this, std::placeholders::_1));
+  // rviz_clicked_point_sub_ = this->create_subscription<geometry_msgs::msg::PointStamped>("clicked_point", 10, std::bind(&QNodeOP3::pointStampedCallback, this, std::placeholders::_1));
   // interactive_marker_server_.reset(new interactive_markers::InteractiveMarkerServer("Feet_Pose", "", false));
 
-  // RCLCPP_INFO(ros_node->get_logger(), "Initialized node handle for preview walking");
+  // RCLCPP_INFO(this->get_logger(), "Initialized node handle for preview walking");
 }
 
 bool QNodeOP3::transformPose(const std::string &from_id, const std::string &to_id, const geometry_msgs::msg::Pose &from_pose, geometry_msgs::msg::Pose &to_pose, bool inverse)

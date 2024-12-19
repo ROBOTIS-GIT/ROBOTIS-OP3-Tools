@@ -591,8 +591,10 @@ void MainWindow::initModeUnit()
       continue;
     std::string module_reg = "*_" + module_name;
 
-    QRegExp reg_exp(QRegExp(tr(module_reg.c_str())));
-    reg_exp.setPatternSyntax(QRegExp::Wildcard);
+    QString pattern = QString::fromStdString(module_reg);
+    pattern = QRegularExpression::wildcardToRegularExpression(pattern);
+
+    QRegularExpression reg_exp(pattern);
 
     QList<QWidget *> widget_list = ui_->centralwidget->findChildren<QWidget *>(reg_exp);
     module_ui_table_[module_name] = widget_list;

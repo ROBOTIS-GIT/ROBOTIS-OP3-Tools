@@ -120,7 +120,7 @@ public:
   bool isUsingModule(std::string module_name);
   void moveInitPose();
 
-  void init_default_demo(rclcpp::Node::SharedPtr node);
+  void init_default_demo();
   // Head control
   void setHeadJoint(double pan, double tilt);
 
@@ -132,7 +132,7 @@ public:
   void initGyro();
 
   // Preview Walking
-  void init_preview_walking(rclcpp::Node::SharedPtr node);
+  void init_preview_walking();
   void sendFootStepCommandMsg(op3_online_walking_module_msgs::msg::FootStepCommand msg);
   void sendWalkingParamMsg(op3_online_walking_module_msgs::msg::WalkingParam msg);
   void sendBodyOffsetMsg(geometry_msgs::msg::Pose msg);

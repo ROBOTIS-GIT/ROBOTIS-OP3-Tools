@@ -64,10 +64,10 @@ QNodeOP3::QNodeOP3(int argc, char** argv, QObject *parent)
   get_module_control_client_ = this->create_client<robotis_controller_msgs::srv::GetJointModule>("/robotis/get_present_joint_ctrl_modules");
 
   // For default demo
-  init_default_demo(shared_from_this());
+  init_default_demo();
 
   // Preview
-  init_preview_walking(shared_from_this());
+  init_preview_walking();
 
   // Config
   std::string default_config_path = ament_index_cpp::get_package_share_directory(ROS_PACKAGE_NAME) + "/config/gui_config.yaml";

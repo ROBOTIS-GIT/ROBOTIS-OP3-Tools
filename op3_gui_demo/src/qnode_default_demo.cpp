@@ -26,30 +26,30 @@
 namespace robotis_op
 {
 
-void QNodeOP3::init_default_demo(rclcpp::Node::SharedPtr ros_node)
+void QNodeOP3::init_default_demo()
 {
-  init_gyro_pub_ = ros_node->create_publisher<robotis_controller_msgs::msg::SyncWriteItem>("/robotis/sync_write_item", 10);
-  set_head_joint_angle_pub_ = ros_node->create_publisher<sensor_msgs::msg::JointState>("/robotis/head_control/set_joint_states", 10);
+  init_gyro_pub_ = this->create_publisher<robotis_controller_msgs::msg::SyncWriteItem>("/robotis/sync_write_item", 10);
+  set_head_joint_angle_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/robotis/head_control/set_joint_states", 10);
 
-  current_joint_states_sub_ = ros_node->create_subscription<sensor_msgs::msg::JointState>(
+  current_joint_states_sub_ = this->create_subscription<sensor_msgs::msg::JointState>(
       "/robotis/present_joint_states", 10, std::bind(&QNodeOP3::updateHeadJointStatesCallback, this, std::placeholders::_1));
 
   // Walking
-  set_walking_command_pub = ros_node->create_publisher<std_msgs::msg::String>("/robotis/walking/command", 10);
-  set_walking_param_pub = ros_node->create_publisher<op3_walking_module_msgs::msg::WalkingParam>("/robotis/walking/set_params", 10);
-  get_walking_param_client_ = ros_node->create_client<op3_walking_module_msgs::srv::GetWalkingParam>("/robotis/walking/get_params");
+  set_walking_command_pub = this->create_publisher<std_msgs::msg::String>("/robotis/walking/command", 10);
+  set_walking_param_pub = this->create_publisher<op3_walking_module_msgs::msg::WalkingParam>("/robotis/walking/set_params", 10);
+  get_walking_param_client_ = this->create_client<op3_walking_module_msgs::srv::GetWalkingParam>("/robotis/walking/get_params");
 
   // Action
-  motion_index_pub_ = ros_node->create_publisher<std_msgs::msg::Int32>("/robotis/action/page_num", 10);
+  motion_index_pub_ = this->create_publisher<std_msgs::msg::Int32>("/robotis/action/page_num", 10);
 
   // Demo
-  demo_command_pub_ = ros_node->create_publisher<std_msgs::msg::String>("/robotis/demo_command", 10);
+  demo_command_pub_ = this->create_publisher<std_msgs::msg::String>("/robotis/demo_command", 10);
 
   std::string default_motion_path = ament_index_cpp::get_package_share_directory(ROS_PACKAGE_NAME) + "/config/gui_motion.yaml";
-  std::string motion_path = ros_node->declare_parameter<std::string>("gui_motion", default_motion_path);
+  std::string motion_path = this->declare_parameter<std::string>("gui_motion", default_motion_path);
   parseMotionMapFromYaml(motion_path);
 
-  RCLCPP_INFO(ros_node->get_logger(), "Initialized node handle for default demo");
+  RCLCPP_INFO(this->get_logger(), "Initialized node handle for default demo");
 }
 
 void QNodeOP3::updateHeadJointStatesCallback(const sensor_msgs::msg::JointState::SharedPtr msg)
