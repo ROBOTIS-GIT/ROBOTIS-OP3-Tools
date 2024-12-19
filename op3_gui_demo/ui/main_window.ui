@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindowDesign</class>
- <widget class="QMainWindow" name="MainWindowDesign">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -14,7 +14,7 @@
    <string>OP3 Demo</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../../../ROBOTIS-OP3-TEST/op3_test_gui/resources/images.qrc">
+   <iconset>
     <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
   </property>
   <property name="locale">
@@ -129,7 +129,7 @@
           <bool>true</bool>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>5</number>
          </property>
          <widget class="QWidget" name="tab_mode">
           <attribute name="title">
@@ -1134,7 +1134,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>684</width>
-                <height>677</height>
+                <height>715</height>
                </rect>
               </property>
              </widget>
@@ -1215,22 +1215,6 @@
           <attribute name="title">
            <string>Online Walking</string>
           </attribute>
-          <widget class="PreviewWalkingForm" name="widget_preview_walking" native="true">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>691</width>
-             <height>650</height>
-            </rect>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>650</height>
-            </size>
-           </property>
-          </widget>
          </widget>
         </widget>
        </item>
@@ -1271,7 +1255,7 @@
      <x>0</x>
      <y>0</y>
      <width>1477</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -1315,14 +1299,6 @@
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>PreviewWalkingForm</class>
-   <extends>QWidget</extends>
-   <header>preview_walking_form.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <tabstops>
   <tabstop>tab_manager</tabstop>
   <tabstop>view_logging</tabstop>
@@ -1367,14 +1343,12 @@
   <tabstop>head_center_button</tabstop>
   <tabstop>scrollArea</tabstop>
  </tabstops>
- <resources>
-  <include location="../../../ROBOTIS-OP3-TEST/op3_test_gui/resources/images.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>action_Quit</sender>
    <signal>triggered()</signal>
-   <receiver>MainWindowDesign</receiver>
+   <receiver>MainWindow</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">

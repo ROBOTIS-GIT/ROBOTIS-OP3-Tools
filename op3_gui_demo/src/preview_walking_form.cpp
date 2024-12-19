@@ -16,6 +16,8 @@
 
 /* Author: Kayman Jung */
 
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include "../include/op3_gui_demo/preview_walking_form.h"
 
 PreviewWalkingForm::PreviewWalkingForm(QWidget *parent) :
@@ -37,11 +39,10 @@ bool PreviewWalkingForm::init(robotis_op::QNodeOP3 *qnode)
 
   if(result == true)
   {
-    qRegisterMetaType<geometry_msgs::Point>("geometry_msgs::Point");
-    qRegisterMetaType<geometry_msgs::Pose>("geometry_msgs::Pose");
-    connect(qnode_op3_, SIGNAL(updateDemoPoint(geometry_msgs::Point)), this,
-            SLOT(updatePointPanel(geometry_msgs::Point)));
-    connect(qnode_op3_, SIGNAL(updateDemoPose(geometry_msgs::Pose)), this, SLOT(updatePosePanel(geometry_msgs::Pose)));
+    qRegisterMetaType<geometry_msgs::msg::Point>("geometry_msgs::msg::Point");
+    qRegisterMetaType<geometry_msgs::msg::Pose>("geometry_msgs::msg::Pose");
+    connect(qnode_op3_, &robotis_op::QNodeOP3::updateDemoPoint, this, &PreviewWalkingForm::updatePointPanel);
+    connect(qnode_op3_, &robotis_op::QNodeOP3::updateDemoPose, this, &PreviewWalkingForm::updatePosePanel);
   }
 
   return result;
@@ -84,7 +85,7 @@ void PreviewWalkingForm::on_button_p_walking_right_clicked(bool check)
 
 void PreviewWalkingForm::on_button_set_walking_param_clicked(bool check)
 {
-  op3_online_walking_module_msgs::WalkingParam msg;
+  op3_online_walking_module_msgs::msg::WalkingParam msg;
 
   msg.dsp_ratio = p_walking_ui->dSpinBox_dsp_ratio->value();
   msg.lipm_height = p_walking_ui->dSpinBox_lipm_height->value();
@@ -97,7 +98,7 @@ void PreviewWalkingForm::on_button_set_walking_param_clicked(bool check)
 
 void PreviewWalkingForm::on_button_send_body_offset_clicked(bool check)
 {
-  geometry_msgs::Pose msg;
+  geometry_msgs::msg::Pose msg;
   msg.position.x = p_walking_ui->dSpinBox_body_offset_x->value();
   msg.position.y = p_walking_ui->dSpinBox_body_offset_y->value();
   msg.position.z = p_walking_ui->dSpinBox_body_offset_z->value();
@@ -107,7 +108,7 @@ void PreviewWalkingForm::on_button_send_body_offset_clicked(bool check)
 
 void PreviewWalkingForm::on_button_send_foot_distance_clicked(bool check)
 {
-  std_msgs::Float64 msg;
+  std_msgs::msg::Float64 msg;
   msg.data = p_walking_ui->dSpinBox_foot_distance->value();
 
   qnode_op3_->sendFootDistanceMsg(msg);
@@ -115,10 +116,10 @@ void PreviewWalkingForm::on_button_send_foot_distance_clicked(bool check)
 
 void PreviewWalkingForm::on_button_p_walking_init_pose_clicked(bool check)
 {
-  std::string ini_pose_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/init_pose.yaml";
+  std::string ini_pose_path = ament_index_cpp::get_package_share_directory(ROS_PACKAGE_NAME) + "/config/init_pose.yaml";
   qnode_op3_->parseIniPoseData(ini_pose_path);
 
-  std_msgs::Bool msg;
+  std_msgs::msg::Bool msg;
   msg.data = true;
 
   qnode_op3_->sendResetBodyMsg(msg);
@@ -126,7 +127,7 @@ void PreviewWalkingForm::on_button_p_walking_init_pose_clicked(bool check)
 
 void PreviewWalkingForm::on_button_p_walking_balance_on_clicked(bool check)
 {
-  std_msgs::String msg;
+  std_msgs::msg::String msg;
   msg.data = "balance_on";
 
   qnode_op3_->sendWholebodyBalanceMsg(msg);
@@ -134,7 +135,7 @@ void PreviewWalkingForm::on_button_p_walking_balance_on_clicked(bool check)
 
 void PreviewWalkingForm::on_button_p_walking_balance_off_clicked(bool check)
 {
-  std_msgs::String msg;
+  std_msgs::msg::String msg;
   msg.data = "balance_off";
 
   qnode_op3_->sendWholebodyBalanceMsg(msg);
@@ -153,18 +154,8 @@ void PreviewWalkingForm::on_button_marker_clear_clicked(bool check)
 
 void PreviewWalkingForm::on_button_footstep_plan_clicked(bool check)
 {
-  geometry_msgs::Pose target_pose;
+  geometry_msgs::msg::Pose target_pose;
   getPoseFromMarkerPanel(target_pose);
-//  target_pose.position.x = p_walking_ui->dSpinBox_marker_pos_x->value();
-//  target_pose.position.y = p_walking_ui->dSpinBox_marker_pos_y->value();
-//  target_pose.position.z = p_walking_ui->dSpinBox_marker_pos_z->value();
-
-//  double roll = deg2rad<double>(p_walking_ui->dSpinBox_marker_ori_r->value());
-//  double pitch = deg2rad<double>(p_walking_ui->dSpinBox_marker_ori_p->value());
-//  double yaw = deg2rad<double>(p_walking_ui->dSpinBox_marker_ori_y->value());
-
-//  Eigen::Quaterniond orientation = rpy2quaternion(roll, pitch, yaw);
-//  tf::quaternionEigenToMsg(orientation, target_pose.orientation);
 
   qnode_op3_->makeFootstepUsingPlanner(target_pose);
 }
@@ -188,7 +179,6 @@ void PreviewWalkingForm::on_button_footstep_go_clicked(bool check)
   if(clear_marker == true)
     clearMarkerPanel();
 }
-
 
 void PreviewWalkingForm::on_dSpinBox_marker_pos_x_valueChanged(double value)
 {
@@ -218,7 +208,7 @@ void PreviewWalkingForm::on_dSpinBox_marker_ori_y_valueChanged(double value)
 
 void PreviewWalkingForm::sendPWalkingCommand(const std::string &command, bool set_start_foot)
 {
-  op3_online_walking_module_msgs::FootStepCommand msg;
+  op3_online_walking_module_msgs::msg::FootStepCommand msg;
 
   msg.step_time = p_walking_ui->dSpinBox_p_walking_step_time->value();
   msg.step_num = p_walking_ui->dSpinBox_p_walking_step_num->value();
@@ -244,10 +234,10 @@ bool PreviewWalkingForm::setQNode(robotis_op::QNodeOP3 *qnode)
 // make interactive marker
 void PreviewWalkingForm::makeInteractiveMarker()
 {
-  geometry_msgs::Pose current_pose;
-  getPoseFromMarkerPanel(current_pose);
+  // geometry_msgs::msg::Pose current_pose;
+  // getPoseFromMarkerPanel(current_pose);
 
-  qnode_op3_->makeInteractiveMarker(current_pose);
+  // qnode_op3_->makeInteractiveMarker(current_pose);
 }
 
 // update interactive marker pose from ui
@@ -256,7 +246,7 @@ void PreviewWalkingForm::updateInteractiveMarker()
   if (is_updating_ == true)
     return;
 
-  geometry_msgs::Pose current_pose;
+  geometry_msgs::msg::Pose current_pose;
   getPoseFromMarkerPanel(current_pose);
 
   qnode_op3_->updateInteractiveMarker(current_pose);
@@ -264,37 +254,37 @@ void PreviewWalkingForm::updateInteractiveMarker()
 
 void PreviewWalkingForm::clearMarkerPanel()
 {
-  geometry_msgs::Pose init_pose;
+  geometry_msgs::msg::Pose init_pose;
   updatePosePanel(init_pose);
 
-  ROS_INFO("Clear Panel");
+  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Clear Panel");
 
   qnode_op3_->clearInteractiveMarker();
 }
 
 // Update UI - position
-void PreviewWalkingForm::updatePointPanel(const geometry_msgs::Point point)
+void PreviewWalkingForm::updatePointPanel(const geometry_msgs::msg::Point point)
 {
   is_updating_ = true;
 
   setPointToMarkerPanel(point);
 
-  ROS_INFO("Update Position Panel");
+  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Update Position Panel");
   is_updating_ = false;
 }
 
 // Update UI - pose
-void PreviewWalkingForm::updatePosePanel(const geometry_msgs::Pose pose)
+void PreviewWalkingForm::updatePosePanel(const geometry_msgs::msg::Pose pose)
 {
   is_updating_ = true;
 
   setPoseToMarkerPanel(pose);
 
-  ROS_INFO("Update Pose Panel");
+  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Update Pose Panel");
   is_updating_ = false;
 }
 
-void PreviewWalkingForm::getPoseFromMarkerPanel(geometry_msgs::Pose &current)
+void PreviewWalkingForm::getPoseFromMarkerPanel(geometry_msgs::msg::Pose &current)
 {
   // position
   current.position.x = p_walking_ui->dSpinBox_marker_pos_x->value();
@@ -302,14 +292,15 @@ void PreviewWalkingForm::getPoseFromMarkerPanel(geometry_msgs::Pose &current)
   current.position.z = p_walking_ui->dSpinBox_marker_pos_z->value();
 
   // orientation
-  Eigen::Vector3d euler(p_walking_ui->dSpinBox_marker_ori_r->value(), p_walking_ui->dSpinBox_marker_ori_p->value(),
+  Eigen::Vector3d euler(p_walking_ui->dSpinBox_marker_ori_r->value(), 
+                        p_walking_ui->dSpinBox_marker_ori_p->value(),
                         p_walking_ui->dSpinBox_marker_ori_y->value());
   Eigen::Quaterniond orientation = rpy2quaternion(deg2rad<Eigen::Vector3d>(euler));
 
-  tf::quaternionEigenToMsg(orientation, current.orientation);
+  current.orientation = tf2::toMsg(tf2::Quaternion(orientation.x(), orientation.y(), orientation.z(), orientation.w()));
 }
 
-void PreviewWalkingForm::setPoseToMarkerPanel(const geometry_msgs::Pose &current)
+void PreviewWalkingForm::setPoseToMarkerPanel(const geometry_msgs::msg::Pose &current)
 {
   // position
   p_walking_ui->dSpinBox_marker_pos_x->setValue(current.position.x);
@@ -324,7 +315,7 @@ void PreviewWalkingForm::setPoseToMarkerPanel(const geometry_msgs::Pose &current
   p_walking_ui->dSpinBox_marker_ori_y->setValue(euler[2]);
 }
 
-void PreviewWalkingForm::getPointFromMarkerPanel(geometry_msgs::Point &current)
+void PreviewWalkingForm::getPointFromMarkerPanel(geometry_msgs::msg::Point &current)
 {
   // position
   current.x = p_walking_ui->dSpinBox_marker_pos_x->value();
@@ -332,7 +323,7 @@ void PreviewWalkingForm::getPointFromMarkerPanel(geometry_msgs::Point &current)
   current.z = p_walking_ui->dSpinBox_marker_pos_z->value();
 }
 
-void PreviewWalkingForm::setPointToMarkerPanel(const geometry_msgs::Point &current)
+void PreviewWalkingForm::setPointToMarkerPanel(const geometry_msgs::msg::Point &current)
 {
   // position
   p_walking_ui->dSpinBox_marker_pos_x->setValue(current.x);
@@ -405,10 +396,10 @@ Eigen::Vector3d PreviewWalkingForm::quaternion2rpy(const Eigen::Quaterniond &qua
   return rpy;
 }
 
-Eigen::Vector3d PreviewWalkingForm::quaternion2rpy(const geometry_msgs::Quaternion &quaternion)
+Eigen::Vector3d PreviewWalkingForm::quaternion2rpy(const geometry_msgs::msg::Quaternion &quaternion)
 {
   Eigen::Quaterniond eigen_quaternion;
-  tf::quaternionMsgToEigen(quaternion, eigen_quaternion);
+  //tf2::fromMsg(quaternion, eigen_quaternion);
 
   Eigen::Vector3d rpy = rotation2rpy(eigen_quaternion.toRotationMatrix());
 

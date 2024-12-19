@@ -26,13 +26,16 @@
 
 //#include <QtGui/QMainWindow>
 #include <QMainWindow>
-#include "ui_main_window.h"
 #include "qnode.hpp"
 
 #endif
 /*****************************************************************************
  ** Namespace
  *****************************************************************************/
+namespace Ui
+{
+class MainWindow;
+}
 
 namespace robotis_op
 {
@@ -51,7 +54,7 @@ class MainWindow : public QMainWindow
 Q_OBJECT
 
  public:
-  MainWindow(int argc, char** argv, QWidget *parent = 0);
+  explicit MainWindow(int argc, char** argv, QWidget *parent = nullptr);
   ~MainWindow();
 
   void readSettings();  // Load up qt program settings at startup
@@ -104,7 +107,7 @@ Q_OBJECT
   void updateHeadAngles(double pan, double tilt);
 
   // Walking
-  void updateWalkingParams(op3_walking_module_msgs::WalkingParam params);
+  void updateWalkingParams(op3_walking_module_msgs::msg::WalkingParam params);
   void walkingCommandShortcut();
 
  protected Q_SLOTS:
@@ -130,8 +133,8 @@ Q_OBJECT
   void setHeadAngle(double pan, double tilt);
   void applyWalkingParams();
 
-  Ui::MainWindowDesign ui_;
-  QNodeOP3 qnode_op3_;
+  Ui::MainWindow * ui_;
+  QNodeOP3 * qnode_op3_;
   bool debug_;
 
   bool is_updating_;
