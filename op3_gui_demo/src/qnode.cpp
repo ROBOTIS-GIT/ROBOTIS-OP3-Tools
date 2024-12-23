@@ -20,6 +20,7 @@
  ** Includes
  *****************************************************************************/
 
+#include <ament_index_cpp/get_package_share_directory.hpp>
 #include "../include/op3_gui_demo/qnode.hpp"
 
 /*****************************************************************************
@@ -33,10 +34,12 @@ namespace robotis_op
  ** Implementation
  *****************************************************************************/
 
-QNodeOP3::QNodeOP3(int argc, char** argv)
-    : init_argc_(argc),
-      init_argv_(argv),
-      body_height_(-1.0)
+QNodeOP3::QNodeOP3(int argc, char** argv, QObject *parent)
+  : Node("op3_gui_demo"),
+    QObject(parent),
+    init_argc_(argc),
+    init_argv_(argv),
+    body_height_(-1.0)
 {
   // code to DEBUG
   debug_ = false;
@@ -49,78 +52,40 @@ QNodeOP3::QNodeOP3(int argc, char** argv)
     else
       debug_ = false;
   }
+
+  // Add your ros communications here.
+  module_control_pub_ = this->create_publisher<robotis_controller_msgs::msg::JointCtrlModule>("/robotis/set_joint_ctrl_modules", 10);
+  module_control_preset_pub_ = this->create_publisher<std_msgs::msg::String>("/robotis/enable_ctrl_module", 10);
+  init_pose_pub_ = this->create_publisher<std_msgs::msg::String>("/robotis/base/ini_pose", 10);
+
+  status_msg_sub_ = this->create_subscription<robotis_controller_msgs::msg::StatusMsg>("/robotis/status", 10, std::bind(&QNodeOP3::statusMsgCallback, this, std::placeholders::_1));
+  current_module_control_sub_ = this->create_subscription<robotis_controller_msgs::msg::JointCtrlModule>("/robotis/present_joint_ctrl_modules", 10, std::bind(&QNodeOP3::refreshCurrentJointControlCallback, this, std::placeholders::_1));
+
+  get_module_control_client_ = this->create_client<robotis_controller_msgs::srv::GetJointModule>("/robotis/get_present_joint_ctrl_modules");
+
+  // For default demo
+  init_default_demo();
+
+  // Preview
+  init_preview_walking();
+
+  // Config
+  std::string default_config_path = ament_index_cpp::get_package_share_directory(ROS_PACKAGE_NAME) + "/config/gui_config.yaml";
+  std::string config_path = this->declare_parameter<std::string>("gui_config", default_config_path);
+  parseJointNameFromYaml(config_path);
+
+  // start time
+  start_time_ = rclcpp::Clock().now();
+
+  // tf_listener_.reset(new tf2_ros::TransformListener(*this, tf_buffer_));
 }
 
 QNodeOP3::~QNodeOP3()
 {
-  if (ros::isStarted())
+  if (rclcpp::ok())
   {
-    ros::shutdown();  // explicitly needed since we use ros::start();
-    ros::waitForShutdown();
+    rclcpp::shutdown();
   }
-  wait();
-}
-
-bool QNodeOP3::init()
-{
-  ros::init(init_argc_, init_argv_, "op3_gui_demo");
-
-  if (!ros::master::check())
-  {
-    return false;
-  }
-
-  ros::start();  // explicitly needed since our nodehandle is going out of scope.
-
-  ros::NodeHandle ros_node;
-
-  // Add your ros communications here.
-  module_control_pub_ = ros_node.advertise<robotis_controller_msgs::JointCtrlModule>("/robotis/set_joint_ctrl_modules",
-                                                                                     0);
-  module_control_preset_pub_ = ros_node.advertise<std_msgs::String>("/robotis/enable_ctrl_module", 0);
-  init_pose_pub_ = ros_node.advertise<std_msgs::String>("/robotis/base/ini_pose", 0);
-
-  status_msg_sub_ = ros_node.subscribe("/robotis/status", 10, &QNodeOP3::statusMsgCallback, this);
-  current_module_control_sub_ = ros_node.subscribe("/robotis/present_joint_ctrl_modules", 10,
-                                                   &QNodeOP3::refreshCurrentJointControlCallback, this);
-
-  get_module_control_client_ = ros_node.serviceClient<robotis_controller_msgs::GetJointModule>(
-      "/robotis/get_present_joint_ctrl_modules");
-
-  // For default demo
-  init_default_demo(ros_node);
-
-  // Preview
-  init_preview_walking(ros_node);
-
-  // Config
-  std::string default_config_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/gui_config.yaml";
-  std::string config_path = ros_node.param<std::string>("gui_config", default_config_path);
-  parseJointNameFromYaml(config_path);
-
-  // start time
-  start_time_ = ros::Time::now();
-
-  tf_listener_.reset( new tf::TransformListener());
-
-  // start qthread
-  start();  
-
-  return true;
-}
-
-void QNodeOP3::run()
-{
-  ros::Rate loop_rate(1);
-
-  while (ros::ok())
-  {
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
-
-  std::cout << "Ros shutdown, proceeding to close the gui." << std::endl;
-  Q_EMIT rosShutdown();  // used to signal the gui for a shutdown (useful to roslaunch)
 }
 
 void QNodeOP3::parseJointNameFromYaml(const std::string &path)
@@ -128,29 +93,29 @@ void QNodeOP3::parseJointNameFromYaml(const std::string &path)
   YAML::Node doc;
   try
   {
-    // load yaml
-    doc = YAML::LoadFile(path.c_str());
+  // load yaml
+  doc = YAML::LoadFile(path.c_str());
   } catch (const std::exception& e)
   {
-    ROS_ERROR("Fail to load id_joint table yaml.");
-    return;
+  RCLCPP_ERROR(this->get_logger(), "Fail to load id_joint table yaml.");
+  return;
   }
 
   // parse id_joint table
   YAML::Node id_sub_node = doc["id_joint"];
   for (YAML::iterator _it = id_sub_node.begin(); _it != id_sub_node.end(); ++_it)
   {
-    int joint_id;
-    std::string joint_name;
+  int joint_id;
+  std::string joint_name;
 
-    joint_id = _it->first.as<int>();
-    joint_name = _it->second.as<std::string>();
+  joint_id = _it->first.as<int>();
+  joint_name = _it->second.as<std::string>();
 
-    id_joint_table_[joint_id] = joint_name;
-    joint_id_table_[joint_name] = joint_id;
+  id_joint_table_[joint_id] = joint_name;
+  joint_id_table_[joint_name] = joint_id;
 
-    if (debug_)
-      std::cout << "ID : " << joint_id << " - " << joint_name << std::endl;
+  if (debug_)
+    std::cout << "ID : " << joint_id << " - " << joint_name << std::endl;
   }
 
   // parse module
@@ -159,27 +124,27 @@ void QNodeOP3::parseJointNameFromYaml(const std::string &path)
   int module_index = 0;
   for (std::vector<std::string>::iterator modules_it = modules.begin(); modules_it != modules.end(); ++modules_it)
   {
-    std::string module_name = *modules_it;
+  std::string module_name = *modules_it;
 
-    index_mode_table_[module_index] = module_name;
-    mode_index_table_[module_name] = module_index++;
+  index_mode_table_[module_index] = module_name;
+  mode_index_table_[module_name] = module_index++;
 
-    using_mode_table_[module_name] = false;
+  using_mode_table_[module_name] = false;
   }
 
   // parse module_joint preset
   YAML::Node sub_node = doc["module_button"];
   for (YAML::iterator yaml_it = sub_node.begin(); yaml_it != sub_node.end(); ++yaml_it)
   {
-    int key_index;
-    std::string module_name;
+  int key_index;
+  std::string module_name;
 
-    key_index = yaml_it->first.as<int>();
-    module_name = yaml_it->second.as<std::string>();
+  key_index = yaml_it->first.as<int>();
+  module_name = yaml_it->second.as<std::string>();
 
-    module_table_[key_index] = module_name;
-    if (debug_)
-      std::cout << "Preset : " << module_name << std::endl;
+  module_table_[key_index] = module_name;
+  if (debug_)
+    std::cout << "Preset : " << module_name << std::endl;
   }
 }
 
@@ -190,7 +155,7 @@ bool QNodeOP3::getJointNameFromID(const int &id, std::string &joint_name)
 
   map_it = id_joint_table_.find(id);
   if (map_it == id_joint_table_.end())
-    return false;
+  return false;
 
   joint_name = map_it->second;
   return true;
@@ -203,7 +168,7 @@ bool QNodeOP3::getIDFromJointName(const std::string &joint_name, int &id)
 
   map_it = joint_id_table_.find(joint_name);
   if (map_it == joint_id_table_.end())
-    return false;
+  return false;
 
   id = map_it->second;
   return true;
@@ -216,12 +181,12 @@ bool QNodeOP3::getIDJointNameFromIndex(const int &index, int &id, std::string &j
   int count = 0;
   for (map_it = id_joint_table_.begin(); map_it != id_joint_table_.end(); ++map_it, count++)
   {
-    if (index == count)
-    {
-      id = map_it->first;
-      joint_name = map_it->second;
-      return true;
-    }
+  if (index == count)
+  {
+    id = map_it->first;
+    joint_name = map_it->second;
+    return true;
+  }
   }
   return false;
 }
@@ -233,7 +198,7 @@ std::string QNodeOP3::getModeName(const int &index)
   std::map<int, std::string>::iterator map_it = index_mode_table_.find(index);
 
   if (map_it != index_mode_table_.end())
-    mode = map_it->second;
+  mode = map_it->second;
 
   return mode;
 }
@@ -245,7 +210,7 @@ int QNodeOP3::getModeIndex(const std::string &mode_name)
   std::map<std::string, int>::iterator map_it = mode_index_table_.find(mode_name);
 
   if (map_it != mode_index_table_.end())
-    mode_index = map_it->second;
+  mode_index = map_it->second;
 
   return mode_index;
 }
@@ -265,8 +230,8 @@ int QNodeOP3::getJointSize()
 void QNodeOP3::clearUsingModule()
 {
   for (std::map<std::string, bool>::iterator map_it = using_mode_table_.begin(); map_it != using_mode_table_.end();
-      ++map_it)
-    map_it->second = false;
+    ++map_it)
+  map_it->second = false;
 }
 
 bool QNodeOP3::isUsingModule(std::string module_name)
@@ -274,7 +239,7 @@ bool QNodeOP3::isUsingModule(std::string module_name)
   std::map<std::string, bool>::iterator map_it = using_mode_table_.find(module_name);
 
   if (map_it == using_mode_table_.end())
-    return false;
+  return false;
 
   return map_it->second;
 }
@@ -282,26 +247,26 @@ bool QNodeOP3::isUsingModule(std::string module_name)
 // move ini pose : wholedody module
 void QNodeOP3::moveInitPose()
 {
-  std_msgs::String init_msg;
+  std_msgs::msg::String init_msg;
   init_msg.data = "ini_pose";
 
-  init_pose_pub_.publish(init_msg);
+  init_pose_pub_->publish(init_msg);
 
   log(Info, "Go to robot initial pose.");
 }
 
 // set mode(module) to each joint
-void QNodeOP3::setJointControlMode(const robotis_controller_msgs::JointCtrlModule &msg)
+void QNodeOP3::setJointControlMode(const robotis_controller_msgs::msg::JointCtrlModule &msg)
 {
-  module_control_pub_.publish(msg);
+  module_control_pub_->publish(msg);
 }
 
 void QNodeOP3::setControlMode(const std::string &mode)
 {
-  std_msgs::String set_module_msg;
+  std_msgs::msg::String set_module_msg;
   set_module_msg.data = mode;
 
-  module_control_preset_pub_.publish(set_module_msg);
+  module_control_preset_pub_->publish(set_module_msg);
 
   std::stringstream _ss;
   _ss << "Set Mode : " << mode;
@@ -311,7 +276,7 @@ void QNodeOP3::setControlMode(const std::string &mode)
 // get current mode(module) of joints
 void QNodeOP3::getJointControlMode()
 {
-  robotis_controller_msgs::GetJointModule get_joint;
+  auto request = std::make_shared<robotis_controller_msgs::srv::GetJointModule::Request>();
   std::map<std::string, int> service_map;
 
   // _get_joint.request
@@ -319,52 +284,54 @@ void QNodeOP3::getJointControlMode()
   int index = 0;
   for (map_it = id_joint_table_.begin(); map_it != id_joint_table_.end(); ++map_it, index++)
   {
-    get_joint.request.joint_name.push_back(map_it->second);
-    service_map[map_it->second] = index;
+  request->joint_name.push_back(map_it->second);
+  service_map[map_it->second] = index;
   }
 
-  if (get_module_control_client_.call(get_joint))
+  auto result = get_module_control_client_->async_send_request(request);
+  if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result) == rclcpp::FutureReturnCode::SUCCESS)
   {
-    // _get_joint.response
-    std::vector<int> modules;
-    modules.resize(getJointSize());
+  auto response = result.get();
+  // _get_joint.response
+  std::vector<int> modules;
+  modules.resize(getJointSize());
 
-    // clear current using modules
-    clearUsingModule();
+  // clear current using modules
+  clearUsingModule();
 
-    for (int ix = 0; ix < get_joint.response.joint_name.size(); ix++)
-    {
-      std::string joint_name = get_joint.response.joint_name[ix];
-      std::string module_name = get_joint.response.module_name[ix];
+  for (int ix = 0; ix < response->joint_name.size(); ix++)
+  {
+    std::string joint_name = response->joint_name[ix];
+    std::string module_name = response->module_name[ix];
 
-      std::map<std::string, int>::iterator service_it = service_map.find(joint_name);
-      if (service_it == service_map.end())
-        continue;
+    std::map<std::string, int>::iterator service_it = service_map.find(joint_name);
+    if (service_it == service_map.end())
+    continue;
 
-      index = service_it->second;
+    index = service_it->second;
 
-      service_it = mode_index_table_.find(module_name);
-      if (service_it == mode_index_table_.end())
-        continue;
+    service_it = mode_index_table_.find(module_name);
+    if (service_it == mode_index_table_.end())
+    continue;
 
-      modules.at(index) = service_it->second;
+    modules.at(index) = service_it->second;
 
-      std::map<std::string, bool>::iterator module_it = using_mode_table_.find(module_name);
-      if (module_it != using_mode_table_.end())
-        module_it->second = true;
-    }
+    std::map<std::string, bool>::iterator module_it = using_mode_table_.find(module_name);
+    if (module_it != using_mode_table_.end())
+    module_it->second = true;
+  }
 
-    // update ui
-    Q_EMIT updateCurrentJointControlMode(modules);
-    log(Info, "Get current Mode");
+  // update ui
+  Q_EMIT updateCurrentJointControlMode(modules);
+  log(Info, "Get current Mode");
   }
   else
-    log(Error, "Fail to get current joint control module.");
+  log(Error, "Fail to get current joint control module.");
 }
 
-void QNodeOP3::refreshCurrentJointControlCallback(const robotis_controller_msgs::JointCtrlModule::ConstPtr &msg)
+void QNodeOP3::refreshCurrentJointControlCallback(const robotis_controller_msgs::msg::JointCtrlModule::SharedPtr msg)
 {
-  ROS_INFO("set current joint module");
+  RCLCPP_INFO(this->get_logger(), "set current joint module");
   //int _index = 0;
 
   std::vector<int> modules;
@@ -377,29 +344,29 @@ void QNodeOP3::refreshCurrentJointControlCallback(const robotis_controller_msgs:
 
   for (int ix = 0; ix < msg->joint_name.size(); ix++)
   {
-    std::string joint_name = msg->joint_name[ix];
-    std::string module_name = msg->module_name[ix];
+  std::string joint_name = msg->joint_name[ix];
+  std::string module_name = msg->module_name[ix];
 
-    joint_module_map[joint_name] = getModeIndex(module_name);
+  joint_module_map[joint_name] = getModeIndex(module_name);
 
-    std::map<std::string, bool>::iterator module_it = using_mode_table_.find(module_name);
-    if (module_it != using_mode_table_.end())
-      module_it->second = true;
+  std::map<std::string, bool>::iterator module_it = using_mode_table_.find(module_name);
+  if (module_it != using_mode_table_.end())
+    module_it->second = true;
   }
 
   for (int ix = 0; ix < getJointSize(); ix++)
   {
-    int id = 0;
-    std::string joint_name = "";
+  int id = 0;
+  std::string joint_name = "";
 
-    if (getIDJointNameFromIndex(ix, id, joint_name) == false)
-      continue;
+  if (getIDJointNameFromIndex(ix, id, joint_name) == false)
+    continue;
 
-    std::map<std::string, int>::iterator module_it = joint_module_map.find(joint_name);
-    if (module_it == joint_module_map.end())
-      continue;
+  std::map<std::string, int>::iterator module_it = joint_module_map.find(joint_name);
+  if (module_it == joint_module_map.end())
+    continue;
 
-    modules.at(ix) = module_it->second;
+  modules.at(ix) = module_it->second;
   }
 
   // update ui
@@ -410,7 +377,7 @@ void QNodeOP3::refreshCurrentJointControlCallback(const robotis_controller_msgs:
 
 
 // LOG
-void QNodeOP3::statusMsgCallback(const robotis_controller_msgs::StatusMsg::ConstPtr &msg)
+void QNodeOP3::statusMsgCallback(const robotis_controller_msgs::msg::StatusMsg::SharedPtr msg)
 {
   log((LogLevel) msg->type, msg->status_msg, msg->module_name);
 }
@@ -420,17 +387,17 @@ void QNodeOP3::log(const LogLevel &level, const std::string &msg, std::string se
   logging_model_.insertRows(logging_model_.rowCount(), 1);
   std::stringstream logging_model_msg;
 
-  ros::Duration duration_time = ros::Time::now() - start_time_;
-  int current_time = duration_time.sec;
+  rclcpp::Duration duration_time = rclcpp::Clock().now() - start_time_;
+  int current_time = duration_time.seconds();
   int min_time = 0, sec_time = 0;
   min_time = (int) (current_time / 60);
   sec_time = (int) (current_time % 60);
 
   std::stringstream min_str, sec_str;
   if (min_time < 10)
-    min_str << "0";
+  min_str << "0";
   if (sec_time < 10)
-    sec_str << "0";
+  sec_str << "0";
   min_str << min_time;
   sec_str << sec_time;
 
@@ -439,36 +406,36 @@ void QNodeOP3::log(const LogLevel &level, const std::string &msg, std::string se
 
   switch (level)
   {
-    case (Debug):
-    {
-      ROS_DEBUG_STREAM(msg);
-      logging_model_msg << "[DEBUG] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
-      break;
-    }
-    case (Info):
-    {
-      ROS_INFO_STREAM(msg);
-      logging_model_msg << "[INFO] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
-      break;
-    }
-    case (Warn):
-    {
-      ROS_WARN_STREAM(msg);
-      logging_model_msg << "[WARN] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
-      break;
-    }
-    case (Error):
-    {
-      ROS_ERROR_STREAM(msg);
-      logging_model_msg << "<ERROR> [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
-      break;
-    }
-    case (Fatal):
-    {
-      ROS_FATAL_STREAM(msg);
-      logging_model_msg << "[FATAL] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
-      break;
-    }
+  case (Debug):
+  {
+    RCLCPP_DEBUG(this->get_logger(), msg.c_str());
+    logging_model_msg << "[DEBUG] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
+    break;
+  }
+  case (Info):
+  {
+    RCLCPP_INFO(this->get_logger(), msg.c_str());
+    logging_model_msg << "[INFO] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
+    break;
+  }
+  case (Warn):
+  {
+    RCLCPP_WARN(this->get_logger(), msg.c_str());
+    logging_model_msg << "[WARN] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
+    break;
+  }
+  case (Error):
+  {
+    RCLCPP_ERROR(this->get_logger(), msg.c_str());
+    logging_model_msg << "<ERROR> [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
+    break;
+  }
+  case (Fatal):
+  {
+    RCLCPP_FATAL(this->get_logger(), msg.c_str());
+    logging_model_msg << "[FATAL] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
+    break;
+  }
   }
   QVariant new_row(QString(logging_model_msg.str().c_str()));
   logging_model_.setData(logging_model_.index(logging_model_.rowCount() - 1), new_row);
@@ -478,7 +445,7 @@ void QNodeOP3::log(const LogLevel &level, const std::string &msg, std::string se
 void QNodeOP3::clearLog()
 {
   if (logging_model_.rowCount() == 0)
-    return;
+  return;
 
   logging_model_.removeRows(0, logging_model_.rowCount());
 }
