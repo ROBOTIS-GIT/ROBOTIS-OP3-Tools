@@ -340,7 +340,7 @@ bool ActionEditor::initializeActionEditor(std::string robot_file_path, std::stri
         8);
   }
 
-  default_editor_script_path_ = ament_index_cpp::get_package_share_directory("op3_action_editor") + "/script/editor_script.yaml";
+  default_editor_script_path_ = ament_index_cpp::get_package_share_directory("op3_action_editor") + "/config/editor_script.yaml";
   mirror_joint_file_path_ = ament_index_cpp::get_package_share_directory("op3_action_editor") + "/config/config_mirror_joint.yaml";
 
   // for mirroring

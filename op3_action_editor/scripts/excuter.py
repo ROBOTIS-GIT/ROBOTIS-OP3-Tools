@@ -40,7 +40,7 @@ def main(args=None):
     ]
 
     try:
-        proc_player = subprocess.Popen(['ros2', 'run', 'ros_mpg321_player' 'ros_mpg321_player'],
+        proc_player = subprocess.Popen(['ros2', 'run', 'ros_mpg321_player', 'ros_mpg321_player'],
                       stdout=subprocess.DEVNULL,  # Redirect standard output
                       stderr=subprocess.DEVNULL   # Redirect standard error
         )
