@@ -16,6 +16,9 @@ find_package(robotis_math REQUIRED)
 find_package(op3_action_module REQUIRED)
 find_package(op3_base_module REQUIRED)
 
+find_package(ament_cmake_python REQUIRED)
+find_package(rclpy REQUIRED)
+
 ## N curses
 find_package(Curses REQUIRED)
 
@@ -78,6 +81,13 @@ install(DIRECTORY
   launch
   config
   DESTINATION share/${PROJECT_NAME}/
+)
+
+ament_python_install_package(${PROJECT_NAME})
+
+install(PROGRAMS
+  scripts/excuter.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_package()

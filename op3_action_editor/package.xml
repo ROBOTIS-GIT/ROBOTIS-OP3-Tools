@@ -28,4 +28,8 @@
   <export>                               
     <build_type>ament_cmake</build_type> 
   </export> 
+
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+  <depend>rclpy</depend>
+
 </package>
