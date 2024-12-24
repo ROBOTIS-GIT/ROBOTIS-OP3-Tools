@@ -1292,8 +1292,7 @@ void ActionEditor::playCmd(int mp3_index)
   ctrl_->startTimer();
   rclcpp::sleep_for(std::chrono::milliseconds(300));  // waiting for timer start
 
-  std::string module_name = "op3_action_module";
-  ctrl_->setCtrlModule(module_name);
+  ctrl_->setCtrlModule("action_module");
   rclcpp::sleep_for(std::chrono::milliseconds(300)); // waiting for enable
 
   if (ActionModule::getInstance()->start(page_idx_, &page_) == false)

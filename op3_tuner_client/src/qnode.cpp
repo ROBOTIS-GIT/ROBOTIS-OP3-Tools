@@ -138,22 +138,25 @@ void QNode::getPresentJointOffsetData(bool recalculate_offset)
   //request
 
   //response
-  auto result = get_present_joint_offset_data_client_->async_send_request(request);
-  if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result) == rclcpp::FutureReturnCode::SUCCESS)
-  {
-  auto response = result.get();
-  for (auto &data : response->present_data_array)
-  {
-    op3_tuning_module_msgs::msg::JointOffsetPositionData _temp = data;
+  auto future = get_present_joint_offset_data_client_->async_send_request(request,
+      [this, recalculate_offset](rclcpp::Client<op3_tuning_module_msgs::srv::GetPresentJointOffsetData>::SharedFuture result)
+      {
+        if (result.get())
+        {
+          auto response = result.get();
+          for (auto &data : response->present_data_array)
+          {
+            op3_tuning_module_msgs::msg::JointOffsetPositionData _temp = data;
 
-//      if(recalculate_offset == true)
-//        _temp.offset_value = _temp.present_value - _temp.goal_value;
+            // if(recalculate_offset == true)
+            //   _temp.offset_value = _temp.present_value - _temp.goal_value;
 
-    Q_EMIT updatePresentJointOffsetData(_temp);
-  }
-  }
-  else
-  log(Error, "Fail to get joint offset data");
+            Q_EMIT updatePresentJointOffsetData(_temp);
+          }
+        }
+        else
+          log(Error, "Fail to get joint offset data");
+      });
 
   is_refresh_ = false;
 }

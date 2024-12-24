@@ -108,18 +108,20 @@ void QNodeOP3::refreshWalkingParam()
 {
   auto request = std::make_shared<op3_walking_module_msgs::srv::GetWalkingParam::Request>();
 
-  auto result = get_walking_param_client_->async_send_request(request);
+  auto future = get_walking_param_client_->async_send_request(request,
+      [this](rclcpp::Client<op3_walking_module_msgs::srv::GetWalkingParam>::SharedFuture result)
+      {
+        if (result.get())
+        {
+          walking_param_ = result.get()->parameters;
 
-  if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result) == rclcpp::FutureReturnCode::SUCCESS)
-  {
-    walking_param_ = result.get()->parameters;
-
-    // update ui
-    Q_EMIT updateWalkingParameters(walking_param_);
-    log(Info, "Get walking parameters");
-  }
-  else
-    log(Error, "Fail to get walking parameters.");
+          // update ui
+          Q_EMIT updateWalkingParameters(walking_param_);
+          log(Info, "Get walking parameters");
+        }
+        else
+          log(Error, "Fail to get walking parameters.");
+      });
 }
 
 void QNodeOP3::saveWalkingParam()

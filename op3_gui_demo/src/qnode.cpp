@@ -93,29 +93,29 @@ void QNodeOP3::parseJointNameFromYaml(const std::string &path)
   YAML::Node doc;
   try
   {
-  // load yaml
-  doc = YAML::LoadFile(path.c_str());
+    // load yaml
+    doc = YAML::LoadFile(path.c_str());
   } catch (const std::exception& e)
   {
-  RCLCPP_ERROR(this->get_logger(), "Fail to load id_joint table yaml.");
-  return;
+    RCLCPP_ERROR(this->get_logger(), "Fail to load id_joint table yaml.");
+    return;
   }
 
   // parse id_joint table
   YAML::Node id_sub_node = doc["id_joint"];
   for (YAML::iterator _it = id_sub_node.begin(); _it != id_sub_node.end(); ++_it)
   {
-  int joint_id;
-  std::string joint_name;
+    int joint_id;
+    std::string joint_name;
 
-  joint_id = _it->first.as<int>();
-  joint_name = _it->second.as<std::string>();
+    joint_id = _it->first.as<int>();
+    joint_name = _it->second.as<std::string>();
 
-  id_joint_table_[joint_id] = joint_name;
-  joint_id_table_[joint_name] = joint_id;
+    id_joint_table_[joint_id] = joint_name;
+    joint_id_table_[joint_name] = joint_id;
 
-  if (debug_)
-    std::cout << "ID : " << joint_id << " - " << joint_name << std::endl;
+    if (debug_)
+      std::cout << "ID : " << joint_id << " - " << joint_name << std::endl;
   }
 
   // parse module
@@ -124,27 +124,27 @@ void QNodeOP3::parseJointNameFromYaml(const std::string &path)
   int module_index = 0;
   for (std::vector<std::string>::iterator modules_it = modules.begin(); modules_it != modules.end(); ++modules_it)
   {
-  std::string module_name = *modules_it;
+    std::string module_name = *modules_it;
 
-  index_mode_table_[module_index] = module_name;
-  mode_index_table_[module_name] = module_index++;
+    index_mode_table_[module_index] = module_name;
+    mode_index_table_[module_name] = module_index++;
 
-  using_mode_table_[module_name] = false;
+    using_mode_table_[module_name] = false;
   }
 
   // parse module_joint preset
   YAML::Node sub_node = doc["module_button"];
   for (YAML::iterator yaml_it = sub_node.begin(); yaml_it != sub_node.end(); ++yaml_it)
   {
-  int key_index;
-  std::string module_name;
+    int key_index;
+    std::string module_name;
 
-  key_index = yaml_it->first.as<int>();
-  module_name = yaml_it->second.as<std::string>();
+    key_index = yaml_it->first.as<int>();
+    module_name = yaml_it->second.as<std::string>();
 
-  module_table_[key_index] = module_name;
-  if (debug_)
-    std::cout << "Preset : " << module_name << std::endl;
+    module_table_[key_index] = module_name;
+    if (debug_)
+      std::cout << "Preset : " << module_name << std::endl;
   }
 }
 
@@ -155,7 +155,7 @@ bool QNodeOP3::getJointNameFromID(const int &id, std::string &joint_name)
 
   map_it = id_joint_table_.find(id);
   if (map_it == id_joint_table_.end())
-  return false;
+    return false;
 
   joint_name = map_it->second;
   return true;
@@ -168,7 +168,7 @@ bool QNodeOP3::getIDFromJointName(const std::string &joint_name, int &id)
 
   map_it = joint_id_table_.find(joint_name);
   if (map_it == joint_id_table_.end())
-  return false;
+    return false;
 
   id = map_it->second;
   return true;
@@ -181,12 +181,12 @@ bool QNodeOP3::getIDJointNameFromIndex(const int &index, int &id, std::string &j
   int count = 0;
   for (map_it = id_joint_table_.begin(); map_it != id_joint_table_.end(); ++map_it, count++)
   {
-  if (index == count)
-  {
-    id = map_it->first;
-    joint_name = map_it->second;
-    return true;
-  }
+    if (index == count)
+    {
+      id = map_it->first;
+      joint_name = map_it->second;
+      return true;
+    }
   }
   return false;
 }
@@ -198,7 +198,7 @@ std::string QNodeOP3::getModeName(const int &index)
   std::map<int, std::string>::iterator map_it = index_mode_table_.find(index);
 
   if (map_it != index_mode_table_.end())
-  mode = map_it->second;
+    mode = map_it->second;
 
   return mode;
 }
@@ -210,7 +210,7 @@ int QNodeOP3::getModeIndex(const std::string &mode_name)
   std::map<std::string, int>::iterator map_it = mode_index_table_.find(mode_name);
 
   if (map_it != mode_index_table_.end())
-  mode_index = map_it->second;
+    mode_index = map_it->second;
 
   return mode_index;
 }
@@ -229,17 +229,16 @@ int QNodeOP3::getJointSize()
 
 void QNodeOP3::clearUsingModule()
 {
-  for (std::map<std::string, bool>::iterator map_it = using_mode_table_.begin(); map_it != using_mode_table_.end();
-    ++map_it)
-  map_it->second = false;
+  for (auto map_it = using_mode_table_.begin(); map_it != using_mode_table_.end(); ++map_it)
+    map_it->second = false;
 }
 
 bool QNodeOP3::isUsingModule(std::string module_name)
 {
-  std::map<std::string, bool>::iterator map_it = using_mode_table_.find(module_name);
+  auto map_it = using_mode_table_.find(module_name);
 
   if (map_it == using_mode_table_.end())
-  return false;
+    return false;
 
   return map_it->second;
 }
@@ -280,53 +279,54 @@ void QNodeOP3::getJointControlMode()
   std::map<std::string, int> service_map;
 
   // _get_joint.request
-  std::map<int, std::string>::iterator map_it;
   int index = 0;
-  for (map_it = id_joint_table_.begin(); map_it != id_joint_table_.end(); ++map_it, index++)
+  for (const auto& [id, joint_name] : id_joint_table_)
   {
-  request->joint_name.push_back(map_it->second);
-  service_map[map_it->second] = index;
+    request->joint_name.push_back(joint_name);
+    service_map[joint_name] = index++;
   }
 
-  auto result = get_module_control_client_->async_send_request(request);
-  if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result) == rclcpp::FutureReturnCode::SUCCESS)
-  {
-  auto response = result.get();
-  // _get_joint.response
-  std::vector<int> modules;
-  modules.resize(getJointSize());
+  auto future = get_module_control_client_->async_send_request(request, 
+      [this, service_map](rclcpp::Client<robotis_controller_msgs::srv::GetJointModule>::SharedFuture result) 
+      {
+        if (result.get())
+        {
+          auto response = result.get();
+          // _get_joint.response
+          std::vector<int> modules(getJointSize(), 0);
 
-  // clear current using modules
-  clearUsingModule();
+          // clear current using modules
+          clearUsingModule();
 
-  for (int ix = 0; ix < response->joint_name.size(); ix++)
-  {
-    std::string joint_name = response->joint_name[ix];
-    std::string module_name = response->module_name[ix];
+          for (size_t ix = 0; ix < response->joint_name.size(); ix++)
+          {
+            const std::string& joint_name = response->joint_name[ix];
+            const std::string& module_name = response->module_name[ix];
 
-    std::map<std::string, int>::iterator service_it = service_map.find(joint_name);
-    if (service_it == service_map.end())
-    continue;
+            auto service_it = service_map.find(joint_name);
+            if (service_it == service_map.end())
+              continue;
 
-    index = service_it->second;
+            int index = service_it->second;
 
-    service_it = mode_index_table_.find(module_name);
-    if (service_it == mode_index_table_.end())
-    continue;
+            auto mode_index_it = mode_index_table_.find(module_name);
+            if (mode_index_it == mode_index_table_.end())
+              continue;
 
-    modules.at(index) = service_it->second;
+            modules.at(index) = mode_index_it->second;
 
-    std::map<std::string, bool>::iterator module_it = using_mode_table_.find(module_name);
-    if (module_it != using_mode_table_.end())
-    module_it->second = true;
-  }
+            auto module_it = using_mode_table_.find(module_name);
+            if (module_it != using_mode_table_.end())
+              module_it->second = true;
+          }
 
-  // update ui
-  Q_EMIT updateCurrentJointControlMode(modules);
-  log(Info, "Get current Mode");
-  }
-  else
-  log(Error, "Fail to get current joint control module.");
+          // update ui
+          Q_EMIT updateCurrentJointControlMode(modules);
+          log(Info, "Get current Mode");
+        }
+        else
+          log(Error, "Fail to get current joint control module.");
+      });
 }
 
 void QNodeOP3::refreshCurrentJointControlCallback(const robotis_controller_msgs::msg::JointCtrlModule::SharedPtr msg)
@@ -344,29 +344,29 @@ void QNodeOP3::refreshCurrentJointControlCallback(const robotis_controller_msgs:
 
   for (int ix = 0; ix < msg->joint_name.size(); ix++)
   {
-  std::string joint_name = msg->joint_name[ix];
-  std::string module_name = msg->module_name[ix];
+    std::string joint_name = msg->joint_name[ix];
+    std::string module_name = msg->module_name[ix];
 
-  joint_module_map[joint_name] = getModeIndex(module_name);
+    joint_module_map[joint_name] = getModeIndex(module_name);
 
-  std::map<std::string, bool>::iterator module_it = using_mode_table_.find(module_name);
-  if (module_it != using_mode_table_.end())
-    module_it->second = true;
+    std::map<std::string, bool>::iterator module_it = using_mode_table_.find(module_name);
+    if (module_it != using_mode_table_.end())
+      module_it->second = true;
   }
 
   for (int ix = 0; ix < getJointSize(); ix++)
   {
-  int id = 0;
-  std::string joint_name = "";
+    int id = 0;
+    std::string joint_name = "";
 
-  if (getIDJointNameFromIndex(ix, id, joint_name) == false)
-    continue;
+    if (getIDJointNameFromIndex(ix, id, joint_name) == false)
+      continue;
 
-  std::map<std::string, int>::iterator module_it = joint_module_map.find(joint_name);
-  if (module_it == joint_module_map.end())
-    continue;
+    std::map<std::string, int>::iterator module_it = joint_module_map.find(joint_name);
+    if (module_it == joint_module_map.end())
+      continue;
 
-  modules.at(ix) = module_it->second;
+    modules.at(ix) = module_it->second;
   }
 
   // update ui
@@ -406,36 +406,36 @@ void QNodeOP3::log(const LogLevel &level, const std::string &msg, std::string se
 
   switch (level)
   {
-  case (Debug):
-  {
-    RCLCPP_DEBUG(this->get_logger(), msg.c_str());
-    logging_model_msg << "[DEBUG] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
-    break;
-  }
-  case (Info):
-  {
-    RCLCPP_INFO(this->get_logger(), msg.c_str());
-    logging_model_msg << "[INFO] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
-    break;
-  }
-  case (Warn):
-  {
-    RCLCPP_WARN(this->get_logger(), msg.c_str());
-    logging_model_msg << "[WARN] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
-    break;
-  }
-  case (Error):
-  {
-    RCLCPP_ERROR(this->get_logger(), msg.c_str());
-    logging_model_msg << "<ERROR> [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
-    break;
-  }
-  case (Fatal):
-  {
-    RCLCPP_FATAL(this->get_logger(), msg.c_str());
-    logging_model_msg << "[FATAL] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
-    break;
-  }
+    case (Debug):
+    {
+      RCLCPP_DEBUG(this->get_logger(), msg.c_str());
+      logging_model_msg << "[DEBUG] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
+      break;
+    }
+    case (Info):
+    {
+      RCLCPP_INFO(this->get_logger(), msg.c_str());
+      logging_model_msg << "[INFO] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
+      break;
+    }
+    case (Warn):
+    {
+      RCLCPP_WARN(this->get_logger(), msg.c_str());
+      logging_model_msg << "[WARN] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
+      break;
+    }
+    case (Error):
+    {
+      RCLCPP_ERROR(this->get_logger(), msg.c_str());
+      logging_model_msg << "<ERROR> [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
+      break;
+    }
+    case (Fatal):
+    {
+      RCLCPP_FATAL(this->get_logger(), msg.c_str());
+      logging_model_msg << "[FATAL] [" << min_str.str() << ":" << sec_str.str() << "]: " << sender_ss.str() << msg;
+      break;
+    }
   }
   QVariant new_row(QString(logging_model_msg.str().c_str()));
   logging_model_.setData(logging_model_.index(logging_model_.rowCount() - 1), new_row);
