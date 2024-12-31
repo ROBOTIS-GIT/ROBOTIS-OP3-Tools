@@ -45,7 +45,7 @@ using namespace Qt;
 MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
   : QMainWindow(parent),
     ui_(new Ui::MainWindow),
-    qnode_op3_(nullptr),
+    //qnode_op3_(nullptr),
     is_updating_(false),
     is_walking_(false)
 {
@@ -64,7 +64,8 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
   ui_->setupUi(this);  // Calling this incidentally connects all ui's triggers to on_...() callbacks in this class.
   QObject::connect(ui_->actionAbout_Qt, &QAction::triggered, qApp, &QApplication::aboutQt);  // qApp is a global variable for the application
 
-  qnode_op3_ = new QNodeOP3(argc, argv, this);
+//  qnode_op3_ = new QNodeOP3(argc, argv, this);
+  qnode_op3_ = new QNodeOP3(argc, argv);
   readSettings();
   setWindowIcon(QIcon(":/images/icon.png"));
   ui_->tab_manager->setCurrentIndex(0);  // ensure the first tab is showing - qt-designer should have this already hardwired, but often loses it (settings?).
@@ -93,7 +94,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
   /*********************
    ** Auto Start
    **********************/
-  // qnode_op3_->init();
+  qnode_op3_->init();
   initModeUnit();
   setUserShortcut();
   updateModuleUI();

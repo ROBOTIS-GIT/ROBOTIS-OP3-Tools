@@ -33,10 +33,10 @@ namespace robotis_op
 /*****************************************************************************
  ** Implementation
  *****************************************************************************/
-
-QNodeOP3::QNodeOP3(int argc, char** argv, QObject *parent)
+//QNodeOP3::QNodeOP3(int argc, char** argv, QObject *parent)
+QNodeOP3::QNodeOP3(int argc, char** argv)
   : Node("op3_gui_demo"),
-    QObject(parent),
+    //QObject(parent),
     init_argc_(argc),
     init_argv_(argv),
     body_height_(-1.0)
@@ -52,7 +52,10 @@ QNodeOP3::QNodeOP3(int argc, char** argv, QObject *parent)
     else
       debug_ = false;
   }
+}
 
+bool QNodeOP3::init()
+{
   // Add your ros communications here.
   module_control_pub_ = this->create_publisher<robotis_controller_msgs::msg::JointCtrlModule>("/robotis/set_joint_ctrl_modules", 10);
   module_control_preset_pub_ = this->create_publisher<std_msgs::msg::String>("/robotis/enable_ctrl_module", 10);
@@ -78,6 +81,11 @@ QNodeOP3::QNodeOP3(int argc, char** argv, QObject *parent)
   start_time_ = rclcpp::Clock().now();
 
   // tf_listener_.reset(new tf2_ros::TransformListener(*this, tf_buffer_));
+  
+  // start qthread
+  start();  
+
+  return true;
 }
 
 QNodeOP3::~QNodeOP3()
@@ -86,6 +94,24 @@ QNodeOP3::~QNodeOP3()
   {
     rclcpp::shutdown();
   }
+}
+
+void QNodeOP3::run()
+{
+  auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+  executor->add_node(this->get_node_base_interface());
+
+  rclcpp::Rate loop_rate(10);
+
+  while (rclcpp::ok())
+  {
+    //rclcpp::spin_some(this);
+    executor->spin_some();
+    loop_rate.sleep();
+  }
+
+  std::cout << "Ros shutdown, proceeding to close the gui." << std::endl;
+  Q_EMIT rosShutdown();  // used to signal the gui for a shutdown (useful to roslaunch)
 }
 
 void QNodeOP3::parseJointNameFromYaml(const std::string &path)
@@ -332,6 +358,7 @@ void QNodeOP3::getJointControlMode()
 void QNodeOP3::refreshCurrentJointControlCallback(const robotis_controller_msgs::msg::JointCtrlModule::SharedPtr msg)
 {
   RCLCPP_INFO(this->get_logger(), "set current joint module");
+  log(Info, "set current joint module");
   //int _index = 0;
 
   std::vector<int> modules;

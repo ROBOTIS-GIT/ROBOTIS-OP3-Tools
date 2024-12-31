@@ -83,7 +83,7 @@ namespace robotis_op
  ** Class
  *****************************************************************************/
 
-class QNodeOP3 : public QObject, public rclcpp::Node
+class QNodeOP3 : public QThread, public rclcpp::Node
 {
   Q_OBJECT
 public:
@@ -97,8 +97,12 @@ public:
     Fatal = 4
   };
 
-  QNodeOP3(int argc, char** argv, QObject* parent = nullptr);
+  //QNodeOP3(int argc, char** argv, QObject* parent = nullptr);
+  QNodeOP3(int argc, char** argv);
   virtual ~QNodeOP3();
+
+  bool init();
+  void run();
 
   QStringListModel* loggingModel()
   {
