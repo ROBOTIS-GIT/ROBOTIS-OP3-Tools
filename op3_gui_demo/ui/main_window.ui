@@ -129,7 +129,7 @@
           <bool>true</bool>
          </property>
          <property name="currentIndex">
-          <number>5</number>
+          <number>4</number>
          </property>
          <widget class="QWidget" name="tab_mode">
           <attribute name="title">
@@ -1210,11 +1210,6 @@
             </widget>
            </item>
           </layout>
-         </widget>
-         <widget class="QWidget" name="tab_online_walking_module">
-          <attribute name="title">
-           <string>Online Walking</string>
-          </attribute>
          </widget>
         </widget>
        </item>

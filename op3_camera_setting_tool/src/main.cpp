@@ -18,15 +18,17 @@
 
 #include "op3_camera_setting_tool/op3_camera_setting_tool.h"
 
+rclcpp::Node::SharedPtr node;
+
 int main(int argc, char **argv)
 {
   rclcpp::init(argc, argv);
 
-  auto nh = std::make_shared<rclcpp::Node>("op3_camera_setting_tool");
+  node = std::make_shared<rclcpp::Node>("op3_camera_setting_tool");
 
   // get param to use
-  nh->declare_parameter("video_device", "/dev/video0");
-  nh->get_parameter("video_device", g_device_name);
+  node->declare_parameter("video_device", "/dev/video0");
+  node->get_parameter("video_device", g_device_name);
 
   // v4l param name, ros param name
   g_param_list["brightness"] = "brightness";
@@ -44,17 +46,17 @@ int main(int argc, char **argv)
   g_param_list["white_balance_temperature_auto"] = "auto_white_balance";
   g_param_list["white_balance_temperature"] = "white_balance";
 
-  auto camera_param_sub = nh->create_subscription<op3_camera_setting_tool_msgs::msg::V4lParameter>("/op3_camera/set_param", 1, setCameraParameterCallback);
-  auto camera_params_sub = nh->create_subscription<op3_camera_setting_tool_msgs::msg::V4lParameters>("/op3_camera/set_params", 1, setCameraParametersCallback);
+  auto camera_param_sub = node->create_subscription<op3_camera_setting_tool_msgs::msg::V4lParameter>("/op3_camera/set_param", 1, setCameraParameterCallback);
+  auto camera_params_sub = node->create_subscription<op3_camera_setting_tool_msgs::msg::V4lParameters>("/op3_camera/set_params", 1, setCameraParametersCallback);
 
   // web setting
-  nh->declare_parameter("yaml_path", "");
-  g_has_path = nh->get_parameter("yaml_path", g_param_path);
+  node->declare_parameter("yaml_path", "");
+  g_has_path = node->get_parameter("yaml_path", g_param_path);
 
-  g_param_pub = nh->create_publisher<op3_camera_setting_tool_msgs::msg::CameraParams>("/op3_camera/camera_params", 1);
-  g_param_command_sub = nh->create_subscription<std_msgs::msg::String>("/op3_camera/param_command", 1, paramCommandCallback);
-  g_set_param_service = nh->create_service<op3_camera_setting_tool_msgs::srv::SetParameters>("/op3_camera/set_camera_params", setParamCallback);
-  g_get_param_service = nh->create_service<op3_camera_setting_tool_msgs::srv::GetParameters>("/op3_camera/get_camera_params", getParamCallback);
+  g_param_pub = node->create_publisher<op3_camera_setting_tool_msgs::msg::CameraParams>("/op3_camera/camera_params", 1);
+  g_param_command_sub = node->create_subscription<std_msgs::msg::String>("/op3_camera/param_command", 1, paramCommandCallback);
+  g_set_param_service = node->create_service<op3_camera_setting_tool_msgs::srv::SetParameters>("/op3_camera/set_camera_params", setParamCallback);
+  g_get_param_service = node->create_service<op3_camera_setting_tool_msgs::srv::GetParameters>("/op3_camera/get_camera_params", getParamCallback);
   g_default_setting_path = ament_index_cpp::get_package_share_directory(ROS_PACKAGE_NAME) + "/config/camera_parameter_default.yaml";
 
   // boost::recursive_mutex config_mutex;
@@ -75,9 +77,9 @@ int main(int argc, char **argv)
   // callback_fnc = boost::bind(&dynParamCallback, _1, _2);
   // g_param_server->setCallback(callback_fnc);
 
-  RCLCPP_INFO(nh->get_logger(), "start camera setting tool!");
+  RCLCPP_INFO(node->get_logger(), "start camera setting tool!");
 
-  rclcpp::spin(nh);
+  rclcpp::spin(node);
 
   rclcpp::shutdown();
 
@@ -237,41 +239,39 @@ void setV4lParameter(const std::string& cmd)
 
 void getROSParam()
 {
-  auto nh = std::make_shared<rclcpp::Node>("op3_camera_setting_tool");
-
   int param_int_value;
   bool param_bool_value;
   bool exist_param;
 
-  exist_param = nh->get_parameter("brightness", param_int_value);  //0-255
+  exist_param = node->get_parameter("brightness", param_int_value);  //0-255
   if (exist_param == true)
   {
     setV4lParameter("brightness", param_int_value);
     g_dyn_config.brightness = param_int_value;
   }
 
-  exist_param = nh->get_parameter("contrast", param_int_value);  //0-255
+  exist_param = node->get_parameter("contrast", param_int_value);  //0-255
   if (exist_param == true)
   {
     setV4lParameter("contrast", param_int_value);
     g_dyn_config.contrast = param_int_value;
   }
 
-  exist_param = nh->get_parameter("saturation", param_int_value);  //0-255
+  exist_param = node->get_parameter("saturation", param_int_value);  //0-255
   if (exist_param == true)
   {
     setV4lParameter("saturation", param_int_value);
     g_dyn_config.saturation = param_int_value;
   }
 
-  exist_param = nh->get_parameter("sharpness", param_int_value);  //0-255
+  exist_param = node->get_parameter("sharpness", param_int_value);  //0-255
   if (exist_param == true)
   {
     setV4lParameter("sharpness", param_int_value);
     g_dyn_config.sharpness = param_int_value;
   }
 
-  exist_param = nh->get_parameter("gain", param_int_value);  //0-255
+  exist_param = node->get_parameter("gain", param_int_value);  //0-255
   if (exist_param == true)
   {
     setV4lParameter("gain", param_int_value);
@@ -279,7 +279,7 @@ void getROSParam()
   }
 
   // focus
-  exist_param = nh->get_parameter("focus_auto", param_bool_value);
+  exist_param = node->get_parameter("focus_auto", param_bool_value);
   if (exist_param == true)
   {
     setV4lParameter("focus_auto", param_bool_value);
@@ -288,14 +288,14 @@ void getROSParam()
     if (param_bool_value == false)
     {
       int focus_absolute;
-      nh->get_parameter_or("focus_absolute", focus_absolute, -1);  //0-255, -1 "leave alone"
+      node->get_parameter_or("focus_absolute", focus_absolute, -1);  //0-255, -1 "leave alone"
       setV4lParameter("focus_absolute", focus_absolute);
       g_dyn_config.focus_absolute = focus_absolute;
     }
   }
 
   // exposure
-  exist_param = nh->get_parameter("exposure_auto", param_int_value);
+  exist_param = node->get_parameter("exposure_auto", param_int_value);
   if (exist_param == true)
   {
     // turn down exposure control (from max of 3)
@@ -305,14 +305,14 @@ void getROSParam()
     if (param_int_value == 1)
     {
       int exposure;
-      nh->get_parameter_or("exposure_absolute", exposure, 100);
+      node->get_parameter_or("exposure_absolute", exposure, 100);
       setV4lParameter("exposure_absolute", exposure);
       g_dyn_config.exposure_absolute = exposure;
     }
   }
 
   // white balance
-  exist_param = nh->get_parameter("white_balance_temperature_auto", param_bool_value);
+  exist_param = node->get_parameter("white_balance_temperature_auto", param_bool_value);
   if (exist_param == true)
   {
     setV4lParameter("white_balance_temperature_auto", param_bool_value);
@@ -321,7 +321,7 @@ void getROSParam()
     if (param_bool_value == false)
     {
       int white_balance_temperature;
-      nh->get_parameter_or("white_balance_temperature", white_balance_temperature, 4000);
+      node->get_parameter_or("white_balance_temperature", white_balance_temperature, 4000);
       setV4lParameter("white_balance_temperature", white_balance_temperature);
       g_dyn_config.white_balance_temperature = white_balance_temperature;
     }
@@ -330,9 +330,8 @@ void getROSParam()
 
 void setROSParam(const std::string& v4l_param, const int& value)
 {
-  auto nh = std::make_shared<rclcpp::Node>("op3_camera_setting_tool");
-  nh->set_parameter(rclcpp::Parameter(v4l_param, value));
-  RCLCPP_INFO(nh->get_logger(), "Set param to parameter server : %s = %d", v4l_param.c_str(), value);
+  node->set_parameter(rclcpp::Parameter(v4l_param, value));
+  RCLCPP_INFO(node->get_logger(), "Set param to parameter server : %s = %d", v4l_param.c_str(), value);
 }
 
 // web setting
