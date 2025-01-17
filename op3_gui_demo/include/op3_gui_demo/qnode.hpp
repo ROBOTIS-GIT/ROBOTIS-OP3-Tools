@@ -68,6 +68,8 @@
 #include "op3_online_walking_module_msgs/msg/step2_d_array.hpp"
 // #include "humanoid_nav_msgs/srv/plan_footsteps.hpp"
 
+Q_DECLARE_METATYPE(op3_walking_module_msgs::msg::WalkingParam)
+
 #endif
 
 #define DEG2RAD   (M_PI / 180.0)
