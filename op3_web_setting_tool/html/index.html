@@ -220,7 +220,7 @@
 		var param_listener = new ROSLIB.Topic({
 			ros: ros,
 			name: '/ball_detector_node/current_params',
-			messageType: 'ball_detector/BallDetectorParams'
+			messageType: 'op3_ball_detector_msgs/BallDetectorParams'
 		});
 
 		param_listener.subscribe(function (message) {
@@ -248,7 +248,7 @@
 		var camera_param_listener = new ROSLIB.Topic({
 			ros: ros,
 			name: '/op3_camera/camera_params',
-			messageType: 'op3_camera_setting_tool/CameraParams'
+			messageType: 'op3_camera_setting_tool_msgs/CameraParams'
 		});
 
 		camera_param_listener.subscribe(function (message) {
@@ -274,13 +274,13 @@
 		var setBallDetectorParamClient = new ROSLIB.Service({
 		 ros : ros,
 		 name : '/ball_detector_node/set_param',
-		 serviceType : 'ball_detector/SetParameters'
+		 serviceType : 'op3_ball_detector_msgs/SetParameters'
 		});
 		
 		var getBallDetectorParamClient = new ROSLIB.Service({
 		 ros : ros,
 		 name : '/ball_detector_node/get_param',
-		 serviceType : 'ball_detector/GetParameters'
+		 serviceType : 'op3_ball_detector_msgs/GetParameters'
 		});
 				
 		function callServiceSetBallDetectorParams(new_params) {
@@ -320,13 +320,13 @@
 		var setCameraParamClient = new ROSLIB.Service({
 		 ros : ros,
 		 name : '/op3_camera/set_camera_params',
-		 serviceType : 'op3_camera_setting_tool/SetParameters'
+		 serviceType : 'op3_camera_setting_tool_msgs/SetParameters'
 		});
 		
 		var getCameraParamClient = new ROSLIB.Service({
 		 ros : ros,
 		 name : '/op3_camera/get_camera_params',
-		 serviceType : 'op3_camera_setting_tool/GetParameters'
+		 serviceType : 'op3_camera_setting_tool_msgs/GetParameters'
 		});
 		
 		
