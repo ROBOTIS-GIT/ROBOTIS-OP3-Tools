@@ -7,6 +7,7 @@
     <!-- <rosparam file="$(find-pkg-share op3_camera_setting_tool)/config/camera_parameter.yaml" command="load"/> -->
     <param name="video_device" value="/dev/video0" />
     <param name="yaml_path" value="$(find-pkg-share op3_camera_setting_tool)/config/camera_parameter.yaml"/>
+    <param from="$(find-pkg-share op3_camera_setting_tool)/config/camera_parameter.yaml"/>
     <!-- <param name="camera_node_name" type="string" value="/usb_cam_node" /> -->
   </node>
 </launch>
