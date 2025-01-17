@@ -30,12 +30,26 @@ const int CONTRAST_DEFAULT = 128;
 const int SATURATION_DEFAULT = 128;
 const int SHARPNESS_DEFAULT = 128;
 const int GAIN_DEFAULT = 0;
-const bool FOCUS_AUTO_DEFAULT = false;
+const bool FOCUS_AUTOMATIC_CONTINUOUIS_DEFAULT = false;
 const int FOCUS_ABSOLUTE_DEFAULT = -1;
-const int EXPOSURE_AUTO_DEFAULT = 3;
-const int EXPOSURE_ABSOLUTE_DEFAULT = 80;
-const bool WHITE_BALANCE_TEMPERATURE_AUTO_DEFAULT = true;
+const int AUTO_EXPOSURE_DEFAULT = 3;
+const int EXPOSURE_TIME_ABSOLUTE_DEFAULT = 80;
+const bool WHITE_BALANCE_AUTOMATIC_DEFAULT = true;
 const int WHITE_BALANCE_TEMPERATURE_DEFAULT = 4000;
+
+std::string param_names[11] = {
+  "brightness",
+  "contrast",
+  "saturation",
+  "sharpness",
+  "gain",
+  "focus_automatic_continuous",
+  "focus_absolute",
+  "auto_exposure",
+  "exposure_time_absolute",
+  "white_balance_automatic",
+  "white_balance_temperature"
+};
 
 class CameraParamsConfig
 {
@@ -45,11 +59,11 @@ public:
   int saturation;
   int sharpness;
   int gain;
-  bool focus_auto;
+  bool focus_automatic_continuous;
   int focus_absolute;
-  int exposure_auto;
-  int exposure_absolute;
-  bool white_balance_temperature_auto;
+  int auto_exposure;
+  int exposure_time_absolute;
+  bool white_balance_automatic;
   int white_balance_temperature;
 
   CameraParamsConfig()
@@ -58,11 +72,11 @@ public:
       saturation(SATURATION_DEFAULT),
       sharpness(SHARPNESS_DEFAULT),
       gain(GAIN_DEFAULT),
-      focus_auto(FOCUS_AUTO_DEFAULT),
+      focus_automatic_continuous(FOCUS_AUTOMATIC_CONTINUOUIS_DEFAULT),
       focus_absolute(FOCUS_ABSOLUTE_DEFAULT),
-      exposure_auto(EXPOSURE_AUTO_DEFAULT),
-      exposure_absolute(EXPOSURE_ABSOLUTE_DEFAULT),
-      white_balance_temperature_auto(WHITE_BALANCE_TEMPERATURE_AUTO_DEFAULT),
+      auto_exposure(AUTO_EXPOSURE_DEFAULT),
+      exposure_time_absolute(EXPOSURE_TIME_ABSOLUTE_DEFAULT),
+      white_balance_automatic(WHITE_BALANCE_AUTOMATIC_DEFAULT),
       white_balance_temperature(WHITE_BALANCE_TEMPERATURE_DEFAULT)
   {
   }

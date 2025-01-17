@@ -50,19 +50,20 @@ rclcpp::Service<op3_camera_setting_tool_msgs::srv::SetParameters>::SharedPtr g_s
 bool g_has_path;
 std::string g_param_path;
 
-void dynParamCallback(robotis_op::CameraParamsConfig &config, uint32_t level);
-void changeDynParam(const std::string& param, const int& value);
-void updateDynParam(robotis_op::CameraParamsConfig &config);
+void paramCallback(const rclcpp::Parameter& p);
+void changeDynParam(const rclcpp::Parameter& p);
+void changeDynParam(const std::string& param_name, const int& value);
+//void updateDynParam(const std::string& param_name, const int& value);
 
 void setCameraParameterCallback(const op3_camera_setting_tool_msgs::msg::V4lParameter::SharedPtr msg);
 void setCameraParametersCallback(const op3_camera_setting_tool_msgs::msg::V4lParameters::SharedPtr msg);
 
-void setV4lParameter(const std::string& param, const std::string& value);
-void setV4lParameter(const std::string& param, const int& value);
+void setV4lParameter(const std::string& param_name, const std::string& value);
+void setV4lParameter(const std::string& param_name, const int& value);
 void setV4lParameter(const std::string& cmd);
 
 void getROSParam();
-void setROSParam(const std::string& param, const int& value);
+void setROSParam(const std::string& param_name, const int& value);
 
 void paramCommandCallback(const std_msgs::msg::String::SharedPtr msg);
 bool setParamCallback(const std::shared_ptr<op3_camera_setting_tool_msgs::srv::SetParameters::Request> req, std::shared_ptr<op3_camera_setting_tool_msgs::srv::SetParameters::Response> res);
