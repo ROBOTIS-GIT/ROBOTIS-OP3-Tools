@@ -6,8 +6,8 @@
     sharpness: 128
     gain: 255
     focus_automatic_continuous: false
-    focus_absolute: -1
-    auto_exposure: 0
-    exposure_time_absolute: 1109
+    focus_absolute: 19
+    auto_exposure: 1
+    exposure_time_absolute: 367
     white_balance_automatic: false
-    white_balance_temperature: 4903
+    white_balance_temperature: 3947

@@ -136,7 +136,7 @@ void changeDynParam(const rclcpp::Parameter& p)
   {
     g_dyn_config.focus_absolute = p.as_int();
   }
-  else if (param_name == "exposure_auto")
+  else if (param_name == "auto_exposure")
   {
     g_dyn_config.auto_exposure = p.as_int();
   }
@@ -184,7 +184,7 @@ void changeDynParam(const std::string& param_name, const int& value)
   {
     g_dyn_config.focus_absolute = value;
   }
-  else if (param_name == "exposure_auto")
+  else if (param_name == "auto_exposure")
   {
     g_dyn_config.auto_exposure = value;
   }
@@ -429,7 +429,7 @@ void getROSParam()
     // turn down exposure control (from max of 3)
     setV4lParameter("auto_exposure", param_int_value);
     g_dyn_config.auto_exposure = param_int_value;
-    RCLCPP_INFO_STREAM(node->get_logger(), "  exposure_auto: " << g_dyn_config.auto_exposure);
+    RCLCPP_INFO_STREAM(node->get_logger(), "  auto_exposure: " << g_dyn_config.auto_exposure);
 
     if (param_int_value == 1)
     {
@@ -488,7 +488,7 @@ bool setParamCallback(const std::shared_ptr<op3_camera_setting_tool_msgs::srv::S
   setV4lParameter("sharpness", req->params.sharpness);
   setV4lParameter("gain", req->params.gain);
   // focus
-  setV4lParameter("focus_auto", req->params.focus_automatic_continuous);
+  setV4lParameter("focus_automatic_continuous", req->params.focus_automatic_continuous);
   if (req->params.focus_automatic_continuous == false)
   {
     //0-255, -1 "leave alone"
@@ -497,7 +497,7 @@ bool setParamCallback(const std::shared_ptr<op3_camera_setting_tool_msgs::srv::S
 
   // exposure
   // turn down exposure control (from max of 3)
-  setV4lParameter("exposure_auto", req->params.auto_exposure);
+  setV4lParameter("auto_exposure", req->params.auto_exposure);
   if (req->params.auto_exposure == 1)  // if it's manual
   {
     setV4lParameter("exposure_time_absolute", req->params.exposure_time_absolute);
