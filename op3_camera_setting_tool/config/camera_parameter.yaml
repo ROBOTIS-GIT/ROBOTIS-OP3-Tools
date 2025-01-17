@@ -7,7 +7,7 @@
     gain: 255
     focus_automatic_continuous: false
     focus_absolute: -1
-    auto_exposure: 1
-    exposure_time_absolute: 250
+    auto_exposure: 0
+    exposure_time_absolute: 1109
     white_balance_automatic: false
-    white_balance_temperature: 4000
+    white_balance_temperature: 4903

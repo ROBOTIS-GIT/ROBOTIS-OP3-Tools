@@ -107,11 +107,11 @@
 			saturation : 128,
 			sharpness : 128,
 			gain : 255,
-			focus_auto : false,
+			focus_automatic_continuous : false,
 			focus_absolute : -1,
-			exposure_auto : 1,
-			exposure_absolute : 80,
-			white_balance_temperature_auto : false,
+			auto_exposure : 1,
+			exposure_time_absolute : 250,
+			white_balance_automatic : false,
 			white_balance_temperature : 4000
 		}
 
@@ -256,12 +256,12 @@
 			camera_parameters.contrast							= message.contrast;
 			camera_parameters.saturation						= message.saturation;
 			camera_parameters.sharpness							= message.sharpness;
-			camera_parameters.gain								= message.gain;
-			camera_parameters.focus_auto						= message.focus_auto;
+			camera_parameters.gain								  = message.gain;
+			camera_parameters.focus_automatic_continuous = message.focus_automatic_continuous;
 			camera_parameters.focus_absolute					= message.focus_absolute;
-			camera_parameters.exposure_auto						= message.exposure_auto;
-			camera_parameters.exposure_absolute					= message.exposure_absolute;
-			camera_parameters.white_balance_temperature_auto	= message.white_balance_temperature_auto;
+			camera_parameters.auto_exposure						= message.auto_exposure;
+			camera_parameters.exposure_time_absolute					= message.exposure_time_absolute;
+			camera_parameters.white_balance_automatic	        = message.white_balance_automatic;
 			camera_parameters.white_balance_temperature   		= message.white_balance_temperature;
 			
 			refresh_camera_parameters();
@@ -348,11 +348,11 @@
 				camera_parameters.saturation						= result.returns.saturation;
 				camera_parameters.sharpness							= result.returns.sharpness;
 				camera_parameters.gain								= result.returns.gain;
-				camera_parameters.focus_auto						= result.returns.focus_auto;
+				camera_parameters.focus_automatic_continuous = result.returns.focus_automatic_continuous;
 				camera_parameters.focus_absolute					= result.returns.focus_absolute;
-				camera_parameters.exposure_auto						= result.returns.exposure_auto;
-				camera_parameters.exposure_absolute					= result.returns.exposure_absolute;
-				camera_parameters.white_balance_temperature_auto	= result.returns.white_balance_temperature_auto;
+				camera_parameters.auto_exposure						= result.returns.auto_exposure;
+				camera_parameters.exposure_time_absolute	= result.returns.exposure_time_absolute;
+				camera_parameters.white_balance_automatic	= result.returns.white_balance_automatic;
 				camera_parameters.white_balance_temperature   		= result.returns.white_balance_temperature;
 				
 				refresh_camera_parameters();
@@ -1041,8 +1041,8 @@
 			$("#camera_setting_slider_06").slider({
 				value: camera_parameters[label_text],
 				min: -1,
-				max: 255,
-				step : 1,
+				max: 250,
+				step : 5,
 				slide: function (event, ui) {
 					$("#camera_setting_input_06").val(ui.value);
 					camera_parameters[label_text] = ui.value;
@@ -1083,8 +1083,8 @@
 			label_text = label_text.split(' ').join('')
 			$("#camera_setting_slider_07").slider({
 				value: camera_parameters[label_text],
-				min: 0,
-				max: 255,
+				min: 3,
+				max: 2047,
 				step : 1,
 				slide: function (event, ui) {
 					$("#camera_setting_input_07").val(ui.value);
@@ -1166,7 +1166,7 @@
 			// auto_focus
 			$("#camera_setting_input_06").val(camera_parameters.focus_absolute );
 			// auto_exposure
-			$("#camera_setting_input_07").val(camera_parameters.exposure_absolute );
+			$("#camera_setting_input_07").val(camera_parameters.exposure_time_absolute );
 			// auto white balance
 			$("#camera_setting_input_08").val(camera_parameters.white_balance_temperature );			
 		
@@ -1175,11 +1175,11 @@
 			$( "#camera_setting_slider_03" ).slider( "value", camera_parameters.saturation );
 			$( "#camera_setting_slider_04" ).slider( "value", camera_parameters.sharpness );
 			$( "#camera_setting_slider_05" ).slider( "value", camera_parameters.gain );
-			id('camera_setting_checkbox_01').checked = camera_parameters.focus_auto;
+			id('camera_setting_checkbox_01').checked = camera_parameters.focus_automatic_continuous;
 			$( "#camera_setting_slider_06" ).slider( "value", camera_parameters.focus_absolute );
-			id('combobox_exposure').selectedIndex = camera_parameters.exposure_auto;
-			$( "#camera_setting_slider_07" ).slider( "value", camera_parameters.exposure_absolute );
-			id('camera_setting_checkbox_02').checked = camera_parameters.white_balance_temperature_auto;
+			id('combobox_exposure').selectedIndex = camera_parameters.auto_exposure;
+			$( "#camera_setting_slider_07" ).slider( "value", camera_parameters.exposure_time_absolute );
+			id('camera_setting_checkbox_02').checked = camera_parameters.white_balance_automatic;
 			$( "#camera_setting_slider_08" ).slider( "value", camera_parameters.white_balance_temperature );
 						
 			for(p in camera_parameters)
@@ -1527,7 +1527,7 @@
 						</tr>
 						<tr>
 							<td >
-								<label id = "camera_setting_checkbox_label_01"> focus_auto </label>
+								<label id = "camera_setting_checkbox_label_01"> focus_automatic_continuous </label>
 							</td>
 							<td >
 								<input type = "checkbox" id = "camera_setting_checkbox_01" onclick="auto_focus_clicked()">
@@ -1551,7 +1551,7 @@
 						
 						<tr>
 							<td >
-								<label id = "combobox_exposure_label"> exposure_auto </label>
+								<label id = "combobox_exposure_label"> auto_exposure </label>
 							</td>
 							<td >
 								<select id="combobox_exposure" onchange="combobox_exposure_changed()">
@@ -1567,7 +1567,7 @@
 						</tr>
 						<tr>
 							<td >
-								<label id = "camera_setting_label_07"> exposure_absolute </label>
+								<label id = "camera_setting_label_07"> exposure_time_absolute </label>
 							</td>
 							<td >
 								<div id="camera_setting_slider_07"></div>
@@ -1579,7 +1579,7 @@
 						
 						<tr>
 							<td >
-								<label id = "camera_setting_checkbox_label_02"> white_balance_temperature_auto </label>
+								<label id = "camera_setting_checkbox_label_02"> white_balance_automatic </label>
 							</td>
 							<td >
 								<input type = "checkbox" id = "camera_setting_checkbox_02" onclick="auto_white_balance_clicked()">

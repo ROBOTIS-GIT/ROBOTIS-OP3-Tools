@@ -504,7 +504,7 @@ bool setParamCallback(const std::shared_ptr<op3_camera_setting_tool_msgs::srv::S
   }
 
   // white balance
-  setV4lParameter("white_balance_temperature_auto", req->params.white_balance_automatic);
+  setV4lParameter("white_balance_automatic", req->params.white_balance_automatic);
   if (req->params.white_balance_automatic == false)
   {
     setV4lParameter("white_balance_temperature", req->params.white_balance_temperature);
