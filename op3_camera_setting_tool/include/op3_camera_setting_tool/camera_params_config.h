@@ -25,16 +25,16 @@ namespace robotis_op
 {
 
 // constants
-const int BRIGHTNESS_DEFAULT = 128;
+const int BRIGHTNESS_DEFAULT = 64;
 const int CONTRAST_DEFAULT = 128;
 const int SATURATION_DEFAULT = 128;
 const int SHARPNESS_DEFAULT = 128;
 const int GAIN_DEFAULT = 0;
 const bool FOCUS_AUTOMATIC_CONTINUOUIS_DEFAULT = false;
-const int FOCUS_ABSOLUTE_DEFAULT = -1;
-const int AUTO_EXPOSURE_DEFAULT = 3;
-const int EXPOSURE_TIME_ABSOLUTE_DEFAULT = 80;
-const bool WHITE_BALANCE_AUTOMATIC_DEFAULT = true;
+const int FOCUS_ABSOLUTE_DEFAULT = 0;
+const int AUTO_EXPOSURE_DEFAULT = 1;
+const int EXPOSURE_TIME_ABSOLUTE_DEFAULT = 250;
+const bool WHITE_BALANCE_AUTOMATIC_DEFAULT = false;
 const int WHITE_BALANCE_TEMPERATURE_DEFAULT = 4000;
 
 std::string param_names[11] = {
