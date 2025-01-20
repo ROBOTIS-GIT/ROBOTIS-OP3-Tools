@@ -58,7 +58,7 @@ QNode::QNode(int argc, char** argv)
   std::string default_config_path = ament_index_cpp::get_package_share_directory(ROS_PACKAGE_NAME) + "/config/joint_data.yaml";
   parseOffsetGroup(default_config_path);
 
-  rclcpp::init(init_argc_, init_argv_);
+  //rclcpp::init(init_argc_, init_argv_);
 }
 
 QNode::~QNode()
