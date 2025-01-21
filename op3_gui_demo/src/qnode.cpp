@@ -315,9 +315,9 @@ void QNodeOP3::getJointControlMode()
   auto future = get_module_control_client_->async_send_request(request, 
       [this, service_map](rclcpp::Client<robotis_controller_msgs::srv::GetJointModule>::SharedFuture result) 
       {
-        if (result.get())
+        auto response = result.get();
+        if (response)
         {
-          auto response = result.get();
           // _get_joint.response
           std::vector<int> modules(getJointSize(), 0);
 

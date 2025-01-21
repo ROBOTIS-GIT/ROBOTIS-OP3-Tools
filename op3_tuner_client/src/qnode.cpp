@@ -141,9 +141,9 @@ void QNode::getPresentJointOffsetData(bool recalculate_offset)
   auto future = get_present_joint_offset_data_client_->async_send_request(request,
       [this, recalculate_offset](rclcpp::Client<op3_tuning_module_msgs::srv::GetPresentJointOffsetData>::SharedFuture result)
       {
-        if (result.get())
+        auto response = result.get();
+        if (response)
         {
-          auto response = result.get();
           for (auto &data : response->present_data_array)
           {
             op3_tuning_module_msgs::msg::JointOffsetPositionData _temp = data;

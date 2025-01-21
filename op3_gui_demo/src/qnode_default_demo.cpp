@@ -111,9 +111,10 @@ void QNodeOP3::refreshWalkingParam()
   auto future = get_walking_param_client_->async_send_request(request,
       [this](rclcpp::Client<op3_walking_module_msgs::srv::GetWalkingParam>::SharedFuture result)
       {
-        if (result.get())
+        auto request_result = result.get();
+        if (request_result)
         {
-          walking_param_ = result.get()->parameters;
+          walking_param_ = request_result->parameters;
 
           // update ui
           Q_EMIT updateWalkingParameters(walking_param_);
