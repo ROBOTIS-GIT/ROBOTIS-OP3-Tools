@@ -39,9 +39,10 @@ namespace op3_offset_tuner_client
  ** Implementation
  *****************************************************************************/
 
-QNode::QNode(int argc, char** argv, QObject *parent)
+//QNode::QNode(int argc, char** argv, QObject *parent)
+QNode::QNode(int argc, char** argv)
   : Node("op3_offset_tuner_client"),
-    QObject(parent),
+    //QObject(parent),
     init_argc_(argc),
     init_argv_(argv),
     is_refresh_(false)

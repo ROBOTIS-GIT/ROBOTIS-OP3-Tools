@@ -58,13 +58,13 @@ using namespace Qt;
 
 MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
   : QMainWindow(parent), 
-    ui_(new Ui::MainWindow),
-    qnode_(nullptr)    
+    ui_(new Ui::MainWindow)    //qnode_(nullptr)    
 {
   ui_->setupUi(this);  // Calling this incidentally connects all ui's triggers to on_...() callbacks in this class.
   QObject::connect(ui_->actionAbout_Qt, &QAction::triggered, qApp, &QApplication::aboutQt);  // qApp is a global variable for the application
 
-  qnode_ = new QNode(argc, argv, this);
+  //qnode_ = new QNode(argc, argv, this);
+  qnode_ = new QNode(argc, argv);
   setWindowIcon(QIcon(":/images/icon.png"));
   ui_->tab_manager->setCurrentIndex(0);  // ensure the first tab is showing - qt-designer should have this already hardwired, but often loses it (settings?).
   QObject::connect(qnode_, &QNode::rosShutdown, this, &MainWindow::close);
