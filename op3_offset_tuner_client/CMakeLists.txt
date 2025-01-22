@@ -73,7 +73,7 @@ install(TARGETS ${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(DIRECTORY resources launch
+install(DIRECTORY resources launch config
   DESTINATION share/${PROJECT_NAME}
 )
 

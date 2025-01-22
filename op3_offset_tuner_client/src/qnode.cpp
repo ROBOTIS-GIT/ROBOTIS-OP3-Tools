@@ -172,61 +172,61 @@ void QNode::parseOffsetGroup(const std::string &path)
   YAML::Node doc;
   try
   {
-  // load yaml
-  doc = YAML::LoadFile(path.c_str());
+    // load yaml
+    doc = YAML::LoadFile(path.c_str());
   } catch (const std::exception& e)
   {
-  RCLCPP_ERROR(this->get_logger(), "Fail to load offset config yaml.");
-  return;
+    RCLCPP_ERROR(this->get_logger(), "Fail to load offset config yaml. (%s)", path.c_str());
+    return;
   }
 
   // parse right_arm
   YAML::Node right_arm_node = doc["right_arm"];
   for (YAML::iterator yaml_it = right_arm_node.begin(); yaml_it != right_arm_node.end(); ++yaml_it)
   {
-  int index;
-  std::string joint_name;
+    int index;
+    std::string joint_name;
 
-  index = yaml_it->first.as<int>();
-  joint_name = yaml_it->second.as<std::string>();
+    index = yaml_it->first.as<int>();
+    joint_name = yaml_it->second.as<std::string>();
 
-  right_arm_offset_group_[index] = joint_name;
+    right_arm_offset_group_[index] = joint_name;
   }
 
   YAML::Node left_arm_node = doc["left_arm"];
   for (YAML::iterator yaml_it = left_arm_node.begin(); yaml_it != left_arm_node.end(); ++yaml_it)
   {
-  int index;
-  std::string joint_name;
+    int index;
+    std::string joint_name;
 
-  index = yaml_it->first.as<int>();
-  joint_name = yaml_it->second.as<std::string>();
+    index = yaml_it->first.as<int>();
+    joint_name = yaml_it->second.as<std::string>();
 
-  left_arm_offset_group_[index] = joint_name;
+    left_arm_offset_group_[index] = joint_name;
   }
 
   YAML::Node legs_node = doc["legs"];
   for (YAML::iterator yaml_it = legs_node.begin(); yaml_it != legs_node.end(); ++yaml_it)
   {
-  int index;
-  std::string joint_name;
+    int index;
+    std::string joint_name;
 
-  index = yaml_it->first.as<int>();
-  joint_name = yaml_it->second.as<std::string>();
+    index = yaml_it->first.as<int>();
+    joint_name = yaml_it->second.as<std::string>();
 
-  legs_offset_group_[index] = joint_name;
+    legs_offset_group_[index] = joint_name;
   }
 
   YAML::Node body_node = doc["body"];
   for (YAML::iterator yaml_it = body_node.begin(); yaml_it != body_node.end(); ++yaml_it)
   {
-  int index;
-  std::string joint_name;
+    int index;
+    std::string joint_name;
 
-  index = yaml_it->first.as<int>();
-  joint_name = yaml_it->second.as<std::string>();
+    index = yaml_it->first.as<int>();
+    joint_name = yaml_it->second.as<std::string>();
 
-  body_offset_group_[index] = joint_name;
+    body_offset_group_[index] = joint_name;
   }
 }
 
