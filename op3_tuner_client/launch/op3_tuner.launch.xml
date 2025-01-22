@@ -2,5 +2,5 @@
 
 <launch>
     <include file="$(find-pkg-share op3_manager)/launch/op3_manager.launch.py" />
-    <include file="$(find-pkg-share op3_tuner_client)/launch/op3_tuner_client.launch.py" />
+    <include file="$(find-pkg-share op3_tuner_client)/launch/op3_tuner_client.launch.xml" />
 </launch>
