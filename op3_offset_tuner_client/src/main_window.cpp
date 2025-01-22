@@ -95,10 +95,11 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
   /****************************
    ** Connect
    ****************************/
-
+  
   /*********************
    ** Auto Start
    **********************/
+  qnode_->init();
 
   // make ui
   makeUI();

@@ -47,6 +47,17 @@ QNode::QNode(int argc, char** argv)
     init_argv_(argv),
     is_refresh_(false)
 {
+
+
+}
+
+QNode::~QNode()
+{
+  rclcpp::shutdown();
+}
+
+bool QNode::init()
+{
   // Add your ros communications here
   joint_offset_data_pub_ = this->create_publisher<op3_offset_tuner_msgs::msg::JointOffsetData>(
     "/robotis/offset_tuner/joint_offset_data", 10);
@@ -60,11 +71,28 @@ QNode::QNode(int argc, char** argv)
   std::string default_config_path = ament_index_cpp::get_package_share_directory("op3_offset_tuner_client") + "/config/joint_data.yaml";
   parseOffsetGroup(default_config_path);
 
+  // start qthread
+  start();  
+
+  return true;
 }
 
-QNode::~QNode()
+void QNode::run()
 {
-  rclcpp::shutdown();
+  auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+  executor->add_node(this->get_node_base_interface());
+
+  rclcpp::Rate loop_rate(10);
+
+  while (rclcpp::ok())
+  {
+    //rclcpp::spin_some(this);
+    executor->spin_some();
+    loop_rate.sleep();
+  }
+
+  std::cout << "Ros shutdown, proceeding to close the gui." << std::endl;
+  Q_EMIT rosShutdown();  // used to signal the gui for a shutdown (useful to roslaunch)
 }
 
 void QNode::sendTorqueEnableMsg(op3_offset_tuner_msgs::msg::JointTorqueOnOffArray msg)
@@ -109,7 +137,7 @@ void QNode::getPresentJointOffsetData(bool recalculate_offset)
           for (auto &data : response->present_data_array)
           {
             op3_offset_tuner_msgs::msg::JointOffsetPositionData _temp = data;
-
+            
             if(recalculate_offset == true)
               _temp.offset_value = _temp.present_value - _temp.goal_value;
 

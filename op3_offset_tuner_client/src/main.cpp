@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
     app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 
     auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
-    auto spin_thread = std::thread([executor]() {
+    auto spin_thread = std::thread([&executor]() {
         executor->spin();
     });
 
