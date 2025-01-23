@@ -1,0 +1,4 @@
+<?xml version="1.0" ?>
+<launch>
+  <node pkg="op3_offset_tuner_client" exec="op3_offset_tuner_client" name="offset_tuner_client" output="screen"/>
+</launch>
