@@ -28,7 +28,9 @@ int main(int argc, char **argv)
 
   // TODO: singletone 을 변경해야 하나?
   auto server = std::make_shared<OffsetTunerServer>();
-  server->initialize();
+  if (server->initialize() == false)
+    return 1;
+  
   rclcpp::spin(server);
 
   rclcpp::shutdown();

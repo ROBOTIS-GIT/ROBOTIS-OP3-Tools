@@ -42,6 +42,8 @@
 #include "op3_offset_tuner_msgs/msg/joint_torque_on_off_array.hpp"
 #include "op3_offset_tuner_msgs/srv/get_present_joint_offset_data.hpp"
 
+Q_DECLARE_METATYPE(op3_offset_tuner_msgs::msg::JointOffsetPositionData)
+
 #endif
 /*****************************************************************************
  ** Namespaces
@@ -54,7 +56,7 @@ namespace op3_offset_tuner_client
  ** Class
  *****************************************************************************/
 
-class QNode : public QObject, public rclcpp::Node
+class QNode : public QThread, public rclcpp::Node
 {
   Q_OBJECT
  public:
@@ -67,9 +69,13 @@ class QNode : public QObject, public rclcpp::Node
     Fatal
   };
 
-  explicit QNode(int argc, char** argv, QObject* parent = nullptr);
+  //explicit QNode(int argc, char** argv, QObject* parent = nullptr);
+  QNode(int argc, char** argv);
   virtual ~QNode();
-
+  
+  bool init();
+  void run();
+  
   QStringListModel* loggingModel()
   {
     return &logging_model_;
