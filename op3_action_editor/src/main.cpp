@@ -75,7 +75,7 @@ int main(int argc, char **argv)
   std::string _device_name;
   int _baud_rate;
 
-  editor->declare_parameter<std::string>("offset_table", "");
+  editor->declare_parameter<std::string>("offset_file_path", "");
   editor->declare_parameter<std::string>("robot_file_path", "");
   editor->declare_parameter<std::string>("init_file_path", "");
   editor->declare_parameter<std::string>("device_name", SUB_CONTROLLER_DEVICE);
