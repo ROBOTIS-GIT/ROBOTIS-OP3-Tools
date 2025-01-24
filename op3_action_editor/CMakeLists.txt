@@ -86,7 +86,7 @@ install(DIRECTORY
 ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
-  scripts/excuter.py
+  scripts/executor.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -6,13 +6,13 @@ import time
 from rclpy.node import Node
 from ament_index_python.packages import get_package_share_directory
 
-class ActionEditorExcuter(Node):
+class ActionEditorExecutor(Node):
     def __init__(self):
-        super().__init__('op3_action_editor_excuter')
+        super().__init__('op3_action_editor_executor')
 
 def main(args=None):
     rclpy.init(args=args)
-    node = ActionEditorExcuter()
+    node = ActionEditorExecutor()
 
     # Define your package and executable
     package = "op3_action_editor"
