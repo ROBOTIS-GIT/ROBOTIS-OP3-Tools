@@ -148,7 +148,7 @@
 		var demoModeCommand = new ROSLIB.Topic({
 			ros: ros,
 			name: '/robotis/mode_command',
-			messageType: 'std_msgs/String'
+			messageType: 'std_msgs/msg/String'
 		});
 
 		function publishModeCommand(mode_command) {
@@ -162,7 +162,7 @@
 		var demoCommand = new ROSLIB.Topic({
 			ros: ros,
 			name: '/robotis/demo_command',
-			messageType: 'std_msgs/String'
+			messageType: 'std_msgs/msg/String'
 		});
 
 		function publishDemoCommand(demo_command) {
@@ -175,7 +175,7 @@
 		var paramCommand = new ROSLIB.Topic({
 			ros: ros,
 			name: '/ball_detector_node/param_command',
-			messageType: 'std_msgs/String'
+			messageType: 'std_msgs/msg/String'
 		});
 				
 		function publishParamCommand(param_command) {
@@ -189,7 +189,7 @@
 		var cameraCommand = new ROSLIB.Topic({
 			ros: ros,
 			name: '/op3_camera/param_command',
-			messageType: 'std_msgs/String'
+			messageType: 'std_msgs/msg/String'
 		});
 
 		function publishCameraCommand(camera_command) {
@@ -203,7 +203,7 @@
 		var actionIndex = new ROSLIB.Topic({
 			ros: ros,
 			name: '/robotis/action/page_num',
-			messageType: 'std_msgs/Int32'
+			messageType: 'std_msgs/msg/Int32'
 		});
 
 		function publishActionIndex(action_index) {
@@ -220,7 +220,7 @@
 		var param_listener = new ROSLIB.Topic({
 			ros: ros,
 			name: '/ball_detector_node/current_params',
-			messageType: 'op3_ball_detector_msgs/BallDetectorParams'
+			messageType: 'op3_ball_detector_msgs/msg/BallDetectorParams'
 		});
 
 		param_listener.subscribe(function (message) {
@@ -248,7 +248,7 @@
 		var camera_param_listener = new ROSLIB.Topic({
 			ros: ros,
 			name: '/op3_camera/camera_params',
-			messageType: 'op3_camera_setting_tool_msgs/CameraParams'
+			messageType: 'op3_camera_setting_tool_msgs/msg/CameraParams'
 		});
 
 		camera_param_listener.subscribe(function (message) {
@@ -274,13 +274,13 @@
 		var setBallDetectorParamClient = new ROSLIB.Service({
 		 ros : ros,
 		 name : '/ball_detector_node/set_param',
-		 serviceType : 'op3_ball_detector_msgs/SetParameters'
+		 serviceType : 'op3_ball_detector_msgs/srv/SetParameters'
 		});
 		
 		var getBallDetectorParamClient = new ROSLIB.Service({
 		 ros : ros,
 		 name : '/ball_detector_node/get_param',
-		 serviceType : 'op3_ball_detector_msgs/GetParameters'
+		 serviceType : 'op3_ball_detector_msgs/srv/GetParameters'
 		});
 				
 		function callServiceSetBallDetectorParams(new_params) {
@@ -320,13 +320,13 @@
 		var setCameraParamClient = new ROSLIB.Service({
 		 ros : ros,
 		 name : '/op3_camera/set_camera_params',
-		 serviceType : 'op3_camera_setting_tool_msgs/SetParameters'
+		 serviceType : 'op3_camera_setting_tool_msgs/srv/SetParameters'
 		});
 		
 		var getCameraParamClient = new ROSLIB.Service({
 		 ros : ros,
 		 name : '/op3_camera/get_camera_params',
-		 serviceType : 'op3_camera_setting_tool_msgs/GetParameters'
+		 serviceType : 'op3_camera_setting_tool_msgs/srv/GetParameters'
 		});
 		
 		
@@ -1065,7 +1065,7 @@
 			var label_text = id('combobox_exposure_label').innerHTML;
 			label_text = label_text.split(' ').join('')
 			console.log(label_text + " : " + camera_parameters[label_text]);
-			id('combobox_exposure').selectedIndex = camera_parameters[label_text];
+			id('combobox_exposure').selectedIndex = (camera_parameters[label_text] == 1) ? 0 : 1;
 		});
 		
 		function combobox_exposure_changed() {
@@ -1178,7 +1178,7 @@
 			$( "#camera_setting_slider_05" ).slider( "value", camera_parameters.gain );
 			id('camera_setting_checkbox_01').checked = camera_parameters.focus_automatic_continuous;
 			$( "#camera_setting_slider_06" ).slider( "value", camera_parameters.focus_absolute );
-			id('combobox_exposure').selectedIndex = camera_parameters.auto_exposure;
+			id('combobox_exposure').selectedIndex = (camera_parameters.auto_exposure == 1)? 0 : 1;
 			$( "#camera_setting_slider_07" ).slider( "value", camera_parameters.exposure_time_absolute );
 			id('camera_setting_checkbox_02').checked = camera_parameters.white_balance_automatic;
 			$( "#camera_setting_slider_08" ).slider( "value", camera_parameters.white_balance_temperature );
