@@ -3,6 +3,7 @@ project(op3_camera_setting_tool)
 
 set(ROS_PACKAGE_NAME ${PROJECT_NAME})
 
+find_package(usb_cam 0.8.2 REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(rclcpp REQUIRED)

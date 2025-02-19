@@ -19,6 +19,7 @@
   <depend>op3_camera_setting_tool_msgs</depend>
   <!-- <depend>dynamic_reconfigure</depend> -->
   <depend>yaml-cpp</depend>
+  <depend>usb_cam</depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
   <export>
