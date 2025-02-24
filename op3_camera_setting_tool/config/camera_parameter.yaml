@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    brightness: 110
+    brightness: 128
     contrast: 128
     saturation: 128
     sharpness: 128
