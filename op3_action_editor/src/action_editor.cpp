@@ -268,6 +268,7 @@ bool ActionEditor::initializeActionEditor(std::string robot_file_path, std::stri
 
   ctrl_->loadOffset(offset_file_path);
   ctrl_->addMotionModule((robotis_framework::MotionModule*) ActionModule::getInstance());
+  ctrl_->addMotionModule((robotis_framework::MotionModule*) BaseModule::getInstance());
   ActionModule::getInstance()->enableAllJoints();
 
   robot_ = ctrl_->robot_;
